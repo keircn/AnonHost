@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
-import { Copy, Trash2 } from "lucide-react"
+import { Copy, Trash2, Download } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -90,15 +90,6 @@ export default function SettingsPage() {
     }
   }
 
-  const generateRandomString = (length: number) => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    let result = ""
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return result
-  }
-
   const handleCreateApiKey = async () => {
     if (!newKeyName.trim()) {
       toast({
@@ -108,24 +99,24 @@ export default function SettingsPage() {
       })
       return
     }
-  
+
     setIsGeneratingKey(true)
-  
+
     try {
       const response = await fetch("/api/keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newKeyName }),
       })
-  
+
       if (!response.ok) {
         throw new Error("Failed to create API key")
       }
-  
+
       const newKey = await response.json()
       setApiKeys((prev) => [...prev, newKey])
       setNewKeyName("")
-  
+
       toast({
         title: "API key created",
         description: "Your new API key has been created successfully",
@@ -147,13 +138,13 @@ export default function SettingsPage() {
       const response = await fetch(`/api/keys/${id}`, {
         method: "DELETE",
       })
-  
+
       if (!response.ok) {
         throw new Error("Failed to delete API key")
       }
-  
+
       setApiKeys((prev) => prev.filter((key) => key.id !== id))
-  
+
       toast({
         title: "API key deleted",
         description: "Your API key has been deleted successfully",
@@ -200,6 +191,31 @@ export default function SettingsPage() {
         variant: "destructive",
       })
     }
+  }
+
+  function generateShareXConfig(apiKey: string, baseUrl: string) {
+    return {
+      Version: "14.1.0",
+      Name: "AnonHost",
+      DestinationType: "ImageUploader",
+      RequestMethod: "POST",
+      RequestURL: `${baseUrl}/api/upload`,
+      Headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      Body: "MultipartFormData",
+      FileFormName: "file",
+      URL: "$json:url$",
+      ThumbnailURL: "$json:url$",
+      DeletionURL: "",
+      ErrorMessage: "$json:error$"
+    }
+  }
+  const handleCopyShareXConfig = (apiKey: string) => {
+    const config = generateShareXConfig(apiKey, window.location.origin)
+    const configString = JSON.stringify(config, null, 2)
+  
+    navigator.clipboard.writeText(configString)
   }
 
   if (status === "loading") {
@@ -339,8 +355,21 @@ export default function SettingsPage() {
                                   )}
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button variant="outline" size="icon" onClick={() => copyToClipboard(apiKey.key)}>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => copyToClipboard(apiKey.key)}
+                                    title="Copy API Key"
+                                  >
                                     <Copy className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleCopyShareXConfig(apiKey.key)}
+                                    title="Copy ShareX Config"
+                                  >
+                                    <Download className="h-4 w-4" />
                                   </Button>
                                   <Dialog>
                                     <DialogTrigger asChild>

@@ -4,9 +4,6 @@ import Image from 'next/image'
 import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Copy, Download } from "lucide-react"
-import { toast } from "@/components/ui/use-toast"
 
 interface Props {
     params: { id: string[] }

@@ -8,6 +8,7 @@ import { uploadImage } from "@/lib/upload"
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1]
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -42,11 +43,11 @@ export async function GET(req: NextRequest) {
     prisma.image.count({
       where: { userId },
     }),
-    
+
     prisma.image.findMany({
       where: { userId },
       orderBy: {
-        [sort === "filename" ? "filename" : sort === "size" ? "size" : "createdAt"]: 
+        [sort === "filename" ? "filename" : sort === "size" ? "size" : "createdAt"]:
           order === "asc" ? "asc" : "desc",
       },
       skip,
@@ -91,6 +92,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1]
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -127,6 +129,11 @@ export async function POST(req: NextRequest) {
 
     const uploadResult = await uploadImage(file, userId)
 
+    const settings = await prisma.settings.findUnique({
+      where: { userId },
+      select: { customDomain: true },
+    })
+
     const image = await prisma.image.create({
       data: {
         url: uploadResult.url,
@@ -139,9 +146,13 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    const imageUrl = settings?.customDomain 
+      ? `https://${settings.customDomain}/${image.id}`
+      : `${baseUrl}/${image.id}`
+
     return NextResponse.json({
       id: image.id,
-      url: `${req.nextUrl.origin}/${image.id}`,
+      url: imageUrl,
       filename: image.filename,
       size: image.size,
       width: image.width,

@@ -1,7 +1,7 @@
-import NextAuth, { AuthOptions } from "next-auth"
-import DiscordProvider from "next-auth/providers/discord"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import prisma from "@/lib/prisma"
+import NextAuth, { AuthOptions } from "next-auth";
+import DiscordProvider from "next-auth/providers/discord";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import prisma from "@/lib/prisma";
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -11,10 +11,10 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
       authorization: {
         params: {
-          scope: "identify email"
-        }
-      }
-    })
+          scope: "identify email",
+        },
+      },
+    }),
   ],
   callbacks: {
     async session({ session, user }) {
@@ -24,24 +24,24 @@ export const authOptions: AuthOptions = {
           ...session.user,
           id: user.id,
           admin: user.admin,
-          premium: user.premium
-        }
-      }
+          premium: user.premium,
+        },
+      };
     },
     async jwt({ token, account }) {
       if (account) {
-        token.accessToken = account.access_token
+        token.accessToken = account.access_token;
       }
-      return token
-    }
+      return token;
+    },
   },
   pages: {
     signIn: "/",
-    error: "/"
+    error: "/",
   },
-  debug: process.env.NODE_ENV === "development"
-}
+  debug: process.env.NODE_ENV === "development",
+};
 
-const handler = NextAuth(authOptions)
+const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

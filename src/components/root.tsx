@@ -10,11 +10,7 @@ import { AuthProvider } from "@/components/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const Root = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const Root = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -29,5 +25,5 @@ export const Root = ({
         </ThemeProvider>
       </body>
     </html>
-  )
-}
+  );
+};

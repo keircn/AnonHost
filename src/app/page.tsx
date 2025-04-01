@@ -8,31 +8,31 @@ import { motion } from "framer-motion";
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
+  transition: { duration: 0.5 },
 };
 
 const staggerChildren = {
   animate: {
-    transition: { staggerChildren: 0.1 }
-  }
+    transition: { staggerChildren: 0.1 },
+  },
 };
 
 const features = [
   {
     icon: Upload,
     title: "Easy Uploads",
-    description: "Drag and drop or select files to upload instantly"
+    description: "Drag and drop or select files to upload instantly",
   },
   {
     icon: Shield,
     title: "Secure Storage",
-    description: "Your images are stored securely and accessible only to you"
+    description: "Your images are stored securely and accessible only to you",
   },
   {
     icon: Code,
     title: "API Access",
-    description: "Generate API keys and integrate with your applications"
-  }
+    description: "Generate API keys and integrate with your applications",
+  },
 ];
 
 export default function Home() {
@@ -48,10 +48,7 @@ export default function Home() {
                 initial="initial"
                 animate="animate"
               >
-                <motion.div
-                  className="space-y-2"
-                  variants={fadeIn}
-                >
+                <motion.div className="space-y-2" variants={fadeIn}>
                   <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl">
                     AnonHost
                   </h1>

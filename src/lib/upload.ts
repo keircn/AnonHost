@@ -10,24 +10,27 @@ interface UploadResult {
   height: number;
 }
 
+export const STORAGE_LIMITS = {
+  PREMIUM: 1024 * 1024 * 1024,
+  FREE: 500 * 1024 * 1024,
+};
+
 export const FILE_SIZE_LIMITS = {
   PREMIUM: 100 * 1024 * 1024,
   FREE: 50 * 1024 * 1024,
 };
 
-export const STORAGE_LIMITS = {
-  PREMIUM: 1000,
-  FREE: 500,
-}
+export function formatFileSize(bytes: number): string {
+  const units = ["B", "KB", "MB", "GB"];
+  let size = bytes;
+  let unitIndex = 0;
 
-export function formatFileSize(fsize: number): string {
-  const sizeInMB = fsize;
-  if (sizeInMB < 1024) {
-    return `${sizeInMB} MB`;
-  } else if (sizeInMB < 1024 * 1024) {
-    return `${(sizeInMB / 1024).toFixed(1)} GB`;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
   }
-  return `${sizeInMB.toFixed(1)} MB`;
+
+  return `${Math.round(size * 100) / 100} ${units[unitIndex]}`;
 }
 
 const s3Client = new S3Client({

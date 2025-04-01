@@ -1,55 +1,63 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Copy, ChevronDown, ChevronRight } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Copy, ChevronDown, ChevronRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 }
-}
+  animate: { opacity: 1, y: 0 },
+};
 
 const staggerContainer = {
   animate: {
-    transition: { staggerChildren: 0.1 }
-  }
-}
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
 const tabVariants = {
   initial: { opacity: 0, x: -20 },
   animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: 20 }
-}
+  exit: { opacity: 0, x: 20 },
+};
 
 const codeBlockVariants = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
   hover: {
     boxShadow: "0 0 0 2px var(--primary)",
-    transition: { duration: 0.2 }
-  }
-}
+    transition: { duration: 0.2 },
+  },
+};
 
 export default function ApiDocumentationPage() {
-  const { toast } = useToast()
-  const [expandedSection, setExpandedSection] = useState<string | null>("upload")
-  const [activeTab, setActiveTab] = useState("overview")
+  const { toast } = useToast();
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    "upload",
+  );
+  const [activeTab, setActiveTab] = useState("overview");
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+    navigator.clipboard.writeText(text);
     toast({
       title: "Copied to clipboard",
       description: "Code snippet copied to clipboard",
-    })
-  }
+    });
+  };
 
   const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section)
-  }
+    setExpandedSection(expandedSection === section ? null : section);
+  };
 
   return (
     <motion.div
@@ -58,16 +66,10 @@ export default function ApiDocumentationPage() {
       initial="initial"
       animate="animate"
     >
-      <motion.h1
-        className="text-3xl font-bold mb-2"
-        variants={fadeIn}
-      >
+      <motion.h1 className="text-3xl font-bold mb-2" variants={fadeIn}>
         API Documentation
       </motion.h1>
-      <motion.p
-        className="text-muted-foreground mb-6"
-        variants={fadeIn}
-      >
+      <motion.p className="text-muted-foreground mb-6" variants={fadeIn}>
         Integrate AnonHost with your applications using our simple REST API
       </motion.p>
 
@@ -119,10 +121,12 @@ export default function ApiDocumentationPage() {
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Authentication</h3>
                       <p>
-                        All API requests require authentication using an API key. You
-                        can generate API keys in your account settings.
+                        All API requests require authentication using an API
+                        key. You can generate API keys in your account settings.
                       </p>
-                      <p>Include your API key in the request headers as follows:</p>
+                      <p>
+                        Include your API key in the request headers as follows:
+                      </p>
                       <motion.div
                         className="bg-muted p-4 rounded-md font-mono text-sm relative"
                         variants={codeBlockVariants}
@@ -136,7 +140,9 @@ export default function ApiDocumentationPage() {
                           size="icon"
                           className="absolute top-2 right-2"
                           onClick={() =>
-                            copyToClipboard("Authorization: Bearer YOUR_API_KEY")
+                            copyToClipboard(
+                              "Authorization: Bearer YOUR_API_KEY",
+                            )
                           }
                         >
                           <Copy className="h-4 w-4" />
@@ -146,7 +152,10 @@ export default function ApiDocumentationPage() {
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Base URL</h3>
-                      <p>All API endpoints are relative to the following base URL:</p>
+                      <p>
+                        All API endpoints are relative to the following base
+                        URL:
+                      </p>
                       <motion.div
                         className="bg-muted p-4 rounded-md font-mono text-sm relative"
                         variants={codeBlockVariants}
@@ -159,7 +168,9 @@ export default function ApiDocumentationPage() {
                           variant="ghost"
                           size="icon"
                           className="absolute top-2 right-2"
-                          onClick={() => copyToClipboard("https://keiran.cc/api")}
+                          onClick={() =>
+                            copyToClipboard("https://keiran.cc/api")
+                          }
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -171,10 +182,7 @@ export default function ApiDocumentationPage() {
             </TabsContent>
 
             <TabsContent value="endpoints">
-              <motion.div
-                className="space-y-6"
-                variants={staggerContainer}
-              >
+              <motion.div className="space-y-6" variants={staggerContainer}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -241,15 +249,16 @@ export default function ApiDocumentationPage() {
                               <div>file</div>
                               <div>File</div>
                               <div>
-                                The image file to upload (max: 100MB premium, 50MB
-                                free)
+                                The image file to upload (max: 100MB premium,
+                                50MB free)
                               </div>
                             </div>
                             <div className="grid grid-cols-3 p-3">
                               <div>public</div>
                               <div>Boolean</div>
                               <div>
-                                Whether the image should be public (default: false)
+                                Whether the image should be public (default:
+                                false)
                               </div>
                             </div>
                           </div>
@@ -390,7 +399,9 @@ export default function ApiDocumentationPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <h4 className="font-semibold">List Images Response</h4>
+                          <h4 className="font-semibold">
+                            List Images Response
+                          </h4>
                           <motion.div
                             className="bg-muted p-4 rounded-md font-mono text-sm relative"
                             variants={codeBlockVariants}
@@ -595,34 +606,36 @@ export default function ApiDocumentationPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {["Upload an Image", "List All Images"].map((example, index) => (
-                      <motion.div
-                        key={example}
-                        variants={fadeIn}
-                        initial="initial"
-                        animate="animate"
-                        transition={{ delay: index * 0.2 }}
-                      >
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-semibold">{example}</h3>
+                    {["Upload an Image", "List All Images"].map(
+                      (example, index) => (
+                        <motion.div
+                          key={example}
+                          variants={fadeIn}
+                          initial="initial"
+                          animate="animate"
+                          transition={{ delay: index * 0.2 }}
+                        >
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">{example}</h3>
 
-                          <Tabs defaultValue="js" className="w-full">
-                            <TabsList>
-                              <TabsTrigger value="js">JavaScript</TabsTrigger>
-                              <TabsTrigger value="python">Python</TabsTrigger>
-                              <TabsTrigger value="curl">cURL</TabsTrigger>
-                            </TabsList>
+                            <Tabs defaultValue="js" className="w-full">
+                              <TabsList>
+                                <TabsTrigger value="js">JavaScript</TabsTrigger>
+                                <TabsTrigger value="python">Python</TabsTrigger>
+                                <TabsTrigger value="curl">cURL</TabsTrigger>
+                              </TabsList>
 
-                            <TabsContent value="js" className="mt-4">
-                              <motion.div
-                                className="bg-muted p-4 rounded-md font-mono text-sm relative"
-                                variants={codeBlockVariants}
-                                initial="initial"
-                                animate="animate"
-                                whileHover="hover"
-                              >
-                                <pre>
-                                  {example === "Upload an Image" ? `const form = new FormData();
+                              <TabsContent value="js" className="mt-4">
+                                <motion.div
+                                  className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                                  variants={codeBlockVariants}
+                                  initial="initial"
+                                  animate="animate"
+                                  whileHover="hover"
+                                >
+                                  <pre>
+                                    {example === "Upload an Image"
+                                      ? `const form = new FormData();
 form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
 form.append('public', 'true');
@@ -640,7 +653,8 @@ fetch('https://keiran.cc/api/images', {
 })
 .catch(error => {
   console.error('Error:', error);
-});` : `fetch('https://keiran.cc/images?page=1&limit=50', {
+});`
+                                      : `fetch('https://keiran.cc/images?page=1&limit=50', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -654,13 +668,15 @@ fetch('https://keiran.cc/api/images', {
 .catch(error => {
   console.error('Error:', error);
 });`}
-                                </pre>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2"
-                                  onClick={() =>
-                                    copyToClipboard(example === "Upload an Image" ? `const form = new FormData();
+                                  </pre>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2"
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        example === "Upload an Image"
+                                          ? `const form = new FormData();
 form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
 form.append('public', 'true');
@@ -678,7 +694,8 @@ fetch('https://keiran.cc/images', {
 })
 .catch(error => {
   console.error('Error:', error);
-});` : `fetch('https://keiran.cc/images?page=1&limit=50', {
+});`
+                                          : `fetch('https://keiran.cc/images?page=1&limit=50', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -691,24 +708,26 @@ fetch('https://keiran.cc/images', {
 })
 .catch(error => {
   console.error('Error:', error);
-});`)
-                                  }
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </TabsContent>
+});`,
+                                      )
+                                    }
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </TabsContent>
 
-                            <TabsContent value="python" className="mt-4">
-                              <motion.div
-                                className="bg-muted p-4 rounded-md font-mono text-sm relative"
-                                variants={codeBlockVariants}
-                                initial="initial"
-                                animate="animate"
-                                whileHover="hover"
-                              >
-                                <pre>
-                                  {example === "Upload an Image" ? `import requests
+                              <TabsContent value="python" className="mt-4">
+                                <motion.div
+                                  className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                                  variants={codeBlockVariants}
+                                  initial="initial"
+                                  animate="animate"
+                                  whileHover="hover"
+                                >
+                                  <pre>
+                                    {example === "Upload an Image"
+                                      ? `import requests
 
 url = "https://keiran.cc/images"
 headers = {
@@ -725,7 +744,8 @@ data = {
 }
 
 response = requests.post(url, headers=headers, files=files, data=data)
-print(response.json())` : `import requests
+print(response.json())`
+                                      : `import requests
 
 url = "https://keiran.cc/images"
 headers = {
@@ -741,13 +761,15 @@ data = response.json()
 
 print("Images:", data["images"])
 print("Pagination:", data["pagination"])`}
-                                </pre>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2"
-                                  onClick={() =>
-                                    copyToClipboard(example === "Upload an Image" ? `import requests
+                                  </pre>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2"
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        example === "Upload an Image"
+                                          ? `import requests
 
 url = "https://keiran.cc/images"
 headers = {
@@ -764,7 +786,8 @@ data = {
 }
 
 response = requests.post(url, headers=headers, files=files, data=data)
-print(response.json())` : `import requests
+print(response.json())`
+                                          : `import requests
 
 url = "https://keiran.cc/images"
 headers = {
@@ -779,58 +802,66 @@ response = requests.get(url, headers=headers, params=params)
 data = response.json()
 
 print("Images:", data["images"])
-print("Pagination:", data["pagination"])`)
-                                  }
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </TabsContent>
+print("Pagination:", data["pagination"])`,
+                                      )
+                                    }
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </TabsContent>
 
-                            <TabsContent value="curl" className="mt-4">
-                              <motion.div
-                                className="bg-muted p-4 rounded-md font-mono text-sm relative"
-                                variants={codeBlockVariants}
-                                initial="initial"
-                                animate="animate"
-                                whileHover="hover"
-                              >
-                                <pre>
-                                  {example === "Upload an Image" ? `curl -X POST https://keiran.cc/images \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -F "file=@image.jpg" \\
-  -F "filename=custom-name.jpg" \\
-  -F "public=true"` : `curl -X GET "https://keiran.cc/images?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`}
-                                </pre>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2"
-                                  onClick={() =>
-                                    copyToClipboard(example === "Upload an Image" ? `curl -X POST https://keiran.cc/images \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -F "file=@image.jpg" \\
-  -F "filename=custom-name.jpg" \\
-  -F "public=true"` : `curl -X GET "https://keiran.cc/images?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`)
-                                  }
+                              <TabsContent value="curl" className="mt-4">
+                                <motion.div
+                                  className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                                  variants={codeBlockVariants}
+                                  initial="initial"
+                                  animate="animate"
+                                  whileHover="hover"
                                 >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
-                            </TabsContent>
-                          </Tabs>
-                        </div>
-                      </motion.div>
-                    ))}
+                                  <pre>
+                                    {example === "Upload an Image"
+                                      ? `curl -X POST https://keiran.cc/images \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -F "file=@image.jpg" \\
+  -F "filename=custom-name.jpg" \\
+  -F "public=true"`
+                                      : `curl -X GET "https://keiran.cc/images?page=1&limit=50" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+                                  </pre>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2"
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        example === "Upload an Image"
+                                          ? `curl -X POST https://keiran.cc/images \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -F "file=@image.jpg" \\
+  -F "filename=custom-name.jpg" \\
+  -F "public=true"`
+                                          : `curl -X GET "https://keiran.cc/images?page=1&limit=50" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`,
+                                      )
+                                    }
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </TabsContent>
+                            </Tabs>
+                          </div>
+                        </motion.div>
+                      ),
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
             </TabsContent>
           </motion.div>
-        </AnimatePresence >
-      </Tabs >
-    </motion.div >
-  )
+        </AnimatePresence>
+      </Tabs>
+    </motion.div>
+  );
 }

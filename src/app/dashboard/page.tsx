@@ -1,133 +1,141 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Upload, ImageIcon, Trash2, Copy } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import { STORAGE_LIMITS } from "@/lib/upload"
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Upload, ImageIcon, Trash2, Copy } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { formatFileSize, STORAGE_LIMITS } from "@/lib/upload";
+import { toast } from "@/components/ui/use-toast";
 
 interface ImageData {
-  id: string
-  url: string
-  displayUrl: string
-  filename: string
-  createdAt: string
-  size: number
+  id: string;
+  url: string;
+  displayUrl: string;
+  filename: string;
+  createdAt: string;
+  size: number;
 }
 
 interface Stats {
-  totalUploads: number
-  storageUsed: number
-  apiRequests: number
+  totalUploads: number;
+  storageUsed: number;
+  apiRequests: number;
 }
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
-}
+  exit: { opacity: 0, y: -20 },
+};
 
 const staggerContainer = {
   animate: {
-    transition: { staggerChildren: 0.1 }
-  }
-}
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
 const slideAnimation = {
   initial: { opacity: 0, x: -20 },
   animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: 20 }
-}
+  exit: { opacity: 0, x: 20 },
+};
 
 const cardHover = {
   scale: 1.02,
-  transition: { duration: 0.2 }
-}
+  transition: { duration: 0.2 },
+};
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
-  const [images, setImages] = useState<ImageData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("images")
+  const { data: session, status } = useSession();
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("images");
   const [stats, setStats] = useState<Stats>({
     totalUploads: 0,
     storageUsed: 0,
     apiRequests: 0,
-  })
+  });
 
   const fetchImages = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/images")
-      if (!response.ok) throw new Error("Failed to fetch images")
-      const data = await response.json()
-      setImages(data.images || [])
-      setStats(data.stats)
+      const response = await fetch("/api/images");
+      if (!response.ok) throw new Error("Failed to fetch images");
+      const data = await response.json();
+      setImages(data.images || []);
+      setStats(data.stats);
     } catch (error) {
-      console.error("Failed to fetch images:", error)
-      setImages([])
+      console.error("Failed to fetch images:", error);
+      setImages([]);
       toast({
         title: "Error",
         description: "Failed to fetch images",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteImage = async (id: string) => {
     try {
-      const response = await fetch(`/api/images/${id}`, { method: "DELETE" })
-      if (!response.ok) throw new Error("Failed to delete image")
+      const response = await fetch(`/api/images/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete image");
 
-      setImages((prev) => prev.filter((image) => image.id !== id))
+      setImages((prev) => prev.filter((image) => image.id !== id));
       setStats((prev) => ({
         ...prev,
         totalUploads: prev.totalUploads - 1,
-        storageUsed: prev.storageUsed - (images.find((img) => img.id === id)?.size || 0),
-      }))
+        storageUsed:
+          prev.storageUsed - (images.find((img) => img.id === id)?.size || 0),
+      }));
 
       toast({
         title: "Success",
         description: "Image deleted successfully",
-      })
+      });
     } catch (error) {
-      console.error("Failed to delete image:", error)
+      console.error("Failed to delete image:", error);
       toast({
         title: "Error",
         description: "Failed to delete image",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleCopyUrl = (imageId: string) => {
-    const image = images.find((img) => img.id === imageId)
+    const image = images.find((img) => img.id === imageId);
     if (image) {
-      navigator.clipboard.writeText(image.displayUrl)
+      navigator.clipboard.writeText(image.displayUrl);
       toast({
         title: "Copied",
         description: "Image URL copied to clipboard",
-      })
+      });
     }
-  }
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      redirect("/")
+      redirect("/");
     }
 
     if (status === "authenticated") {
-      Promise.all([fetchImages()])
+      Promise.all([fetchImages()]);
     }
-  }, [status])
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -139,7 +147,7 @@ export default function DashboardPage() {
       >
         <div className="text-center">Loading...</div>
       </motion.div>
-    )
+    );
   }
 
   return (
@@ -158,7 +166,11 @@ export default function DashboardPage() {
         Dashboard
       </motion.h1>
 
-      <Tabs defaultValue="images" className="w-full" onValueChange={setActiveTab}>
+      <Tabs
+        defaultValue="images"
+        className="w-full"
+        onValueChange={setActiveTab}
+      >
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="images">My Images</TabsTrigger>
@@ -192,10 +204,7 @@ export default function DashboardPage() {
                   </motion.div>
 
                   {isLoading ? (
-                    <motion.div
-                      className="text-center py-8"
-                      variants={fadeIn}
-                    >
+                    <motion.div className="text-center py-8" variants={fadeIn}>
                       Loading your images...
                     </motion.div>
                   ) : images.length === 0 ? (
@@ -245,7 +254,9 @@ export default function DashboardPage() {
                                     {image.filename}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    {new Date(image.createdAt).toLocaleDateString()}
+                                    {new Date(
+                                      image.createdAt,
+                                    ).toLocaleDateString()}
                                   </p>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -278,18 +289,6 @@ export default function DashboardPage() {
               {activeTab === "stats" && (
                 <>
                   {(() => {
-                    const storageMB = stats.storageUsed / (1024 * 1024)
-                    const storageFormatted = Number.isInteger(storageMB)
-                      ? storageMB.toString()
-                      : storageMB.toFixed(2)
-
-                    const storageLimit = session?.user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE
-
-                    const percentUsed = (stats.storageUsed / storageLimit) * 100
-                    const percentFormatted = Number.isInteger(percentUsed)
-                      ? percentUsed.toString()
-                      : percentUsed.toFixed(1)
-
                     const statsData = [
                       {
                         title: "Total Uploads",
@@ -298,15 +297,15 @@ export default function DashboardPage() {
                       },
                       {
                         title: "Storage Used",
-                        description: `${storageFormatted} MB of ${storageLimit} MB used`,
-                        value: `${percentFormatted}%`,
+                        description: `${formatFileSize(stats.storageUsed)} of ${formatFileSize(session?.user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE)}`,
+                        value: `${Math.round((stats.storageUsed / (session?.user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE)) * 100)}%`,
                       },
                       {
                         title: "API Requests",
                         description: "API requests in the last 30 days",
                         value: stats.apiRequests,
                       },
-                    ]
+                    ];
                     return (
                       <motion.div
                         className="grid gap-6 md:grid-cols-3"
@@ -319,7 +318,9 @@ export default function DashboardPage() {
                             <Card>
                               <CardHeader className="pb-2">
                                 <CardTitle>{stat.title}</CardTitle>
-                                <CardDescription>{stat.description}</CardDescription>
+                                <CardDescription>
+                                  {stat.description}
+                                </CardDescription>
                               </CardHeader>
                               <CardContent>
                                 <motion.div
@@ -335,7 +336,7 @@ export default function DashboardPage() {
                           </motion.div>
                         ))}
                       </motion.div>
-                    )
+                    );
                   })()}
                 </>
               )}
@@ -344,5 +345,5 @@ export default function DashboardPage() {
         </AnimatePresence>
       </Tabs>
     </motion.div>
-  )
+  );
 }

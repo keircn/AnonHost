@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     userId = session!.user.id
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`
+  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc"
   const url = new URL(req.url)
   const page = Number.parseInt(url.searchParams.get("page") || "1")
   const limit = Math.min(Number.parseInt(url.searchParams.get("limit") || "20"), 100)

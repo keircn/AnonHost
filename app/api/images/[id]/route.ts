@@ -32,7 +32,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   const image = await prisma.image.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   })
 
   if (!image) {
@@ -44,7 +44,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   await prisma.image.delete({
-    where: { id: Number(id) },
+    where: { id },
   })
 
   return NextResponse.json({

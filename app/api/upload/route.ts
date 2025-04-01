@@ -8,6 +8,7 @@ import { verifyApiKey } from "@/lib/auth"
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1]
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://keiran.cc"
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -31,6 +32,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Get user settings for custom domain
+    const settings = await prisma.settings.findUnique({
+      where: { userId },
+    })
+
     const formData = await req.formData()
     const file = formData.get("file") as File
 
@@ -54,8 +60,12 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    const imageUrl = settings?.customDomain 
+      ? `https://${settings.customDomain}/${image.id}`
+      : `${baseUrl}/${image.id}`
+
     return NextResponse.json({
-      url: `${req.nextUrl.origin}/${image.id}`,
+      url: imageUrl,
       id: image.id,
       createdAt: image.createdAt,
       filename: image.filename,
@@ -67,4 +77,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to upload image" }, { status: 500 })
   }
 }
-

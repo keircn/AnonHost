@@ -11,7 +11,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { toast } from "@/components/ui/use-toast"
-import { prisma } from "@/lib/prisma"
 
 interface ImageData {
   id: string
@@ -37,30 +36,6 @@ export default function DashboardPage() {
     storageUsed: 0,
     apiRequests: 0,
   })
-  const [baseUrl, setBaseUrl] = useState<string>("http://localhost:9876")
-  const [customDomain, setCustomDomain] = useState<string>("")
-
-  const getImageUrl = (imageId: string): string => {
-    if (customDomain) {
-      return `https://${customDomain}/${imageId}`
-    }
-    return `${baseUrl}/${imageId}`
-  }
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch("/api/settings")
-      if (!response.ok) {
-        throw new Error("Failed to fetch settings")
-      }
-      const data = await response.json()
-      setCustomDomain(data.customDomain)
-    } catch (error) {
-      console.error("Failed to fetch settings:", error)
-      // Fallback to base URL if settings fetch fails
-      setCustomDomain("")
-    }
-  }
 
   const fetchImages = async () => {
     setIsLoading(true)
@@ -72,7 +47,6 @@ export default function DashboardPage() {
       const data = await response.json()
       setImages(data.images || [])
       setStats(data.stats)
-      setBaseUrl(data.baseUrl)
     } catch (error) {
       console.error("Failed to fetch images:", error)
       setImages([])
@@ -134,7 +108,7 @@ export default function DashboardPage() {
     }
 
     if (status === "authenticated") {
-      Promise.all([fetchImages(), fetchSettings()])
+      Promise.all([fetchImages()])
     }
   }, [status])
 

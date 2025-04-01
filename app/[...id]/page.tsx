@@ -99,20 +99,43 @@ export default async function ImagePage({ params }: Props) {
                         src={image.url}
                         alt={image.filename}
                         fill
-                        className="object-contain"
+                        className="object-contain py-8"
                         priority
                     />
                 </div>
                 <CardContent className="p-6">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-semibold text-gray-900">
+                        <h1 className="text-2xl font-semibold text-foreground">
                             {image.filename}
                         </h1>
                         <ImageActions url={image.url} filename={image.filename} />
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {/* ...existing cards... */}
+                    <div className="grid grid-cols-3 gap-6">
+                        <Card>
+                            <CardHeader className="p-4">
+                                <h3 className="text-sm font-medium text-foreground">Uploader</h3>
+                                <p className="text-sm font-semibold text-muted-foreground">
+                                    {image.user.name || 'Anonymous'}
+                                </p>
+                            </CardHeader>
+                        </Card>
+                        <Card>
+                            <CardHeader className="p-4">
+                                <h3 className="text-sm font-medium text-foreground">Size</h3>
+                                <p className="text-sm font-semibold text-muted-foreground">
+                                    {formatBytes(image.size)}
+                                </p>
+                            </CardHeader>
+                        </Card>
+                        <Card>
+                            <CardHeader className="p-4">
+                                <h3 className="text-sm font-medium text-foreground">Uploaded</h3>
+                                <p className="text-sm font-semibold text-muted-foreground">
+                                    {formatDate(image.createdAt)}
+                                </p>
+                            </CardHeader>
+                        </Card>
                     </div>
                 </CardContent>
             </Card>

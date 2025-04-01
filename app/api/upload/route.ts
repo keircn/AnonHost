@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       url: `${req.nextUrl.origin}/${image.id}`,
+      id: image.id,
       createdAt: image.createdAt,
       filename: image.filename,
       size: image.size,

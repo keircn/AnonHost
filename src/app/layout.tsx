@@ -5,6 +5,10 @@ export const metadata = {
   description: "Upload, share, and manage your images with ease.",
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
-  return <Root>{children}</Root>
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <Root>{children}</Root>;
 }

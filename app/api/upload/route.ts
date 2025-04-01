@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let userId: string
+  let userId: number
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey)
@@ -42,14 +42,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File must be an image" }, { status: 400 })
     }
 
-    const uploadResult = await uploadImage(file, userId)
+    const uploadResult = await uploadImage(file, userId.toString())
 
     const image = await prisma.image.create({
       data: {
         url: uploadResult.url,
         filename: uploadResult.filename,
         size: uploadResult.size,
-        userId,
+        userId: userId,
         public: formData.get("public") === "true",
       },
     })

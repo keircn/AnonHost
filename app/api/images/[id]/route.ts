@@ -14,7 +14,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let userId: string
+  let userId: number
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey)
@@ -32,7 +32,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   const image = await prisma.image.findUnique({
-    where: { id },
+    where: { id: Number(id) },
   })
 
   if (!image) {
@@ -44,7 +44,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   await prisma.image.delete({
-    where: { id },
+    where: { id: Number(id) },
   })
 
   return NextResponse.json({

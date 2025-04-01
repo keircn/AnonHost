@@ -4,8 +4,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import prisma from "@/lib/prisma"
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id
-
   const session = await getServerSession(authOptions)
 
   if (!session) {
@@ -13,6 +11,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   const userId = session.user.id
+  const id = parseInt(params.id, 10) // Convert string ID to number
 
   const apiKey = await prisma.apiKey.findUnique({
     where: { id },
@@ -35,4 +34,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     message: "API key deleted successfully",
   })
 }
-

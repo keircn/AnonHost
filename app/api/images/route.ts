@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let userId: string
+  let userId: number
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey)
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let userId: string
+  let userId: number
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey)
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File must be an image" }, { status: 400 })
     }
 
-    const uploadResult = await uploadImage(file, userId)
+    const uploadResult = await uploadImage(file, userId.toString())
 
     const settings = await prisma.settings.findUnique({
       where: { userId },

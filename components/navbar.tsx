@@ -31,28 +31,30 @@ export function Navbar() {
           <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link
               href="/dashboard"
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname === "/dashboard" ? "text-foreground" : "text-foreground/60"
-              }`}
+              className={`transition-colors hover:text-foreground/80 ${pathname === "/dashboard" ? "text-foreground" : "text-foreground/60"
+                }`}
             >
               Dashboard
             </Link>
             <Link
               href="/upload"
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname === "/upload" ? "text-foreground" : "text-foreground/60"
-              }`}
+              className={`transition-colors hover:text-foreground/80 ${pathname === "/upload" ? "text-foreground" : "text-foreground/60"
+                }`}
             >
               Upload
             </Link>
             <Link
               href="/api"
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname === "/api" ? "text-foreground" : "text-foreground/60"
-              }`}
+              className={`transition-colors hover:text-foreground/80 ${pathname === "/api" ? "text-foreground" : "text-foreground/60"
+                }`}
             >
               API
             </Link>
+            {session?.user?.admin && (
+              <Link href="/admin">
+                <Button variant="ghost">Admin</Button>
+              </Link>
+            )}
           </nav>
         </div>
         <div className="ml-auto flex items-center space-x-4">

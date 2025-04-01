@@ -16,7 +16,7 @@ import { Upload, ImageIcon, Trash2, Copy } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { getStorageStats, STORAGE_LIMITS } from "@/lib/upload";
+import { getStorageStats } from "@/lib/upload";
 import { toast } from "@/components/ui/use-toast";
 
 interface ImageData {

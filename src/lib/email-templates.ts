@@ -1,6 +1,6 @@
 export const welcomeEmailTemplate = (name: string) => ({
-  subject: "Welcome to AnonHost! 🚀",
-  text: `Hi ${name}!
+    subject: "Welcome to AnonHost! 🚀",
+    text: `Hi ${name}!
   
   Welcome to AnonHost - we're excited to have you on board!
   
@@ -13,11 +13,11 @@ export const welcomeEmailTemplate = (name: string) => ({
   
   Best regards,
   The AnonHost Team`,
-  html: `
+    html: `
       <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #c6cdd4; background: #18181b;">
   <h1 style="color: #ffffff; margin-bottom: 24px; font-size: 24px;">Welcome to AnonHost! 🚀</h1>
 
-  <p style="margin-bottom: 16px; color: #c6cdd4; font-size: 16px;">Hi {name}!</p>
+  <p style="margin-bottom: 16px; color: #c6cdd4; font-size: 16px;">Hi ${name}!</p>
 
   <p style="margin-bottom: 24px; color: #c6cdd4; font-size: 16px;">We're excited to have you on board. Your account is now ready to use.</p>
 

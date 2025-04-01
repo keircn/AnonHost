@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface Props {
-  params: { id: string[] };
+  params: { id?: string[] }; // Make 'id' optional
+  searchParams: { [key: string]: string | string[] | undefined }; // Add searchParams
 }
 
 function formatBytes(bytes: number): string {
@@ -25,8 +26,15 @@ function formatDate(date: Date): string {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const imageId = id[0];
+  const { id } = params;
+  const imageId = id?.[0]; // Use optional chaining
+
+  if (!imageId) {
+    return {
+      title: "Image not found",
+      description: "The requested image could not be found.",
+    };
+  }
 
   const image = await prisma.image.findUnique({
     where: { id: imageId },
@@ -44,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const description = `Uploaded by ${image.user.name || "Anonymous"} • ${formatBytes(image.size)} • ${formatDate(image.createdAt)}`;
+  const description = `Uploaded by ${image.user?.name || "Anonymous"} • ${formatBytes(image.size)} • ${formatDate(image.createdAt)}`;
 
   return {
     title: image.filename,
@@ -72,8 +80,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ImagePage({ params }: Props) {
-  const { id } = await params;
-  const imageId = id[0];
+  const { id } = params;
+  const imageId = id?.[0]; // Use optional chaining
+
+  if (!imageId) {
+    notFound();
+    return null; // Add a return statement to satisfy TypeScript
+  }
+
   const image = await prisma.image.findUnique({
     where: { id: imageId },
     include: {
@@ -85,6 +99,7 @@ export default async function ImagePage({ params }: Props) {
 
   if (!image) {
     notFound();
+    return null; // Add a return statement to satisfy TypeScript
   }
 
   return (
@@ -114,7 +129,7 @@ export default async function ImagePage({ params }: Props) {
                   Uploader
                 </h3>
                 <p className="text-sm font-semibold text-muted-foreground">
-                  {image.user.name || "Anonymous"}
+                  {image.user?.name || "Anonymous"}
                 </p>
               </CardHeader>
             </Card>

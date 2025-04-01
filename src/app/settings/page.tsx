@@ -410,7 +410,7 @@ export default function SettingsPage() {
                           </motion.div>
                         ) : (
                           <motion.div className="space-y-4" variants={staggerContainer}>
-                            {apiKeys.map((apiKey, index) => (
+                            {apiKeys.map((apiKey) => (
                               <motion.div
                                 key={apiKey.id}
                                 variants={fadeIn}

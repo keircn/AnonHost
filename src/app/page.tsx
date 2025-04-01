@@ -120,7 +120,7 @@ export default function Home() {
               whileInView="animate"
               viewport={{ once: true }}
             >
-              {features.map((feature, index) => (
+              {features.map((feature) => (
                 <motion.div
                   key={feature.title}
                   className="grid gap-1"

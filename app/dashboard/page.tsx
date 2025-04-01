@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma"
 interface ImageData {
   id: string
   url: string
+  displayUrl: string
   filename: string
   createdAt: string
   size: number
@@ -117,12 +118,14 @@ export default function DashboardPage() {
   }
 
   const handleCopyUrl = (imageId: string) => {
-    const url = getImageUrl(imageId)
-    navigator.clipboard.writeText(url)
-    toast({
-      title: "Copied",
-      description: "Image URL copied to clipboard",
-    })
+    const image = images.find(img => img.id === imageId)
+    if (image) {
+      navigator.clipboard.writeText(image.displayUrl)
+      toast({
+        title: "Copied",
+        description: "Image URL copied to clipboard",
+      })
+    }
   }
 
   useEffect(() => {

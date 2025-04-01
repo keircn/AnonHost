@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
     userId = session!.user.id
   }
 
+  const baseUrl = process.env.NEXTAUTH_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`
   const url = new URL(req.url)
   const page = Number.parseInt(url.searchParams.get("page") || "1")
   const limit = Math.min(Number.parseInt(url.searchParams.get("limit") || "20"), 100)
@@ -73,7 +74,10 @@ export async function GET(req: NextRequest) {
   const storageUsedMB = Math.round((storageStats._sum.size || 0) / (1024 * 1024) * 100) / 100
 
   return NextResponse.json({
-    images,
+    images: images.map(image => ({
+      ...image,
+      displayUrl: `${baseUrl}/${image.id}`,
+    })),
     pagination: {
       total,
       page,
@@ -85,6 +89,7 @@ export async function GET(req: NextRequest) {
       storageUsed: storageUsedMB,
       apiRequests,
     },
+    baseUrl,
   })
 }
 

@@ -4,7 +4,7 @@ export const metadata = {
   title: "AnonHost - Simple, Fast Image Hosting",
   description: "Upload, share, and manage your images with ease.",
   openGraph: {
-    images: 'https://keiran.cc/a70c08',
+    images: 'https://r2.keiran.cc/1/aev8sKbvuc7uQ--Zml2kP-archium-dark.png',
   },
   metadataBase: new URL('https://keiran.cc'),
 };

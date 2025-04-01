@@ -33,12 +33,14 @@ export async function sendEmail({
         });
         console.log('Email sent successfully:', result.id);
         return result;
-    } catch (error: any) {
-        console.error('Mailgun error details:', {
-            status: error.status,
-            details: error.details,
-            message: error.message
-        });
+    } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'status' in error && 'details' in error && 'message' in error) {
+            console.error('Mailgun error details:', {
+                status: (error as { status: number }).status,
+                details: (error as { details: string }).details,
+                message: (error as { message: string }).message
+            });
+        }
         throw error;
     }
 }

@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
@@ -132,10 +132,11 @@ export default function AdminPage() {
         description: `Successfully sent email to ${selectedUser?.email}`,
       });
       setIsDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to send email";
       toast({
         title: "Error",
-        description: error.message || "Failed to send email",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

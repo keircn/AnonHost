@@ -72,10 +72,10 @@ export default function ContactPage() {
                             transition={{ duration: 0.5 }}
                         >
                             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                                Need Help? We're Here
+                                Need Help? We&apos;re Here
                             </h1>
                             <p className="max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                                Choose how you'd like to get in touch. We're here to help with any questions about our services.
+                                Choose how you&apos;d like to get in touch. We&apos;re here to help with any questions about our services.
                             </p>
                         </motion.div>
 

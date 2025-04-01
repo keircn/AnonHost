@@ -5,7 +5,13 @@ import prisma from "@/lib/prisma";
 import { sendEmail } from "@/lib/mailgun";
 import { welcomeEmailTemplate } from "@/lib/email-templates";
 
-(BigInt.prototype as any).toJSON = function () {
+declare global {
+  interface BigInt {
+    toJSON(): string;
+  }
+}
+
+BigInt.prototype.toJSON = function (): string {
   return this.toString();
 };
 
@@ -40,7 +46,7 @@ export const authOptions: AuthOptions = {
       }
       return token;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === "discord") {
         try {
           const existingUser = await prisma.user.findUnique({

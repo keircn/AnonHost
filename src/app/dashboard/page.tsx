@@ -16,7 +16,7 @@ import { Upload, ImageIcon, Trash2, Copy } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatFileSize, STORAGE_LIMITS } from "@/lib/upload";
+import { getStorageStats, STORAGE_LIMITS } from "@/lib/upload";
 import { toast } from "@/components/ui/use-toast";
 
 interface ImageData {
@@ -289,6 +289,7 @@ export default function DashboardPage() {
               {activeTab === "stats" && (
                 <>
                   {(() => {
+                    const storageStats = getStorageStats(stats.storageUsed, session?.user?.premium ?? false);
                     const statsData = [
                       {
                         title: "Total Uploads",
@@ -297,8 +298,8 @@ export default function DashboardPage() {
                       },
                       {
                         title: "Storage Used",
-                        description: `${formatFileSize(stats.storageUsed)} of ${formatFileSize(session?.user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE)}`,
-                        value: `${Math.round((stats.storageUsed / (session?.user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE)) * 100)}%`,
+                        description: `${storageStats.used} of ${storageStats.total}`,
+                        value: storageStats.percentage,
                       },
                       {
                         title: "API Requests",

@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { uploadImage } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
-import { FILE_SIZE_LIMITS, STORAGE_LIMITS, formatFileSize } from "@/lib/upload";
+import { FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
 import { getImageDimensions } from "@/app/actions/process-image";
 
 export async function POST(req: NextRequest) {
@@ -92,9 +92,9 @@ export async function POST(req: NextRequest) {
           currentStorage: currentStorageUsed,
           limit: storageLimit,
           remaining: storageLimit - currentStorageUsed,
-          formattedLimit: formatFileSize(storageLimit),
-          formattedUsed: formatFileSize(currentStorageUsed),
-          formattedRemaining: formatFileSize(storageLimit - currentStorageUsed),
+          formattedLimit: storageLimit,
+          formattedUsed: currentStorageUsed,
+          formattedRemaining: storageLimit - currentStorageUsed,
         },
         { status: 400 },
       );

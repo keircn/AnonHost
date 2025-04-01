@@ -20,17 +20,39 @@ export const FILE_SIZE_LIMITS = {
   FREE: 50 * 1024 * 1024,
 };
 
-export function formatFileSize(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB"];
-  let size = bytes;
-  let unitIndex = 0;
+interface StorageStats {
+  used: string;
+  total: string;
+  percentage: string;
+  remaining: string;
+}
 
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
+function formatFileSize(bytes: number): string {
+  const KB = 1024;
+  const MB = KB * 1024;
+  const GB = MB * 1024;
+
+  if (bytes < KB) {
+    return `${Math.round(bytes)} B`;
+  } else if (bytes < MB) {
+    return `${Math.round((bytes / KB) * 10) / 10} KB`;
+  } else if (bytes < GB) {
+    return `${Math.round((bytes / MB) * 10) / 10} MB`;
+  } else {
+    return `${Math.round((bytes / GB) * 10) / 10} GB`;
   }
+}
 
-  return `${Math.round(size * 100) / 100} ${units[unitIndex]}`;
+export function getStorageStats(used: number, isPremium: boolean): StorageStats {
+  const limit = isPremium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE;
+  const percentage = Math.round((used / limit) * 100);
+  
+  return {
+    used: formatFileSize(used),
+    total: formatFileSize(limit),
+    percentage: `${Math.min(percentage, 100)}%`,
+    remaining: formatFileSize(Math.max(0, limit - used))
+  };
 }
 
 const s3Client = new S3Client({

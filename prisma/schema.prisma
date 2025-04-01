@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            Int     @id @default(autoincrement())
+  id            BigInt    @id @default(autoincrement()) @db.BigInt
   name          String?
   email         String?   @unique
   emailVerified DateTime?
@@ -22,12 +22,12 @@ model User {
   settings      Settings?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  storageUsed Int @default(0)
+  storageUsed   Int       @default(0)
 }
 
 model Account {
   id                Int     @id @default(autoincrement())
-  userId            Int
+  userId            BigInt  @db.BigInt
   type              String
   provider          String
   providerAccountId String
@@ -46,20 +46,20 @@ model Account {
 model Session {
   id           Int      @id @default(autoincrement())
   sessionToken String   @unique
-  userId       Int
+  userId       BigInt   @db.BigInt
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Image {
-  id String @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)"))
+  id        String   @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)"))
   url       String
   filename  String
   size      Int
   width     Int?
   height    Int?
   public    Boolean  @default(false)
-  userId    Int
+  userId    BigInt   @db.BigInt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -69,7 +69,7 @@ model ApiKey {
   id        Int       @id @default(autoincrement())
   name      String
   key       String    @unique
-  userId    Int
+  userId    BigInt    @db.BigInt
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastUsed  DateTime?
   createdAt DateTime  @default(now())
@@ -78,7 +78,7 @@ model ApiKey {
 
 model Settings {
   id                  Int     @id @default(autoincrement())
-  userId              Int     @unique
+  userId              BigInt  @db.BigInt @unique
   user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   enableNotifications Boolean @default(true)
   makeImagesPublic    Boolean @default(false)

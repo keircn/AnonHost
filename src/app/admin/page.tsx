@@ -2,15 +2,20 @@
 
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -19,8 +24,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface User {
   id: string;
@@ -38,10 +48,18 @@ interface User {
   };
 }
 
+interface EmailFormData {
+  subject: string;
+  message: string;
+}
+
 export default function AdminPage() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEmailSending, setIsEmailSending] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -89,6 +107,39 @@ export default function AdminPage() {
         description: "Failed to update user",
         variant: "destructive",
       });
+    }
+  };
+
+  const sendEmail = async (formData: EmailFormData) => {
+    setIsEmailSending(true);
+    try {
+      const response = await fetch("/api/admin/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: selectedUser?.email,
+          ...formData,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to send email");
+      }
+
+      toast({
+        title: "Email Sent",
+        description: `Successfully sent email to ${selectedUser?.email}`,
+      });
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEmailSending(false);
     }
   };
 
@@ -164,6 +215,52 @@ export default function AdminPage() {
                             updateUser(user.id, { admin: checked })
                           }
                         />
+                      </TableCell>
+                      <TableCell>
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedUser(user)}
+                            >
+                              Email
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Send Email to {selectedUser?.email}</DialogTitle>
+                            </DialogHeader>
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                const formData = new FormData(e.currentTarget);
+                                sendEmail({
+                                  subject: formData.get("subject") as string,
+                                  message: formData.get("message") as string,
+                                });
+                              }}
+                              className="space-y-4"
+                            >
+                              <Input
+                                name="subject"
+                                placeholder="Email subject"
+                                required
+                                disabled={isEmailSending}
+                              />
+                              <Textarea
+                                name="message"
+                                placeholder="Email message"
+                                required
+                                rows={5}
+                                disabled={isEmailSending}
+                              />
+                              <Button type="submit" disabled={isEmailSending}>
+                                {isEmailSending ? "Sending..." : "Send Email"}
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                     </TableRow>
                   ))}

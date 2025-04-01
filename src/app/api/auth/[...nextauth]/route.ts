@@ -2,6 +2,12 @@ import NextAuth, { AuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
+import { sendEmail } from "@/lib/mailgun";
+import { welcomeEmailTemplate } from "@/lib/email-templates";
+
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -22,7 +28,7 @@ export const authOptions: AuthOptions = {
         ...session,
         user: {
           ...session.user,
-          id: user.id,
+          id: user.id.toString(),
           admin: user.admin,
           premium: user.premium,
         },
@@ -34,6 +40,33 @@ export const authOptions: AuthOptions = {
       }
       return token;
     },
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "discord") {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+            select: { id: true }
+          });
+
+          if (!existingUser) {
+            console.log("Sending welcome email to new user:", user.email);
+            const template = welcomeEmailTemplate(user.name || "there");
+            await sendEmail({
+              to: user.email!,
+              ...template
+            }).catch((error) => {
+              console.error("Failed to send welcome email:", {
+                error,
+                user: user.email
+              });
+            });
+          }
+        } catch (error) {
+          console.error("Error in signIn callback:", error);
+        }
+      }
+      return true;
+    }
   },
   pages: {
     signIn: "/",

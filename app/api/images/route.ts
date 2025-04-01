@@ -8,7 +8,6 @@ import { uploadImage } from "@/lib/upload"
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1]
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -92,7 +91,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1]
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
+  const baseUrl = process.env.NEXTAUTH_URL
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -159,6 +158,8 @@ export async function POST(req: NextRequest) {
       height: image.height,
       public: image.public,
       createdAt: image.createdAt,
+      baseUrl: baseUrl,
+      customDomain: settings?.customDomain,
     })
   } catch (error) {
     console.error("Upload error:", error)

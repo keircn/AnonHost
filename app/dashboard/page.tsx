@@ -36,7 +36,7 @@ export default function DashboardPage() {
     storageUsed: 0,
     apiRequests: 0,
   })
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
+  const [baseUrl, setBaseUrl] = useState<string>("http://localhost:9876")
   const [customDomain, setCustomDomain] = useState<string>("")
 
   const getImageUrl = (imageId: string): string => {
@@ -71,6 +71,7 @@ export default function DashboardPage() {
       const data = await response.json()
       setImages(data.images || [])
       setStats(data.stats)
+      setBaseUrl(data.baseUrl)
     } catch (error) {
       console.error("Failed to fetch images:", error)
       setImages([])

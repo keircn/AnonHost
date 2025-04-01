@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
         }
       }
     },
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token
       }

@@ -285,9 +285,6 @@ export default function DashboardPage() {
                       : storageMB.toFixed(2)
 
                     const storageLimit = session?.user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE
-                    const storageLimitFormatted = Number.isInteger(storageLimit)
-                      ? storageLimit.toString()
-                      : storageLimit.toFixed(1)
 
                     const percentUsed = (stats.storageUsed / storageLimit) * 100
                     const percentFormatted = Number.isInteger(percentUsed)
@@ -302,7 +299,7 @@ export default function DashboardPage() {
                       },
                       {
                         title: "Storage Used",
-                        description: `${storageFormatted} MB of ${storageLimitFormatted} MB used`,
+                        description: `${storageFormatted} MB of ${storageLimit} MB used`,
                         value: `${percentFormatted}%`,
                       },
                       {

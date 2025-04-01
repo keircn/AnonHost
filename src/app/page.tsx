@@ -40,7 +40,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <section className="w-full pt-12 md:pt-12 md:pb-24 lg:pt-16 lg:pb-16">
-          <div className="container px-4 mt-[15vh] mb-36 md:px-6">
+          <div className="container px-4 mb-36 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <motion.div
                 className="flex flex-col justify-center space-y-4"

@@ -218,7 +218,7 @@ export default function DashboardPage() {
                 <CardDescription>Total storage space used</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stats.storageUsed} MB</div>
+                <div className="text-3xl font-bold">{stats.storageUsed < 0 ? 0 : stats.storageUsed} MB</div>
               </CardContent>
             </Card>
             <Card>

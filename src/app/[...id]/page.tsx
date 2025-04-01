@@ -6,8 +6,8 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface Props {
-  params: { id?: string[] }; // Make 'id' optional
-  searchParams: { [key: string]: string | string[] | undefined }; // Add searchParams
+  params: Promise<{ id?: string[] }>; // Make 'id' optional
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // Add searchParams
 }
 
 function formatBytes(bytes: number): string {
@@ -25,7 +25,8 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { id } = params;
   const imageId = id?.[0]; // Use optional chaining
 
@@ -79,7 +80,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ImagePage({ params }: Props) {
+export default async function ImagePage(props: Props) {
+  const params = await props.params;
   const { id } = params;
   const imageId = id?.[0]; // Use optional chaining
 

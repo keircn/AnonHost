@@ -6,9 +6,9 @@ import { verifyApiKey } from "@/lib/auth";
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
-  const id = context.params.id;
+  const id = (await context.params).id;
 
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];

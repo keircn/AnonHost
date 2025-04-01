@@ -2,10 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto"
 
-function generateApiKey() {
-  return "img_" + randomBytes(16).toString("hex");
+function generateApiKey(username: string) {
+  const prefix = username?.toLowerCase().replace(/[^a-z0-9]/g, "") || "anon";
+  return `${prefix}_${randomBytes(16).toString("hex")}`;
 }
 
 export async function GET() {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    const key = generateApiKey();
+    const key = generateApiKey(session.user.name || "");
 
     const apiKey = await prisma.apiKey.create({
       data: {

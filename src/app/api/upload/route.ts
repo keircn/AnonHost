@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { uploadImage } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
-import { FILE_SIZE_LIMITS } from "@/lib/upload";
+import { FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
 import { getImageDimensions } from "@/app/actions/process-image";
 
 export async function POST(req: NextRequest) {
@@ -70,6 +70,23 @@ export async function POST(req: NextRequest) {
         },
         { status: 400 },
       );
+    }
+
+    const userImages = await prisma.image.findMany({
+      where: { userId: userId },
+      select: { size: true },
+    });
+
+    const currentStorageUsed = userImages.reduce((total, img) => total + img.size, 0);
+    const storageLimit = user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE;
+
+    if (currentStorageUsed + file.size > storageLimit) {
+      return NextResponse.json({
+        error: "Storage limit exceeded",
+        currentStorage: currentStorageUsed,
+        limit: storageLimit,
+        remaining: storageLimit - currentStorageUsed,
+      }, { status: 400 });
     }
 
     const dimensions = await getImageDimensions(buffer);

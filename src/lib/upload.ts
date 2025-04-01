@@ -15,6 +15,11 @@ export const FILE_SIZE_LIMITS = {
   FREE: 50 * 1024 * 1024,
 };
 
+export const STORAGE_LIMITS = {
+  PREMIUM: 1000,
+  FREE: 500,
+}
+
 export function formatFileSize(fsize: number): string {
   const sizeInMB = fsize;
   if (sizeInMB < 1024) {

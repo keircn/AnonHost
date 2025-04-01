@@ -51,7 +51,7 @@ model Session {
 }
 
 model Image {
-  id        Int      @id @default(autoincrement())
+  id String @id @default(dbgenerated("substring(md5(random()::text), 1, 6)"))
   url       String
   filename  String
   size      Int

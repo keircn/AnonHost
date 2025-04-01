@@ -25,9 +25,7 @@ function formatDate(date: Date): string {
 }
 
 export async function generateMetadata(
-    { params }: Props,
-    parent: ResolvingMetadata
-): Promise<Metadata> {
+    { params }: Props): Promise<Metadata> {
     const { id } = await params
     const imageId = id[0]
 

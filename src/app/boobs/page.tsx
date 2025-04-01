@@ -1,5 +1,5 @@
 export default function BoobsPage() {
-    const ascii_boobs = `
+  const ascii_boobs = `
 ⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⠟⢉⣕⡞⣼⣿⣿⣿⣿⣿⡟⠛⠛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣳⡀⢻⣤⣴⣴⣶⣶⣶⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿
 ⠀⠀⠀⠀⠀⠀⠀⣼⢧⣿⣦⠬⡜⣼⡝⣿⢹⣿⣿⡟⣁⡀⣴⣿⡟⣹⠈⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣗⠾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⠀⠀⠀⠀⠀⠀⢰⣿⢀⣿⢀⠨⢳⣷⢴⣧⣸⣟⡟⠉⢁⡾⠋⣀⡴⢃⡠⣠⣿⣻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡝⠋⣿⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
@@ -66,11 +66,9 @@ export default function BoobsPage() {
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡍⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣷⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀`;
 
-    return (
-        <div>
-            <pre className="text-xs text-center">
-                {ascii_boobs}
-            </pre>
-        </div>
-    );
+  return (
+    <div>
+      <pre className="text-xs text-center">{ascii_boobs}</pre>
+    </div>
+  );
 }

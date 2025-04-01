@@ -1,28 +1,29 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Upload, ExternalLink, CheckCircle } from "lucide-react"
-import { motion } from "framer-motion"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Upload, ExternalLink, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 },
-}
+};
 
 const staggerChildren = {
   animate: {
     transition: { staggerChildren: 0.1 },
   },
-}
+};
 
 const features = [
   {
     title: "Lightning Fast",
-    description: "Upload and share your files with blazing speed and reliability.",
+    description:
+      "Upload and share your files with blazing speed and reliability.",
     icon: <ArrowRight className="h-5 w-5 text-primary" />,
   },
   {
@@ -35,7 +36,7 @@ const features = [
     description: "Integrate with our powerful API for programmatic uploads.",
     icon: <ExternalLink className="h-5 w-5 text-primary" />,
   },
-]
+];
 
 export default function Home() {
   return (
@@ -61,15 +62,25 @@ export default function Home() {
                     Fast, easy image hosting without the hassle
                   </p>
                 </motion.div>
-                <motion.div className="flex flex-col gap-3 min-[400px]:flex-row" variants={fadeIn}>
+                <motion.div
+                  className="flex flex-col gap-3 min-[400px]:flex-row"
+                  variants={fadeIn}
+                >
                   <Link href="/dashboard">
-                    <Button size="lg" className="gap-2 w-full min-[400px]:w-auto">
+                    <Button
+                      size="lg"
+                      className="gap-2 w-full min-[400px]:w-auto"
+                    >
                       Get Started
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Link href="/api">
-                    <Button size="lg" variant="outline" className="gap-2 w-full min-[400px]:w-auto">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="gap-2 w-full min-[400px]:w-auto"
+                    >
                       API Documentation
                       <ExternalLink className="h-4 w-4" />
                     </Button>
@@ -113,9 +124,12 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h2 className="text-3xl font-bold tracking-tight">Why Choose AnonHost?</h2>
+              <h2 className="text-3xl font-bold tracking-tight">
+                Why Choose AnonHost?
+              </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-                Our platform offers everything you need for seamless file hosting
+                Our platform offers everything you need for seamless file
+                hosting
               </p>
             </motion.div>
 
@@ -129,7 +143,9 @@ export default function Home() {
                   viewport={{ once: true }}
                   className="bg-background rounded-xl p-6 shadow-sm border"
                 >
-                  <div className="rounded-full bg-primary/10 p-3 w-fit mb-4">{feature.icon}</div>
+                  <div className="rounded-full bg-primary/10 p-3 w-fit mb-4">
+                    {feature.icon}
+                  </div>
                   <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </motion.div>
@@ -155,10 +171,12 @@ export default function Home() {
             >
               <div className="grid gap-6 lg:grid-cols-2 items-center">
                 <div>
-                  <h2 className="text-3xl font-bold tracking-tight mb-4">Ready to get started?</h2>
+                  <h2 className="text-3xl font-bold tracking-tight mb-4">
+                    Ready to get started?
+                  </h2>
                   <p className="text-muted-foreground mb-6 max-w-md">
-                    Join thousands of users who trust AnonHost for their file hosting needs. Sign up today and get
-                    started in minutes.
+                    Join thousands of users who trust AnonHost for their file
+                    hosting needs. Sign up today and get started in minutes.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link href="/dashboard">
@@ -168,7 +186,11 @@ export default function Home() {
                       </Button>
                     </Link>
                     <Link href="/pricing">
-                      <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="gap-2 w-full sm:w-auto"
+                      >
                         View Pricing
                       </Button>
                     </Link>
@@ -207,5 +229,5 @@ export default function Home() {
         </section>
       </main>
     </div>
-  )
+  );
 }

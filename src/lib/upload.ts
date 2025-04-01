@@ -43,15 +43,18 @@ function formatFileSize(bytes: number): string {
   }
 }
 
-export function getStorageStats(used: number, isPremium: boolean): StorageStats {
+export function getStorageStats(
+  used: number,
+  isPremium: boolean,
+): StorageStats {
   const limit = isPremium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE;
   const percentage = Math.round((used / limit) * 100);
-  
+
   return {
     used: formatFileSize(used),
     total: formatFileSize(limit),
     percentage: `${Math.min(percentage, 100)}%`,
-    remaining: formatFileSize(Math.max(0, limit - used))
+    remaining: formatFileSize(Math.max(0, limit - used)),
   };
 }
 

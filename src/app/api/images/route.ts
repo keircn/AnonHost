@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import prisma from "@/lib/prisma"
-import { verifyApiKey } from "@/lib/auth"
-import { uploadImage, STORAGE_LIMITS } from "@/lib/upload"
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import prisma from "@/lib/prisma";
+import { verifyApiKey } from "@/lib/auth";
+import { uploadImage, STORAGE_LIMITS } from "@/lib/upload";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -30,17 +30,17 @@ export async function GET(req: NextRequest) {
     userId = session!.user.id;
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc"
-  const url = new URL(req.url)
-  const page = Number.parseInt(url.searchParams.get("page") || "1")
+  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
+  const url = new URL(req.url);
+  const page = Number.parseInt(url.searchParams.get("page") || "1");
   const limit = Math.min(
     Number.parseInt(url.searchParams.get("limit") || "20"),
     100,
-  )
-  const sort = url.searchParams.get("sort") || "createdAt"
-  const order = url.searchParams.get("order") || "desc"
+  );
+  const sort = url.searchParams.get("sort") || "createdAt";
+  const order = url.searchParams.get("order") || "desc";
 
-  const skip = (page - 1) * limit
+  const skip = (page - 1) * limit;
 
   const [total, images, storageStats, apiRequests, user] = await Promise.all([
     prisma.image.count({
@@ -53,8 +53,8 @@ export async function GET(req: NextRequest) {
         [sort === "filename"
           ? "filename"
           : sort === "size"
-          ? "size"
-          : "createdAt"]: order === "asc" ? "asc" : "desc",
+            ? "size"
+            : "createdAt"]: order === "asc" ? "asc" : "desc",
       },
       skip,
       take: limit,
@@ -80,10 +80,12 @@ export async function GET(req: NextRequest) {
       where: { id: userId },
       select: { premium: true },
     }),
-  ])
+  ]);
 
-  const storageUsed = storageStats._sum.size || 0
-  const storageLimit = user?.premium ? STORAGE_LIMITS.PREMIUM : STORAGE_LIMITS.FREE
+  const storageUsed = storageStats._sum.size || 0;
+  const storageLimit = user?.premium
+    ? STORAGE_LIMITS.PREMIUM
+    : STORAGE_LIMITS.FREE;
 
   return NextResponse.json({
     images: images.map((image) => ({
@@ -103,7 +105,7 @@ export async function GET(req: NextRequest) {
       apiRequests,
     },
     baseUrl,
-  })
+  });
 }
 
 export async function POST(req: NextRequest) {

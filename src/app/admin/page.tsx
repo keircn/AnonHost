@@ -133,7 +133,8 @@ export default function AdminPage() {
       });
       setIsDialogOpen(false);
     } catch (error: Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to send email";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to send email";
       toast({
         title: "Error",
         description: errorMessage,
@@ -218,7 +219,10 @@ export default function AdminPage() {
                         />
                       </TableCell>
                       <TableCell>
-                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <Dialog
+                          open={isDialogOpen}
+                          onOpenChange={setIsDialogOpen}
+                        >
                           <DialogTrigger asChild>
                             <Button
                               variant="outline"
@@ -230,7 +234,9 @@ export default function AdminPage() {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Send Email to {selectedUser?.email}</DialogTitle>
+                              <DialogTitle>
+                                Send Email to {selectedUser?.email}
+                              </DialogTitle>
                             </DialogHeader>
                             <form
                               onSubmit={(e) => {

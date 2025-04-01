@@ -289,7 +289,10 @@ export default function DashboardPage() {
               {activeTab === "stats" && (
                 <>
                   {(() => {
-                    const storageStats = getStorageStats(stats.storageUsed, session?.user?.premium ?? false);
+                    const storageStats = getStorageStats(
+                      stats.storageUsed,
+                      session?.user?.premium ?? false,
+                    );
                     const statsData = [
                       {
                         title: "Total Uploads",

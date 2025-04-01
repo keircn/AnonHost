@@ -51,7 +51,7 @@ export const authOptions: AuthOptions = {
         try {
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
-            select: { id: true }
+            select: { id: true },
           });
 
           if (!existingUser) {
@@ -59,11 +59,11 @@ export const authOptions: AuthOptions = {
             const template = welcomeEmailTemplate(user.name || "there");
             await sendEmail({
               to: user.email!,
-              ...template
+              ...template,
             }).catch((error) => {
               console.error("Failed to send welcome email:", {
                 error,
-                user: user.email
+                user: user.email,
               });
             });
           }
@@ -72,7 +72,7 @@ export const authOptions: AuthOptions = {
         }
       }
       return true;
-    }
+    },
   },
   pages: {
     signIn: "/",

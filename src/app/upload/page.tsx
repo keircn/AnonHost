@@ -120,7 +120,7 @@ export default function UploadPage() {
         if (newFiles.length === 0) {
           toast({
             title: "Invalid files",
-            description: "Files must be valid media and within size limits",
+            description: "Files must be valid images and within size limits",
             variant: "destructive",
           });
           return;

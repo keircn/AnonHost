@@ -3,7 +3,6 @@ export interface Parameter {
     type: string;
     description: string;
 }
-
 export interface Endpoint {
     id: string;
     title: string;
@@ -19,7 +18,43 @@ export interface Endpoint {
     };
     response: {
         description?: string;
-        example: any;
+        example: {
+            id?: string;
+            url?: string;
+            displayUrl?: string;
+            filename?: string;
+            size?: number;
+            width?: number;
+            height?: number;
+            public?: boolean;
+            createdAt?: string;
+            baseUrl?: string;
+            customDomain?: string;
+            success?: boolean;
+            message?: string;
+            images?: Array<{
+                id: string;
+                url: string;
+                displayUrl: string;
+                filename: string;
+                size: number;
+                width: number;
+                height: number;
+                public: boolean;
+                createdAt: string;
+            }>;
+            pagination?: {
+                total: number;
+                page: number;
+                limit: number;
+                pages: number;
+            };
+            stats?: {
+                totalUploads: number;
+                storageUsed: number;
+                apiRequests: number;
+            };
+        };
     };
 }
 

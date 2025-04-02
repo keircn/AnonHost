@@ -152,13 +152,13 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      className="container py-8"
+      className="container max-w-8xl mx-auto py-8 sm:py-12 lg:py-16 xl:py-20"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.h1
-        className="text-3xl font-bold mb-6"
+        className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 lg:mb-8"
         variants={fadeIn}
         initial="initial"
         animate="animate"
@@ -189,7 +189,10 @@ export default function DashboardPage() {
           >
             <TabsContent value="images" forceMount>
               {activeTab === "images" && (
-                <motion.div className="grid gap-6" variants={staggerContainer}>
+                <motion.div
+                  className="grid gap-6 lg:gap-8"
+                  variants={staggerContainer}
+                >
                   <motion.div
                     className="flex justify-between items-center"
                     variants={fadeIn}
@@ -226,10 +229,8 @@ export default function DashboardPage() {
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                      className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                       variants={staggerContainer}
-                      initial="initial"
-                      animate="animate"
                     >
                       {images.map((image) => (
                         <motion.div
@@ -238,16 +239,17 @@ export default function DashboardPage() {
                           layoutId={image.id}
                           whileHover={cardHover}
                         >
-                          <Card>
+                          <Card className="h-full">
                             <div className="aspect-square relative overflow-hidden">
                               <Image
                                 src={image.url || "/placeholder.svg"}
                                 alt={image.filename}
                                 fill
                                 className="object-cover"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               />
                             </div>
-                            <CardContent className="p-4">
+                            <CardContent className="p-4 lg:p-6">
                               <div className="flex justify-between items-center">
                                 <div className="truncate mr-2">
                                   <p className="font-medium truncate">
@@ -287,62 +289,67 @@ export default function DashboardPage() {
 
             <TabsContent value="stats" forceMount>
               {activeTab === "stats" && (
-                <>
-                  {(() => {
-                    const storageStats = getStorageStats(
-                      stats.storageUsed,
-                      session?.user?.premium ?? false,
-                    );
-                    const statsData = [
-                      {
-                        title: "Total Uploads",
-                        description: "Number of images you've uploaded",
-                        value: stats.totalUploads,
-                      },
-                      {
-                        title: "Storage Used",
-                        description: `${storageStats.used} of ${storageStats.total}`,
-                        value: storageStats.percentage,
-                      },
-                      {
-                        title: "API Requests",
-                        description: "API requests in the last 30 days",
-                        value: stats.apiRequests,
-                      },
-                    ];
-                    return (
-                      <motion.div
-                        className="grid gap-6 md:grid-cols-3"
-                        variants={staggerContainer}
-                        initial="initial"
-                        animate="animate"
-                      >
-                        {statsData.map((stat, index) => (
-                          <motion.div key={stat.title} variants={fadeIn}>
-                            <Card>
-                              <CardHeader className="pb-2">
-                                <CardTitle>{stat.title}</CardTitle>
-                                <CardDescription>
-                                  {stat.description}
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <motion.div
-                                  className="text-3xl font-bold"
-                                  initial={{ scale: 0.5, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  transition={{ delay: index * 0.1 }}
-                                >
-                                  {stat.value}
-                                </motion.div>
-                              </CardContent>
-                            </Card>
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    );
-                  })()}
-                </>
+                <motion.div
+                  className="grid gap-6 sm:gap-8 md:grid-cols-3"
+                  variants={staggerContainer}
+                >
+                  <>
+                    {(() => {
+                      const storageStats = getStorageStats(
+                        stats.storageUsed,
+                        session?.user?.premium ?? false,
+                      );
+                      const statsData = [
+                        {
+                          title: "Total Uploads",
+                          description: "Number of images you've uploaded",
+                          value: stats.totalUploads,
+                        },
+                        {
+                          title: "Storage Used",
+                          description: `${storageStats.used} of ${storageStats.total}`,
+                          value: storageStats.percentage,
+                        },
+                        {
+                          title: "API Requests",
+                          description: "API requests in the last 30 days",
+                          value: stats.apiRequests,
+                        },
+                      ];
+                      return (
+                        <motion.div
+                          className="grid gap-6 md:grid-cols-3"
+                          variants={staggerContainer}
+                          initial="initial"
+                          animate="animate"
+                        >
+                          {statsData.map((stat, index) => (
+                            <motion.div key={stat.title} variants={fadeIn}>
+                              <Card>
+                                <CardHeader className="pb-2">
+                                  <CardTitle>{stat.title}</CardTitle>
+                                  <CardDescription>
+                                    {stat.description}
+                                  </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <motion.div
+                                    className="text-3xl font-bold"
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: index * 0.1 }}
+                                  >
+                                    {stat.value}
+                                  </motion.div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      );
+                    })()}
+                  </>
+                </motion.div>
               )}
             </TabsContent>
           </motion.div>

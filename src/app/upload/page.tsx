@@ -81,9 +81,8 @@ export default function UploadPage() {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
           title: "File too large",
-          description: `Maximum file size is ${limitInMb}MB for ${
-            session?.user?.premium ? "premium" : "free"
-          } users`,
+          description: `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"
+            } users`,
           variant: "destructive",
         });
         return false;
@@ -194,20 +193,20 @@ export default function UploadPage() {
 
   return (
     <motion.div
-      className="container py-8"
+      className="container max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 xl:py-20"
       variants={fadeIn}
       initial="initial"
       animate="animate"
     >
-      <motion.h1 className="text-3xl font-bold mb-6" variants={fadeIn}>
+      <motion.h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 lg:mb-8" variants={fadeIn}>
         Upload Images
       </motion.h1>
 
       <motion.div variants={cardHover} whileHover="hover">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 lg:p-8 xl:p-10">
             <motion.div
-              className={`border-2 border-dashed rounded-lg p-12 text-center`}
+              className="border-2 border-dashed rounded-lg p-8 sm:p-12 lg:p-16 xl:p-20 text-center"
               variants={dropZoneVariants}
               initial="initial"
               animate={isDragging ? "dragOver" : "animate"}
@@ -216,22 +215,22 @@ export default function UploadPage() {
               onDrop={onDrop}
             >
               <motion.div
-                className="flex flex-col items-center justify-center space-y-4"
+                className="flex flex-col items-center justify-center space-y-6 lg:space-y-8"
                 variants={staggerContainer}
                 initial="initial"
                 animate="animate"
               >
                 <motion.div
-                  className="rounded-full bg-primary/10 p-4"
+                  className="rounded-full bg-primary/10 p-4 lg:p-6"
                   whileHover={{ scale: 1.1 }}
                 >
-                  <Upload className="h-8 w-8 text-primary" />
+                  <Upload className="h-8 w-8 lg:h-12 lg:w-12 text-primary" />
                 </motion.div>
-                <motion.div className="space-y-2" variants={fadeIn}>
-                  <h3 className="text-lg font-semibold">
+                <motion.div className="space-y-2 lg:space-y-3" variants={fadeIn}>
+                  <h3 className="text-lg lg:text-2xl font-semibold">
                     Drag and drop your images here
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm lg:text-base text-muted-foreground">
                     or click to browse from your device
                   </p>
                 </motion.div>
@@ -256,7 +255,7 @@ export default function UploadPage() {
             <AnimatePresence mode="wait">
               {files.length > 0 && (
                 <motion.div
-                  className="mt-6"
+                  className="mt-8 lg:mt-12"
                   variants={fadeIn}
                   initial="initial"
                   animate="animate"
@@ -269,7 +268,7 @@ export default function UploadPage() {
                     Selected Files ({files.length})
                   </motion.h3>
                   <motion.div
-                    className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+                    className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                     variants={staggerContainer}
                   >
                     <AnimatePresence>

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, ChevronDown, ChevronRight } from 'lucide-react';
 import {

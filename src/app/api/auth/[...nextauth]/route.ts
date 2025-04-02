@@ -23,7 +23,8 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
       authorization: {
         params: {
-          scope: "identify email",
+          scope: "identify email guilds",
+          prompt: "consent",
         },
       },
     }),
@@ -37,7 +38,7 @@ export const authOptions: AuthOptions = {
           id: user.id.toString(),
           admin: user.admin,
           premium: user.premium,
-        },
+        }
       };
     },
     async jwt({ token, account }) {
@@ -47,6 +48,10 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async signIn({ user, account }) {
+      if (account?.error === 'access_denied') {
+        return false;
+      }
+
       if (account?.provider === "discord") {
         try {
           const existingUser = await prisma.user.findUnique({

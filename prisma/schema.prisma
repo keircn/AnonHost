@@ -55,6 +55,7 @@ model Image {
   id        String   @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)"))
   url       String
   filename  String
+  type      String   @default("image")
   size      Int
   width     Int?
   height    Int?

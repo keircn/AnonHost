@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      redirect("/register");
+      redirect("/");
       return;
     }
 

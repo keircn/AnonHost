@@ -1,7 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { nanoid } from "nanoid";
-import { NextResponse } from "next/server";
 
 interface UploadResult {
   url: string;
@@ -20,16 +19,6 @@ export const FILE_SIZE_LIMITS = {
   PREMIUM: 100 * 1024 * 1024,
   FREE: 50 * 1024 * 1024,
 };
-
-const allowedTypes = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'video/mp4',
-  'video/webm',
-  'video/ogg'
-];
 
 interface StorageStats {
   used: string;
@@ -89,10 +78,6 @@ export async function uploadImage(
   userId: string,
 ): Promise<UploadResult> {
   try {
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error("File type not supported. Allowed types: JPG, PNG, GIF, WEBP, MP4, WEBM, OGG");
-    }
-
     const filename = `${userId}/${nanoid()}-${file.name}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -120,6 +105,6 @@ export async function uploadImage(
     };
   } catch (error) {
     console.error("Error uploading image:", error);
-    throw new Error(error instanceof Error ? error.message : "Failed to upload image");
+    throw new Error("Failed to upload image");
   }
 }

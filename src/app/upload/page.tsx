@@ -58,7 +58,7 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   if (status === "unauthenticated") {
-    redirect("/register");
+    redirect("/");
   }
 
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -114,7 +114,7 @@ export default function UploadPage() {
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
-          .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/"))
+          .filter((file) => file.type.startsWith("image/"))
           .filter(validateFile);
 
         if (newFiles.length === 0) {
@@ -135,7 +135,7 @@ export default function UploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
-        .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/"))
+        .filter((file) => file.type.startsWith("image/"))
         .filter(validateFile);
 
       if (newFiles.length === 0) {

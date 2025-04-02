@@ -392,7 +392,6 @@ export default function SettingsPage() {
                     <motion.div
                       className="flex justify-end"
                       variants={fadeIn}
-                      whileHover={{ scale: 1.02 }}
                     >
                       <Button onClick={handleSaveSettings}>
                         Save Settings

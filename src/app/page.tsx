@@ -42,34 +42,40 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
-        <section className="w-full pt-16 md:pt-24 lg:pt-32 overflow-hidden relative min-h-screen">
+        <section className="w-full pt-12 sm:pt-16 md:pt-24 lg:pt-32 overflow-hidden relative min-h-[80vh] lg:min-h-screen">
           <div className="container px-4 md:px-6 relative z-10">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
+            <div className="grid gap-6 lg:gap-12 items-center">
               <motion.div
-                className="flex flex-col justify-center space-y-6"
+                className="flex flex-col justify-center space-y-4 sm:space-y-6 text-center lg:text-left"
                 variants={staggerChildren}
                 initial="initial"
                 animate="animate"
               >
-                <motion.div className="space-y-4" variants={fadeIn}>
-                  <Badge variant="secondary" className="text-sm font-medium">
+                <motion.div
+                  className="space-y-3 sm:space-y-4"
+                  variants={fadeIn}
+                >
+                  <Badge
+                    variant="secondary"
+                    className="inline-block text-sm font-medium mb-2"
+                  >
                     Now in Beta
                   </Badge>
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
                     AnonHost
                   </h1>
-                  <p className="max-w-[600px] text-xl text-muted-foreground md:text-2xl">
+                  <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-[600px] mx-auto lg:mx-0">
                     Fast, easy image hosting without the hassle
                   </p>
                 </motion.div>
                 <motion.div
-                  className="flex flex-col gap-3 min-[400px]:flex-row"
+                  className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
                   variants={fadeIn}
                 >
                   <Link href="/dashboard">
                     <Button
                       size="lg"
-                      className="gap-2 w-full min-[400px]:w-auto"
+                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer"
                     >
                       Get Started
                       <ArrowRight className="h-4 w-4" />
@@ -79,7 +85,7 @@ export default function Home() {
                     <Button
                       size="lg"
                       variant="outline"
-                      className="gap-2 w-full min-[400px]:w-auto"
+                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer"
                     >
                       API Documentation
                       <ExternalLink className="h-4 w-4" />
@@ -91,25 +97,51 @@ export default function Home() {
           </div>
 
           <motion.div
-            className="absolute top-[50%] right-[-5%] lg:right-[5%] w-full max-w-md z-0 transform rotate-6 lg:rotate-12"
+            className="absolute hidden sm:block 
+    top-[40%] right-[-5%] 
+    md:top-[35%] md:right-[-2%] 
+    lg:top-[30%] lg:right-[5%] 
+    w-full max-w-[280px] md:max-w-[320px] lg:max-w-md 
+    z-0"
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            viewport={{ once: true }}
           >
-            <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm">
-              <CardContent className="flex flex-col items-center justify-center p-10 pr-12">
-                <div className="rounded-full bg-primary/10 p-4 mb-4">
-                  <Upload className="h-12 w-12 text-primary" />
-                </div>
-                <p className="text-md font-bold text-muted-foreground text-center">
-                  We support images, videos, audio and more!
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/dashboard">
+              <motion.div
+                className="relative group cursor-pointer"
+                animate={{
+                  y: [0, -10, 0],
+                  rotate: [2, 4, 2],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                whileHover={{
+                  scale: 1.02,
+                  rotate: 0,
+                  transition: { duration: 0.2 },
+                }}
+              >
+                <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm transition-all duration-200 group-hover:shadow-2xl group-hover:shadow-primary/20">
+                  <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
+                    <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4 transition-all duration-200 group-hover:scale-110 group-hover:bg-primary">
+                      <Upload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary transition-colors group-hover:text-primary-foreground" />
+                    </div>
+                    <p className="text-sm sm:text-base text-muted-foreground text-center">
+                      We want your filesss
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Link>
           </motion.div>
         </section>
 
-        <section className="w-full py-20 min-h-screen">
+        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24">
           <motion.div
             className="container px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}
@@ -118,22 +150,22 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <motion.div
-              className="text-center mb-12"
+              className="text-center mb-8 sm:mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h2 className="text-3xl font-bold tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 sm:mb-3">
                 Why Choose AnonHost?
               </h2>
-              <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
                 Our platform offers everything you need for seamless file
                 hosting
               </p>
             </motion.div>
 
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -141,20 +173,24 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="bg-background rounded-xl p-6 shadow-sm border"
+                  className="bg-background rounded-xl p-4 sm:p-6 shadow-sm border"
                 >
-                  <div className="rounded-full bg-primary/10 p-3 w-fit mb-4">
+                  <div className="rounded-full bg-primary/10 p-2 sm:p-3 w-fit mb-3 sm:mb-4">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h3 className="text-lg sm:text-xl font-bold mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    {feature.description}
+                  </p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
         </section>
 
-        <section className="w-full pb-20">
+        <section className="w-full pb-12 sm:pb-16 md:pb-20">
           <motion.div
             className="container px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}
@@ -163,7 +199,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <motion.div
-              className="rounded-2xl p-8 md:p-12 relative overflow-hidden"
+              className="rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
@@ -171,16 +207,19 @@ export default function Home() {
             >
               <div className="grid gap-6 lg:grid-cols-2 items-center">
                 <div>
-                  <h2 className="text-3xl font-bold tracking-tight mb-4">
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 sm:mb-4">
                     Ready to get started?
                   </h2>
-                  <p className="text-muted-foreground mb-6 max-w-md">
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 max-w-md">
                     Join thousands of users who trust AnonHost for their file
-                    hosting needs. Sign up today and get started in minutes.
+                    hosting needs.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link href="/dashboard">
-                      <Button size="lg" className="gap-2 w-full sm:w-auto">
+                      <Button
+                        size="lg"
+                        className="gap-2 w-full sm:w-auto cursor-pointer"
+                      >
                         Create Free Account
                         <ArrowRight className="h-4 w-4" />
                       </Button>
@@ -189,7 +228,7 @@ export default function Home() {
                       <Button
                         size="lg"
                         variant="outline"
-                        className="gap-2 w-full sm:w-auto"
+                        className="gap-2 w-full sm:w-auto cursor-pointer"
                       >
                         View Pricing
                       </Button>
@@ -222,8 +261,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-              <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+              <div className="absolute -top-24 -right-24 w-48 sm:w-64 h-48 sm:h-64 bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
+              <div className="absolute -bottom-32 -left-32 w-64 sm:w-80 h-64 sm:h-80 bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
             </motion.div>
           </motion.div>
         </section>

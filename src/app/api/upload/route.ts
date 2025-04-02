@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = user.id;
+    userId = Number(user.id);
 
     await prisma.apiKey.update({
       where: { key: apiKey },
@@ -55,18 +55,21 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { premium: true },
+      select: { premium: true, admin: true },
     });
 
-    const sizeLimit = user?.premium
-      ? FILE_SIZE_LIMITS.PREMIUM
-      : FILE_SIZE_LIMITS.FREE;
+    const sizeLimit = user?.admin
+      ? Number.MAX_SAFE_INTEGER
+      : user?.premium
+        ? FILE_SIZE_LIMITS.PREMIUM
+        : FILE_SIZE_LIMITS.FREE;
 
-    if (file.size > sizeLimit) {
+    if (file.size > sizeLimit && !user?.admin) {
       const limitInMb = sizeLimit / (1024 * 1024);
       return NextResponse.json(
         {
-          error: `File too large. Maximum size is ${limitInMb}MB for ${user?.premium ? "premium" : "free"} users`,
+          error: `File too large. Maximum size is ${limitInMb}MB for ${user?.premium ? "premium" : "free"
+            } users`,
         },
         { status: 400 },
       );
@@ -81,11 +84,14 @@ export async function POST(req: NextRequest) {
       (total, img) => total + (img.size || 0),
       0,
     );
-    const storageLimit = user?.premium
-      ? STORAGE_LIMITS.PREMIUM
-      : STORAGE_LIMITS.FREE;
 
-    if (currentStorageUsed + file.size > storageLimit) {
+    const storageLimit = user?.admin
+      ? Number.MAX_SAFE_INTEGER
+      : user?.premium
+        ? STORAGE_LIMITS.PREMIUM
+        : STORAGE_LIMITS.FREE;
+
+    if (currentStorageUsed + file.size > storageLimit && !user?.admin) {
       return NextResponse.json(
         {
           error: "Storage limit exceeded",

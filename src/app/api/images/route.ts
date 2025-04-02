@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = user.id;
+    userId = Number(user.id);
 
     await prisma.apiKey.update({
       where: { key: apiKey },
@@ -78,14 +78,16 @@ export async function GET(req: NextRequest) {
 
     prisma.user.findUnique({
       where: { id: userId },
-      select: { premium: true },
+      select: { premium: true, admin: true },
     }),
   ]);
 
   const storageUsed = storageStats._sum.size || 0;
-  const storageLimit = user?.premium
-    ? STORAGE_LIMITS.PREMIUM
-    : STORAGE_LIMITS.FREE;
+  const storageLimit = user?.admin
+    ? Number.MAX_SAFE_INTEGER
+    : user?.premium
+      ? STORAGE_LIMITS.PREMIUM
+      : STORAGE_LIMITS.FREE;
 
   return NextResponse.json({
     images: images.map((image) => ({
@@ -103,6 +105,7 @@ export async function GET(req: NextRequest) {
       storageUsed: storageUsed,
       storageLimit: storageLimit,
       apiRequests,
+      isAdmin: user?.admin || false,
     },
     baseUrl,
   });
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = user.id;
+    userId = Number(user.id);
 
     await prisma.apiKey.update({
       where: { key: apiKey },

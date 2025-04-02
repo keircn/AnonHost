@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: true,
+    domains: [
+      "keiran.cc",
+      "keiran.tech",
+      "r2.keiran.cc",
+      "cdn.discordapp.com",
+      "localhost"
+    ]
   },
-  
+
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,

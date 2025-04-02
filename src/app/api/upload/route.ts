@@ -4,8 +4,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { uploadImage } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
-import { FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
-import { getImageDimensions } from "@/app/actions/process-image";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -34,97 +32,51 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const settings = await prisma.settings.findUnique({
-      where: { userId },
-    });
-
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { premium: true, admin: true },
-    });
-
-    const sizeLimit = user?.admin
-      ? Number.MAX_SAFE_INTEGER
-      : user?.premium
-        ? FILE_SIZE_LIMITS.PREMIUM
-        : FILE_SIZE_LIMITS.FREE;
-
-    if (file.size > sizeLimit && !user?.admin) {
-      const limitInMb = sizeLimit / (1024 * 1024);
-      return NextResponse.json(
-        {
-          error: `File too large. Maximum size is ${limitInMb}MB for ${user?.premium ? "premium" : "free"
-            } users`,
-        },
-        { status: 400 },
-      );
-    }
-
-    const userImages = await prisma.image.findMany({
-      where: { userId: userId },
-      select: { size: true },
-    });
-
-    const currentStorageUsed = userImages.reduce(
-      (total, img) => total + (img.size || 0),
-      0,
-    );
-
-    const storageLimit = user?.admin
-      ? Number.MAX_SAFE_INTEGER
-      : user?.premium
-        ? STORAGE_LIMITS.PREMIUM
-        : STORAGE_LIMITS.FREE;
-
-    if (currentStorageUsed + file.size > storageLimit && !user?.admin) {
-      return NextResponse.json(
-        {
-          error: "Storage limit exceeded",
-          currentStorage: currentStorageUsed,
-          limit: storageLimit,
-          remaining: storageLimit - currentStorageUsed,
-          formattedLimit: storageLimit,
-          formattedUsed: currentStorageUsed,
-          formattedRemaining: storageLimit - currentStorageUsed,
-        },
-        { status: 400 },
-      );
-    }
-
-    const dimensions = await getImageDimensions(buffer);
     const uploadResult = await uploadImage(file, userId.toString());
+
+    const settings = await prisma.settings.findUnique({
+      where: { userId },
+      select: { customDomain: true },
+    });
 
     const image = await prisma.image.create({
       data: {
         url: uploadResult.url,
         filename: uploadResult.filename,
         size: uploadResult.size,
-        width: dimensions.width,
-        height: dimensions.height,
-        userId: userId,
+        width: uploadResult.width,
+        height: uploadResult.height,
+        userId,
         public: formData.get("public") === "true",
+        domain: customDomain || null,
       },
     });
 
-    const imageUrl = settings?.customDomain
-      ? `https://${settings.customDomain}/${image.id}`
-      : `${baseUrl}/${image.id}`;
+    const imageUrl = image.domain
+      ? `https://${image.domain}/${image.id}`
+      : settings?.customDomain
+        ? `https://${settings.customDomain}/${image.id}`
+        : `${baseUrl}/${image.id}`;
 
     return NextResponse.json({
-      url: imageUrl,
       id: image.id,
-      createdAt: image.createdAt,
+      url: imageUrl,
       filename: image.filename,
       size: image.size,
+      width: image.width,
+      height: image.height,
       public: image.public,
+      domain: image.domain,
+      createdAt: image.createdAt,
+      baseUrl: baseUrl,
     });
   } catch (error) {
     console.error("Upload error:", error);

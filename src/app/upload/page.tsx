@@ -8,9 +8,11 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ImageIcon, X } from "lucide-react";
+import { Upload, ImageIcon, X, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FILE_SIZE_LIMITS } from "@/lib/upload";
+import { FileSettingsModal } from "@/components/file-settings-modal";
+import type { FileSettings } from "@/types/file-settings";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -56,6 +58,8 @@ export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [fileSettings, setFileSettings] = useState<Record<string, FileSettings>>({});
+  const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(null);
 
   if (status === "unauthenticated") {
     redirect("/");
@@ -168,10 +172,15 @@ export default function UploadPage() {
     setIsUploading(true);
 
     try {
-      const uploadPromises = files.map(async (file) => {
+      const uploadPromises = files.map(async (file, index) => {
+        const settings = fileSettings[index] || { public: false };
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("public", "false");
+        formData.append("public", String(settings.public));
+
+        if (settings.domain && settings.domain !== "keiran.cc") {
+          formData.append("domain", settings.domain);
+        }
 
         const response = await fetch("/api/upload", {
           method: "POST",
@@ -203,6 +212,17 @@ export default function UploadPage() {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const updateFileSettings = (fileIndex: number, settings: Partial<FileSettings>) => {
+    setFileSettings(prev => ({
+      ...prev,
+      [fileIndex]: {
+        ...(prev[fileIndex] || { public: false }),
+        ...settings,
+        domain: settings.domain === "keiran.cc" ? null : settings.domain
+      }
+    }));
   };
 
   return (
@@ -326,6 +346,7 @@ export default function UploadPage() {
                               {file.name}
                             </motion.div>
                           </div>
+
                           <motion.div
                             initial={{ opacity: 0 }}
                             whileHover={{ opacity: 1 }}
@@ -338,6 +359,33 @@ export default function UploadPage() {
                             >
                               <X className="h-4 w-4" />
                             </Button>
+                          </motion.div>
+
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
+                            className="absolute top-2 left-2 z-10"
+                          >
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              onClick={() => setActiveSettingsFile(index)}
+                            >
+                              <Settings2 className="h-4 w-4" />
+                            </Button>
+
+                            {activeSettingsFile !== null && (
+                              <FileSettingsModal
+                                isOpen={true}
+                                onClose={() => setActiveSettingsFile(null)}
+                                fileName={files[activeSettingsFile].name}
+                                settings={fileSettings[activeSettingsFile] || { public: false }}
+                                onSettingsChange={(newSettings) => {
+                                  updateFileSettings(activeSettingsFile, newSettings);
+                                }}
+                              />
+                            )}
+
                           </motion.div>
                         </motion.div>
                       ))}

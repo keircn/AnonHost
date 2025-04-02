@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
   const skip = (page - 1) * limit;
 
-  const [total, images, storageStats, apiRequests, user] = await Promise.all([
+  const [total, images, storageStats, apiRequests, user, settings] = await Promise.all([
     prisma.image.count({
       where: { userId },
     }),
@@ -80,6 +80,11 @@ export async function GET(req: NextRequest) {
       where: { id: userId },
       select: { premium: true, admin: true },
     }),
+
+    prisma.settings.findUnique({
+      where: { userId },
+      select: { customDomain: true },
+    }),
   ]);
 
   const storageUsed = storageStats._sum.size || 0;
@@ -92,7 +97,11 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     images: images.map((image) => ({
       ...image,
-      displayUrl: `${baseUrl}/${image.id}`,
+      displayUrl: image.domain
+        ? `https://${image.domain}/${image.id}`
+        : settings?.customDomain
+          ? `https://${settings.customDomain}/${image.id}`
+          : `${baseUrl}/${image.id}`,
     })),
     pagination: {
       total,
@@ -140,17 +149,13 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
+    const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     const uploadResult = await uploadImage(file, userId.toString());
-
-    const settings = await prisma.settings.findUnique({
-      where: { userId },
-      select: { customDomain: true },
-    });
 
     const image = await prisma.image.create({
       data: {
@@ -161,11 +166,12 @@ export async function POST(req: NextRequest) {
         height: uploadResult.height,
         userId,
         public: formData.get("public") === "true",
+        domain: customDomain || null,
       },
     });
 
-    const imageUrl = settings?.customDomain
-      ? `https://${settings.customDomain}/${image.id}`
+    const imageUrl = image.domain
+      ? `https://${image.domain}/${image.id}`
       : `${baseUrl}/${image.id}`;
 
     return NextResponse.json({
@@ -176,9 +182,9 @@ export async function POST(req: NextRequest) {
       width: image.width,
       height: image.height,
       public: image.public,
+      domain: image.domain,
       createdAt: image.createdAt,
       baseUrl: baseUrl,
-      customDomain: settings?.customDomain,
     });
   } catch (error) {
     console.error("Upload error:", error);

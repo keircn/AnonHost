@@ -60,6 +60,7 @@ model Image {
   width     Int?
   height    Int?
   public    Boolean  @default(false)
+  domain    String?
   userId    BigInt   @db.BigInt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

@@ -58,7 +58,7 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   if (status === "unauthenticated") {
-    redirect("/");
+    redirect("/register");
   }
 
   const onDragOver = useCallback((e: React.DragEvent) => {

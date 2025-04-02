@@ -129,7 +129,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      redirect("/");
+      redirect("/register");
     }
 
     if (status === "authenticated") {

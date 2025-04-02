@@ -147,7 +147,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!session?.user?.admin) {
-      redirect("/");
+      redirect("/register");
     }
     fetchUsers();
   }, [session]);

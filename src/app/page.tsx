@@ -108,36 +108,25 @@ export default function Home() {
             transition={{ duration: 0.3, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            <Link href="/dashboard">
-              <motion.div
-                className="relative group cursor-pointer"
-                animate={{
-                  y: [0, -10, 0],
-                  rotate: [2, 4, 2],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                whileHover={{
-                  scale: 1.02,
-                  rotate: 0,
-                  transition: { duration: 0.2 },
-                }}
-              >
-                <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm transition-all duration-200 group-hover:shadow-2xl group-hover:shadow-primary/20">
-                  <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
-                    <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4 transition-all duration-200 group-hover:scale-110 group-hover:bg-primary">
-                      <Upload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary transition-colors group-hover:text-primary-foreground" />
-                    </div>
-                    <p className="text-sm sm:text-base text-muted-foreground text-center">
-                      We want your filesss
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Link>
+            <motion.div
+              animate={{
+                y: [0, -10, 0],
+                rotate: [2, 4, 2],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm">
+                <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
+                  <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4">
+                    <Upload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </motion.div>
         </section>
 

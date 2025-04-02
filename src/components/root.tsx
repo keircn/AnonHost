@@ -20,8 +20,8 @@ export const Root = ({ children }: { children: React.ReactNode }) => {
             <div className="relative flex min-h-screen flex-col">
               <GridPattern
                 className="absolute inset-0 z-0 opacity-10"
-                width={100}
-                height={100}
+                width={50}
+                height={50}
                 color="bg-accent"
               />
               <Navbar />

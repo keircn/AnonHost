@@ -86,10 +86,10 @@ export function FileSettingsModal({
                                 <SelectValue placeholder="Select a domain" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value={defaultDomain}>
+                                <SelectItem value={defaultDomain || "default"}>
                                     {defaultDomain} (Default)
                                 </SelectItem>
-                                {publicDomains.map((domain) => (
+                                {publicDomains.filter(Boolean).map((domain) => (
                                     <SelectItem key={domain} value={domain}>
                                         {domain}
                                     </SelectItem>

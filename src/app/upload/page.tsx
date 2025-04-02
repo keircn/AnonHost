@@ -114,13 +114,13 @@ export default function UploadPage() {
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
-          .filter((file) => file.type.startsWith("image/"))
+          .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/"))
           .filter(validateFile);
 
         if (newFiles.length === 0) {
           toast({
             title: "Invalid files",
-            description: "Files must be images and within size limits",
+            description: "Files must be valid media and within size limits",
             variant: "destructive",
           });
           return;
@@ -135,13 +135,13 @@ export default function UploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
-        .filter((file) => file.type.startsWith("image/"))
+        .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/"))
         .filter(validateFile);
 
       if (newFiles.length === 0) {
         toast({
           title: "Invalid files",
-          description: "Files must be images and within size limits",
+          description: "Files must be valid media and within size limits",
           variant: "destructive",
         });
         return;

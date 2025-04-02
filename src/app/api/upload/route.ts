@@ -46,13 +46,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json(
-        { error: "File must be an image" },
-        { status: 400 },
-      );
-    }
-
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { premium: true, admin: true },

@@ -73,6 +73,20 @@ export default function UploadPage() {
 
   const validateFile = useCallback(
     (file: File): boolean => {
+      const allowedTypes = [
+        'image/',
+        'video/',
+      ];
+
+      if (!allowedTypes.some(type => file.type.startsWith(type))) {
+        toast({
+          title: "Invalid file type",
+          description: "Only images and videos are allowed",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const sizeLimit = session?.user?.premium
         ? FILE_SIZE_LIMITS.PREMIUM
         : FILE_SIZE_LIMITS.FREE;
@@ -228,7 +242,7 @@ export default function UploadPage() {
                 </motion.div>
                 <motion.div className="space-y-2 lg:space-y-3" variants={fadeIn}>
                   <h3 className="text-lg lg:text-2xl font-semibold">
-                    Drag and drop your images here
+                    Drag and drop your media here
                   </h3>
                   <p className="text-sm lg:text-base text-muted-foreground">
                     or click to browse from your device
@@ -239,7 +253,7 @@ export default function UploadPage() {
                   id="file-upload"
                   className="hidden"
                   multiple
-                  accept="image/*,video/*,audio/*,application/json,text/plain"
+                  accept="image/*,video/mp4,video/webm,video/ogg"
                   onChange={handleFileChange}
                 />
                 <motion.div whileHover={{ scale: 1.02 }}>
@@ -287,15 +301,18 @@ export default function UploadPage() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {file.type.startsWith("image/") ? (
                                   <Image
-                                    src={
-                                      URL.createObjectURL(file) ||
-                                      "/placeholder.svg"
-                                    }
+                                    src={URL.createObjectURL(file)}
                                     alt={file.name}
                                     width={32}
                                     height={32}
                                     priority
                                     className="w-full h-full object-cover"
+                                  />
+                                ) : file.type.startsWith("video/") ? (
+                                  <video
+                                    src={URL.createObjectURL(file)}
+                                    className="w-full h-full object-cover"
+                                    controls={false}
                                   />
                                 ) : (
                                   <ImageIcon className="h-12 w-12 text-muted-foreground" />

@@ -77,6 +77,8 @@ export const authOptions: AuthOptions = {
   pages: {
     signIn: "/",
     error: "/",
+    signOut: "/logout",
+    verifyRequest: "/verify-request",
   },
   debug: process.env.NODE_ENV === "development",
 };

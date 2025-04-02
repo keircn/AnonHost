@@ -42,9 +42,9 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
-        <section className="w-full pt-12 sm:pt-16 md:pt-24 lg:pt-32 overflow-hidden relative min-h-[80vh] lg:min-h-screen">
-          <div className="container px-4 md:px-6 relative z-10">
-            <div className="grid gap-6 lg:gap-12 items-center">
+        <section className="w-full pt-12 sm:pt-16 md:pt-24 lg:pt-32 xl:pt-40 2xl:pt-48 overflow-hidden relative min-h-[80vh] md:min-h-screen lg:min-h-1/2">
+          <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+            <div className="grid gap-6 lg:gap-12 items-center max-w-8xl mx-auto">
               <motion.div
                 className="flex flex-col justify-center space-y-4 sm:space-y-6 text-center lg:text-left"
                 variants={staggerChildren}
@@ -98,11 +98,13 @@ export default function Home() {
 
           <motion.div
             className="absolute hidden sm:block 
-    top-[40%] right-[-5%] 
-    md:top-[35%] md:right-[-2%] 
-    lg:top-[30%] lg:right-[5%] 
-    w-full max-w-[280px] md:max-w-[320px] lg:max-w-md 
-    z-0"
+      top-[50%] right-[-5%] 
+      md:top-[45%] md:right-[-2%] 
+      lg:top-[40%] lg:right-[5%] 
+      xl:top-[35%] xl:right-[10%] 
+      2xl:top-[30%] 2xl:right-[15%]
+      w-full max-w-[280px] md:max-w-[320px] lg:max-w-md xl:max-w-lg 
+      z-0"
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
@@ -118,6 +120,7 @@ export default function Home() {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
+              className="transform translate-y-[min(0px,var(--scroll-offset,0px))]"
             >
               <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm">
                 <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
@@ -130,9 +133,9 @@ export default function Home() {
           </motion.div>
         </section>
 
-        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24">
+        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
           <motion.div
-            className="container px-4 md:px-6"
+            className="container max-w-7xl mx-auto px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -154,7 +157,7 @@ export default function Home() {
               </p>
             </motion.div>
 
-            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-8xl mx-auto">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -179,22 +182,22 @@ export default function Home() {
           </motion.div>
         </section>
 
-        <section className="w-full pb-12 sm:pb-16 md:pb-20">
+        <section className="w-full pb-12 sm:pb-16 md:pb-20 lg:pb-24 xl:pb-32">
           <motion.div
-            className="container px-4 md:px-6"
+            className="container max-w-7xl mx-auto px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
             <motion.div
-              className="rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden"
+              className="rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 relative overflow-hidden"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <div className="grid gap-6 lg:grid-cols-2 items-center">
+              <div className="grid gap-6 lg:gap-12 lg:grid-cols-2 items-center max-w-8xl mx-auto">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 sm:mb-4">
                     Ready to get started?
@@ -250,8 +253,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="absolute -top-24 -right-24 w-48 sm:w-64 h-48 sm:h-64 bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
-              <div className="absolute -bottom-32 -left-32 w-64 sm:w-80 h-64 sm:h-80 bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
+              <div className="absolute -top-24 -right-24 w-48 sm:w-64 md:w-72 lg:w-96 h-48 sm:h-64 md:h-72 lg:h-96 bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
+              <div className="absolute -bottom-32 -left-32 w-64 sm:w-80 md:w-96 lg:w-[32rem] h-64 sm:h-80 md:h-96 lg:h-[32rem] bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
             </motion.div>
           </motion.div>
         </section>

@@ -214,7 +214,7 @@ export default function SettingsPage() {
 
   function generateShareXConfig(apiKey: string, baseUrl: string) {
     return {
-      Version: "14.1.0",
+      Version: "17.0.0",
       Name: "AnonHost",
       DestinationType: "ImageUploader",
       RequestMethod: "POST",
@@ -224,7 +224,7 @@ export default function SettingsPage() {
       },
       Body: "MultipartFormData",
       FileFormName: "file",
-      URL: "$json:url$",
+      URL: "{json:url}",
       ThumbnailURL: "$json:url$",
       DeletionURL: "",
       ErrorMessage: "$json:error$",

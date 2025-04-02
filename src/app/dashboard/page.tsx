@@ -289,67 +289,62 @@ export default function DashboardPage() {
 
             <TabsContent value="stats" forceMount>
               {activeTab === "stats" && (
-                <motion.div
-                  className="grid gap-6 sm:gap-8 md:grid-cols-3"
-                  variants={staggerContainer}
-                >
-                  <>
-                    {(() => {
-                      const storageStats = getStorageStats(
-                        stats.storageUsed,
-                        session?.user?.premium ?? false,
-                      );
-                      const statsData = [
-                        {
-                          title: "Total Uploads",
-                          description: "Number of images you've uploaded",
-                          value: stats.totalUploads,
-                        },
-                        {
-                          title: "Storage Used",
-                          description: `${storageStats.used} of ${storageStats.total}`,
-                          value: storageStats.percentage,
-                        },
-                        {
-                          title: "API Requests",
-                          description: "API requests in the last 30 days",
-                          value: stats.apiRequests,
-                        },
-                      ];
-                      return (
-                        <motion.div
-                          className="grid gap-6 md:grid-cols-3"
-                          variants={staggerContainer}
-                          initial="initial"
-                          animate="animate"
-                        >
-                          {statsData.map((stat, index) => (
-                            <motion.div key={stat.title} variants={fadeIn}>
-                              <Card>
-                                <CardHeader className="pb-2">
-                                  <CardTitle>{stat.title}</CardTitle>
-                                  <CardDescription>
-                                    {stat.description}
-                                  </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                  <motion.div
-                                    className="text-3xl font-bold"
-                                    initial={{ scale: 0.5, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: index * 0.1 }}
-                                  >
-                                    {stat.value}
-                                  </motion.div>
-                                </CardContent>
-                              </Card>
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      );
-                    })()}
-                  </>
-                </motion.div>
+                <>
+                  {(() => {
+                    const storageStats = getStorageStats(
+                      stats.storageUsed,
+                      session?.user?.premium ?? false,
+                    );
+                    const statsData = [
+                      {
+                        title: "Total Uploads",
+                        description: "Number of images you've uploaded",
+                        value: stats.totalUploads,
+                      },
+                      {
+                        title: "Storage Used",
+                        description: `${storageStats.used} of ${storageStats.total}`,
+                        value: storageStats.percentage,
+                      },
+                      {
+                        title: "API Requests",
+                        description: "API requests in the last 30 days",
+                        value: stats.apiRequests,
+                      },
+                    ];
+                    return (
+                      <motion.div
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+                        variants={staggerContainer}
+                        initial="initial"
+                        animate="animate"
+                      >
+                        {statsData.map((stat, index) => (
+                          <motion.div key={stat.title} variants={fadeIn}>
+                            <Card className="h-full">
+                              <CardHeader>
+                                <CardTitle className="text-xl">{stat.title}</CardTitle>
+                                <CardDescription className="text-sm">
+                                  {stat.description}
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <motion.div
+                                  className="text-3xl font-bold text-primary"
+                                  initial={{ scale: 0.5, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  transition={{ delay: index * 0.1 }}
+                                >
+                                  {stat.value}
+                                </motion.div>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    );
+                  })()}
+                </>
               )}
             </TabsContent>
           </motion.div>

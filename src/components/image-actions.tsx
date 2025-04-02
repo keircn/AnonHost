@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 interface ImageActionsProps {
   url: string;

@@ -7,7 +7,7 @@ import { redirect, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Upload, ImageIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FILE_SIZE_LIMITS } from "@/lib/upload";

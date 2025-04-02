@@ -36,6 +36,17 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id;
 
   try {
+    const keyCount = await prisma.apiKey.count({
+      where: { userId },
+    });
+
+    if (keyCount >= 10) {
+      return NextResponse.json(
+        { error: "Maximum number of API keys (10) reached" },
+        { status: 400 }
+      );
+    }
+
     const { name } = await req.json();
 
     if (!name || typeof name !== "string") {
@@ -57,7 +68,7 @@ export async function POST(req: NextRequest) {
     console.error("Failed to create API key:", error);
     return NextResponse.json(
       { error: "Failed to create API key" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

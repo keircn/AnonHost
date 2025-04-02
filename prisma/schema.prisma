@@ -52,7 +52,7 @@ model Session {
 }
 
 model Image {
-  id        String   @id @default(dbgenerated("substring(md5(random()::text || clock_timestamp()::text) from 1 for 6)"))
+  id        String   @id @default(dbgenerated("concat(substring(md5(random()::text || clock_timestamp()::text) from 1 for 6), substring(filename from position('.' in filename)))"))
   url       String
   filename  String
   type      String   @default("image")

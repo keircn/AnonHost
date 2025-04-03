@@ -12,15 +12,17 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
+    // Add type for login OTPs
     await prisma.OTP.create({
       data: {
         email,
         code: otp,
         expiresAt,
+        type: "login",
       },
     });
 
-    const { subject, text, html } = verificationEmailTemplate(otp, email);
+    const { subject, text, html } = verificationEmailTemplate(otp, email, "login");
     await sendEmail({
       to: email,
       subject,
@@ -49,12 +51,7 @@ export async function PUT(req: NextRequest) {
     const { email } = await req.json();
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-    const { subject, text, html } = verificationEmailTemplate(
-      otp,
-      email,
-      "email-change"
-    );
+    const otpType = "email-change" as const;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -70,7 +67,7 @@ export async function PUT(req: NextRequest) {
     await prisma.OTP.deleteMany({
       where: {
         userId: BigInt(session.user.id),
-        type: "EMAIL_CHANGE",
+        type: otpType,
         used: false,
       },
     });
@@ -81,10 +78,11 @@ export async function PUT(req: NextRequest) {
         email,
         code: otp,
         expiresAt,
-        type: "EMAIL_CHANGE",
+        type: otpType,
       },
     });
 
+    const { subject, text, html } = verificationEmailTemplate(otp, email, otpType);
     await sendEmail({
       to: email,
       subject,

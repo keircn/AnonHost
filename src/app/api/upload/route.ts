@@ -4,11 +4,12 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { uploadFile } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
+import { MediaType } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://keiran.cc";
+  const baseUrl = process.env.NEXTAUTH_URL;
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,20 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-      return NextResponse.json(
-        { error: "Invalid file type. Only images and videos are allowed" },
-        { status: 400 },
-      );
-    }
-
     const uploadResult = await uploadFile(file, userId.toString());
-
-    const settings = await prisma.settings.findUnique({
-      where: { userId },
-      select: { customDomain: true },
-    });
 
     const media = await prisma.media.create({
       data: {
@@ -63,14 +51,19 @@ export async function POST(req: NextRequest) {
         width: uploadResult.width,
         height: uploadResult.height,
         duration: uploadResult.duration,
-        type: uploadResult.type === "video" ? "VIDEO" : "IMAGE",
-        userId,
+        type: uploadResult.type.toUpperCase() as MediaType,
+        userId: BigInt(userId),
         public: formData.get("public") === "true",
         domain: customDomain || null,
       },
     });
 
-    const mediaUrl = media.domain
+    const settings = await prisma.settings.findUnique({
+      where: { userId: BigInt(userId) },
+      select: { customDomain: true },
+    });
+
+    const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`
       : settings?.customDomain
         ? `https://${settings.customDomain}/${media.id}`
@@ -78,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       id: media.id,
-      url: mediaUrl,
+      url: displayUrl,
       filename: media.filename,
       size: media.size,
       width: media.width,
@@ -93,7 +86,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { error: "Failed to upload media" },
       { status: 500 },
     );
   }

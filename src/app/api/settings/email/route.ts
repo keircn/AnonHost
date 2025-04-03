@@ -47,6 +47,14 @@ export async function PUT(req: NextRequest) {
 
   try {
     const { email } = await req.json();
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    const { subject, text, html } = verificationEmailTemplate(
+      otp,
+      email,
+      "email-change"
+    );
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -58,9 +66,6 @@ export async function PUT(req: NextRequest) {
         { status: 400 },
       );
     }
-
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
     await prisma.OTP.deleteMany({
       where: {
@@ -80,7 +85,6 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    const { subject, text, html } = verificationEmailTemplate(otp, email, "email-change");
     await sendEmail({
       to: email,
       subject,

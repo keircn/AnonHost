@@ -1,10 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Upload, ExternalLink, CheckCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Upload,
+  ExternalLink,
+  CheckCircle,
+  Copy,
+  Terminal,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 const fadeIn = {
@@ -39,6 +54,29 @@ const features = [
 ];
 
 export default function Home() {
+  const [isCopied, setIsCopied] = useState(false);
+  const { toast } = useToast();
+  const installCommand = "curl https://keiran.cc/install | bash";
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(installCommand);
+      setIsCopied(true);
+      toast({
+        title: "Copied!",
+        description: "Installation command copied to clipboard.",
+      });
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+      toast({
+        title: "Error",
+        description: "Failed to copy command.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
@@ -133,7 +171,7 @@ export default function Home() {
           </motion.div>
         </section>
 
-        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
+        <section className="w-full pb-0 md:pb-0 lg:pb-0 xl:pb-0 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
           <motion.div
             className="container max-w-7xl mx-auto px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}
@@ -179,6 +217,60 @@ export default function Home() {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+        </section>
+
+        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
+          <motion.div
+            className="container max-w-4xl mx-auto px-4 md:px-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-muted/50 p-4 sm:p-6">
+                <div className="flex items-center gap-3">
+                  <Terminal className="h-6 w-6 text-primary" />
+                  <div>
+                    <CardTitle className="text-xl sm:text-2xl">
+                      Command Line Interface
+                    </CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
+                      Upload and manage files directly from your terminal.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 space-y-4">
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Install the AnonHost CLI with a single command:
+                </p>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 bg-muted rounded-md border">
+                  <code className="flex-1 text-sm sm:text-base font-mono bg-transparent break-all">
+                    {installCommand}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleCopy}
+                    className="flex-shrink-0"
+                    aria-label="Copy install command"
+                  >
+                    {isCopied ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Requires curl and bash. The script will install{" "}
+                  <code>anonhost</code> to{" "}
+                  <code>~/.local/bin</code> and check dependencies.
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
         </section>
 

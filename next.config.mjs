@@ -1,12 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "keiran.cc",
-      "keiran.tech",
-      "r2.keiran.cc",
-      "cdn.discordapp.com",
-      "localhost"
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'keiran.cc'
+      },
+      {
+        protocol: 'https',
+        hostname: 'r2.keiran.cc'
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com'
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost'
+      }
     ]
   },
 

@@ -62,7 +62,7 @@ export async function PUT(req: NextRequest) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    await prisma.otp.deleteMany({
+    await prisma.oTP.deleteMany({
       where: {
         userId: BigInt(session.user.id),
         type: "EMAIL_CHANGE",
@@ -70,7 +70,8 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    await prisma.otp.create({
+    // Create new OTP
+    await prisma.OTP.create({
       data: {
         userId: BigInt(session.user.id),
         email,
@@ -85,11 +86,11 @@ export async function PUT(req: NextRequest) {
       subject: "Verify Your New Email Address",
       text: `Your verification code is: ${otp}. This code will expire in 15 minutes.`,
       html: `
-                <h1>Verify Your New Email Address</h1>
-                <p>Your verification code is: <strong>${otp}</strong></p>
-                <p>This code will expire in 15 minutes.</p>
-                <p>If you did not request this change, please ignore this email.</p>
-            `,
+        <h1>Verify Your New Email Address</h1>
+        <p>Your verification code is: <strong>${otp}</strong></p>
+        <p>This code will expire in 15 minutes.</p>
+        <p>If you did not request this change, please ignore this email.</p>
+      `,
     });
 
     return NextResponse.json({ success: true });

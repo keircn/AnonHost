@@ -323,7 +323,9 @@ export default function DashboardPage() {
                           <motion.div key={stat.title} variants={fadeIn}>
                             <Card className="h-full">
                               <CardHeader>
-                                <CardTitle className="text-xl">{stat.title}</CardTitle>
+                                <CardTitle className="text-xl">
+                                  {stat.title}
+                                </CardTitle>
                                 <CardDescription className="text-sm">
                                   {stat.description}
                                 </CardDescription>

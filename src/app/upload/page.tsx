@@ -58,8 +58,12 @@ export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileSettings, setFileSettings] = useState<Record<string, FileSettings>>({});
-  const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(null);
+  const [fileSettings, setFileSettings] = useState<
+    Record<string, FileSettings>
+  >({});
+  const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(
+    null,
+  );
 
   if (status === "unauthenticated") {
     redirect("/");
@@ -77,12 +81,9 @@ export default function UploadPage() {
 
   const validateFile = useCallback(
     (file: File): boolean => {
-      const allowedTypes = [
-        'image/',
-        'video/',
-      ];
+      const allowedTypes = ["image/", "video/"];
 
-      if (!allowedTypes.some(type => file.type.startsWith(type))) {
+      if (!allowedTypes.some((type) => file.type.startsWith(type))) {
         toast({
           title: "Invalid file type",
           description: "Only images and videos are allowed",
@@ -99,8 +100,9 @@ export default function UploadPage() {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
           title: "File too large",
-          description: `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"
-            } users`,
+          description: `Maximum file size is ${limitInMb}MB for ${
+            session?.user?.premium ? "premium" : "free"
+          } users`,
           variant: "destructive",
         });
         return false;
@@ -214,14 +216,17 @@ export default function UploadPage() {
     }
   };
 
-  const updateFileSettings = (fileIndex: number, settings: Partial<FileSettings>) => {
-    setFileSettings(prev => ({
+  const updateFileSettings = (
+    fileIndex: number,
+    settings: Partial<FileSettings>,
+  ) => {
+    setFileSettings((prev) => ({
       ...prev,
       [fileIndex]: {
         ...(prev[fileIndex] || { public: false }),
         ...settings,
-        domain: settings.domain === "keiran.cc" ? null : settings.domain
-      }
+        domain: settings.domain === "keiran.cc" ? null : settings.domain,
+      },
     }));
   };
 
@@ -232,7 +237,10 @@ export default function UploadPage() {
       initial="initial"
       animate="animate"
     >
-      <motion.h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 lg:mb-8" variants={fadeIn}>
+      <motion.h1
+        className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 lg:mb-8"
+        variants={fadeIn}
+      >
         Upload Images
       </motion.h1>
 
@@ -260,7 +268,10 @@ export default function UploadPage() {
                 >
                   <Upload className="h-8 w-8 lg:h-12 lg:w-12 text-primary" />
                 </motion.div>
-                <motion.div className="space-y-2 lg:space-y-3" variants={fadeIn}>
+                <motion.div
+                  className="space-y-2 lg:space-y-3"
+                  variants={fadeIn}
+                >
                   <h3 className="text-lg lg:text-2xl font-semibold">
                     Drag and drop your media here
                   </h3>
@@ -379,13 +390,19 @@ export default function UploadPage() {
                                 isOpen={true}
                                 onClose={() => setActiveSettingsFile(null)}
                                 fileName={files[activeSettingsFile].name}
-                                settings={fileSettings[activeSettingsFile] || { public: false }}
+                                settings={
+                                  fileSettings[activeSettingsFile] || {
+                                    public: false,
+                                  }
+                                }
                                 onSettingsChange={(newSettings) => {
-                                  updateFileSettings(activeSettingsFile, newSettings);
+                                  updateFileSettings(
+                                    activeSettingsFile,
+                                    newSettings,
+                                  );
                                 }}
                               />
                             )}
-
                           </motion.div>
                         </motion.div>
                       ))}

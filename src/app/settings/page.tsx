@@ -279,7 +279,8 @@ export default function SettingsPage() {
 
       toast({
         title: "Verification email sent",
-        description: "Please check your new email address to confirm the change",
+        description:
+          "Please check your new email address to confirm the change",
       });
       setNewEmail("");
     } catch (error) {
@@ -452,10 +453,7 @@ export default function SettingsPage() {
                       </motion.div>
                     </motion.div>
 
-                    <motion.div
-                      className="flex justify-end"
-                      variants={fadeIn}
-                    >
+                    <motion.div className="flex justify-end" variants={fadeIn}>
                       <Button onClick={handleSaveSettings}>
                         Save Settings
                       </Button>

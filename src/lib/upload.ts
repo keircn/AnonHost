@@ -46,7 +46,7 @@ function formatFileSize(bytes: number): string {
 export function getStorageStats(
   used: number,
   isPremium: boolean,
-  isAdmin: boolean = false
+  isAdmin: boolean = false,
 ): StorageStats {
   const limit = isAdmin
     ? Number.MAX_SAFE_INTEGER
@@ -60,7 +60,9 @@ export function getStorageStats(
     used: formatFileSize(used),
     total: isAdmin ? "Unlimited" : formatFileSize(limit),
     percentage: isAdmin ? "0%" : `${Math.min(percentage, 100)}%`,
-    remaining: isAdmin ? "Unlimited" : formatFileSize(Math.max(0, limit - used)),
+    remaining: isAdmin
+      ? "Unlimited"
+      : formatFileSize(Math.max(0, limit - used)),
   };
 }
 

@@ -38,7 +38,7 @@ export const authOptions: AuthOptions = {
           id: user.id.toString(),
           admin: user.admin,
           premium: user.premium,
-        }
+        },
       };
     },
     async jwt({ token, account }) {
@@ -48,7 +48,7 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async signIn({ user, account }) {
-      if (account?.error === 'access_denied') {
+      if (account?.error === "access_denied") {
         return false;
       }
 

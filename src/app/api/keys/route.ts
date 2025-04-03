@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (keyCount >= 10) {
       return NextResponse.json(
         { error: "Maximum number of API keys (10) reached" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     console.error("Failed to create API key:", error);
     return NextResponse.json(
       { error: "Failed to create API key" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -42,10 +42,11 @@ export function Navbar() {
           <Link
             key={link.href}
             href={link.href}
-            className={`px-3 py-2 transition-colors hover:text-foreground/80 rounded-md hover:bg-accent ${pathname === link.href
-              ? "text-foreground bg-accent"
-              : "text-foreground/60"
-              }`}
+            className={`px-3 py-2 transition-colors hover:text-foreground/80 rounded-md hover:bg-accent ${
+              pathname === link.href
+                ? "text-foreground bg-accent"
+                : "text-foreground/60"
+            }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {link.label}
@@ -89,10 +90,7 @@ export function Navbar() {
               <UserMenu session={session} />
             ) : (
               <Link href="/register">
-                <Button
-                  size="sm"
-                  className="px-4 lg:px-6 lg:py-3 lg:text-base"
-                >
+                <Button size="sm" className="px-4 lg:px-6 lg:py-3 lg:text-base">
                   Sign In
                 </Button>
               </Link>
@@ -151,11 +149,7 @@ function UserMenu({ session }: UserMenuProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-56 lg:w-64"
-        align="end"
-        forceMount
-      >
+      <DropdownMenuContent className="w-56 lg:w-64" align="end" forceMount>
         <div className="flex flex-col p-2 lg:p-3">
           <p className="text-sm lg:text-base font-medium">
             {session?.user?.name}

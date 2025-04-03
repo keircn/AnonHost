@@ -1,4 +1,4 @@
 export interface FileSettings {
-    public: boolean;
-    domain?: string | null;
+  public: boolean;
+  domain?: string | null;
 }

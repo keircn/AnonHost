@@ -42,50 +42,51 @@ export async function GET(req: NextRequest) {
 
   const skip = (page - 1) * limit;
 
-  const [total, images, storageStats, apiRequests, user, settings] = await Promise.all([
-    prisma.image.count({
-      where: { userId },
-    }),
+  const [total, images, storageStats, apiRequests, user, settings] =
+    await Promise.all([
+      prisma.image.count({
+        where: { userId },
+      }),
 
-    prisma.image.findMany({
-      where: { userId },
-      orderBy: {
-        [sort === "filename"
-          ? "filename"
-          : sort === "size"
-            ? "size"
-            : "createdAt"]: order === "asc" ? "asc" : "desc",
-      },
-      skip,
-      take: limit,
-    }),
-
-    prisma.image.aggregate({
-      where: { userId },
-      _sum: {
-        size: true,
-      },
-    }),
-
-    prisma.apiKey.count({
-      where: {
-        userId,
-        lastUsed: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      prisma.image.findMany({
+        where: { userId },
+        orderBy: {
+          [sort === "filename"
+            ? "filename"
+            : sort === "size"
+              ? "size"
+              : "createdAt"]: order === "asc" ? "asc" : "desc",
         },
-      },
-    }),
+        skip,
+        take: limit,
+      }),
 
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { premium: true, admin: true },
-    }),
+      prisma.image.aggregate({
+        where: { userId },
+        _sum: {
+          size: true,
+        },
+      }),
 
-    prisma.settings.findUnique({
-      where: { userId },
-      select: { customDomain: true },
-    }),
-  ]);
+      prisma.apiKey.count({
+        where: {
+          userId,
+          lastUsed: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { premium: true, admin: true },
+      }),
+
+      prisma.settings.findUnique({
+        where: { userId },
+        select: { customDomain: true },
+      }),
+    ]);
 
   const storageUsed = storageStats._sum.size || 0;
   const storageLimit = user?.admin

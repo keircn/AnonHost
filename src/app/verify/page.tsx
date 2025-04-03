@@ -24,21 +24,6 @@ function VerifyForm() {
     try {
       const type = searchParams.get("type");
 
-      const result = await signIn("email-otp", {
-        email,
-        otp: code || otp,
-        callbackUrl: "/dashboard",
-        redirect: false,
-      });
-
-      if (result?.error) {
-        throw new Error(result.error);
-      }
-
-      if (result?.url) {
-        window.location.href = result.url;
-      }
-
       if (type === "email-change") {
         const response = await fetch("/api/settings/email/verify", {
           method: "POST",
@@ -58,6 +43,21 @@ function VerifyForm() {
 
         window.location.href = "/settings";
         return;
+      }
+
+      const result = await signIn("email-otp", {
+        email,
+        otp: code || otp,
+        callbackUrl: "/dashboard",
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      if (result?.url) {
+        window.location.href = result.url;
       }
     } catch (error) {
       toast({

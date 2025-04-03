@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
 model User {
   id            BigInt    @id @default(autoincrement()) @db.BigInt
   name          String?
@@ -17,13 +22,13 @@ model User {
   admin         Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
-  images        Image[]
   apiKeys       ApiKey[]
   settings      Settings?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   storageUsed   Int       @default(0)
   OTP           OTP[]
+  Media         Media[]
 }
 
 model Account {
@@ -52,20 +57,20 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Image {
-  id        String   @id @default(dbgenerated("substring(md5(random()::text || clock_timestamp()::text) from 1 for 6)"))
+model Media {
+  id        String    @id @default(cuid())
   url       String
   filename  String
-  type      String   @default("image")
   size      Int
-  width     Int?
-  height    Int?
-  public    Boolean  @default(false)
+  width     Int
+  height    Int
+  duration  Int?
+  type      MediaType @default(IMAGE)
+  userId    BigInt    @db.BigInt
+  public    Boolean   @default(false)
   domain    String?
-  userId    BigInt   @db.BigInt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {

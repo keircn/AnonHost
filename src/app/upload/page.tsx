@@ -81,28 +81,34 @@ export default function UploadPage() {
 
   const validateFile = useCallback(
     (file: File): boolean => {
-      const allowedTypes = ["image/", "video/"];
+      const allowedTypes = {
+        image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        video: ["video/mp4", "video/webm", "video/ogg"],
+      };
 
-      if (!allowedTypes.some((type) => file.type.startsWith(type))) {
+      if (
+        !allowedTypes.image.includes(file.type) &&
+        !allowedTypes.video.includes(file.type)
+      ) {
         toast({
           title: "Invalid file type",
-          description: "Only images and videos are allowed",
+          description: "Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, OGG) are allowed",
           variant: "destructive",
         });
         return false;
       }
 
+      const isVideo = file.type.startsWith("video/");
       const sizeLimit = session?.user?.premium
-        ? FILE_SIZE_LIMITS.PREMIUM
-        : FILE_SIZE_LIMITS.FREE;
+        ? FILE_SIZE_LIMITS.PREMIUM[isVideo ? "VIDEO" : "IMAGE"]
+        : FILE_SIZE_LIMITS.FREE[isVideo ? "VIDEO" : "IMAGE"];
 
       if (file.size > sizeLimit) {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
           title: "File too large",
-          description: `Maximum file size is ${limitInMb}MB for ${
-            session?.user?.premium ? "premium" : "free"
-          } users`,
+          description: `Maximum ${isVideo ? "video" : "image"} size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"
+            } users`,
           variant: "destructive",
         });
         return false;
@@ -120,13 +126,15 @@ export default function UploadPage() {
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
-          .filter((file) => file.type.startsWith("image/"))
+          .filter(file =>
+            file.type.startsWith("image/") || file.type.startsWith("video/")
+          )
           .filter(validateFile);
 
         if (newFiles.length === 0) {
           toast({
             title: "Invalid files",
-            description: "Files must be valid images and within size limits",
+            description: "Files must be valid media and within size limits",
             variant: "destructive",
           });
           return;
@@ -141,7 +149,9 @@ export default function UploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
-        .filter((file) => file.type.startsWith("image/"))
+        .filter(file =>
+          file.type.startsWith("image/") || file.type.startsWith("video/")
+        )
         .filter(validateFile);
 
       if (newFiles.length === 0) {
@@ -165,7 +175,7 @@ export default function UploadPage() {
     if (files.length === 0) {
       toast({
         title: "No files selected",
-        description: "Please select at least one image to upload",
+        description: "Please select at least one file to upload",
         variant: "destructive",
       });
       return;
@@ -200,7 +210,7 @@ export default function UploadPage() {
 
       toast({
         title: "Upload successful",
-        description: `${files.length} image${files.length > 1 ? "s" : ""} uploaded successfully`,
+        description: `${files.length} file${files.length > 1 ? "s" : ""} uploaded successfully`,
       });
 
       router.push("/dashboard");
@@ -241,7 +251,7 @@ export default function UploadPage() {
         className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 lg:mb-8"
         variants={fadeIn}
       >
-        Upload Images
+        Upload Media
       </motion.h1>
 
       <motion.div variants={cardHover} whileHover="hover">

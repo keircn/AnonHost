@@ -19,13 +19,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getStorageStats } from "@/lib/upload";
 import { toast } from "@/hooks/use-toast";
 
-interface ImageData {
+interface MediaItem {
   id: string;
   url: string;
   displayUrl: string;
   filename: string;
   createdAt: string;
   size: number;
+  type: 'IMAGE' | 'VIDEO';
+  duration?: number;
 }
 
 interface Stats {
@@ -54,29 +56,29 @@ const slideAnimation = {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
-  const [images, setImages] = useState<ImageData[]>([]);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("images");
+  const [activeTab, setActiveTab] = useState("media");
   const [stats, setStats] = useState<Stats>({
     totalUploads: 0,
     storageUsed: 0,
     apiRequests: 0,
   });
 
-  const fetchImages = async () => {
+  const fetchMedia = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/images");
-      if (!response.ok) throw new Error("Failed to fetch images");
+      const response = await fetch("/api/media");
+      if (!response.ok) throw new Error("Failed to fetch media");
       const data = await response.json();
-      setImages(data.images || []);
+      setMediaItems(data.media || []);
       setStats(data.stats);
     } catch (error) {
-      console.error("Failed to fetch images:", error);
-      setImages([]);
+      console.error("Failed to fetch media:", error);
+      setMediaItems([]);
       toast({
         title: "Error",
-        description: "Failed to fetch images",
+        description: "Failed to fetch media",
         variant: "destructive",
       });
     } finally {
@@ -84,35 +86,35 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteImage = async (id: string) => {
+  const handleDeleteMedia = async (id: string) => {
     try {
-      const response = await fetch(`/api/images/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to delete image");
+      const response = await fetch(`/api/media/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete media");
 
-      setImages((prev) => prev.filter((image) => image.id !== id));
+      setMediaItems((prev) => prev.filter((item) => item.id !== id));
       setStats((prev) => ({
         ...prev,
         totalUploads: prev.totalUploads - 1,
         storageUsed:
-          prev.storageUsed - (images.find((img) => img.id === id)?.size || 0),
+          prev.storageUsed - (mediaItems.find((item) => item.id === id)?.size || 0),
       }));
 
       toast({
         title: "Success",
-        description: "Image deleted successfully",
+        description: "Media deleted successfully",
       });
     } catch (error) {
-      console.error("Failed to delete image:", error);
+      console.error("Failed to delete media:", error);
       toast({
         title: "Error",
-        description: "Failed to delete image",
+        description: "Failed to delete media",
         variant: "destructive",
       });
     }
   };
 
   const handleCopyUrl = (imageId: string) => {
-    const image = images.find((img) => img.id === imageId);
+    const image = mediaItems.find((img) => img.id === imageId);
     if (image) {
       navigator.clipboard.writeText(image.displayUrl);
       toast({
@@ -128,7 +130,7 @@ export default function DashboardPage() {
     }
 
     if (status === "authenticated") {
-      Promise.all([fetchImages()]);
+      Promise.all([fetchMedia()]);
     }
   }, [status]);
 
@@ -162,13 +164,13 @@ export default function DashboardPage() {
       </motion.h1>
 
       <Tabs
-        defaultValue="images"
+        defaultValue="media"
         className="w-full"
         onValueChange={setActiveTab}
       >
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
-            <TabsTrigger value="images">My Images</TabsTrigger>
+            <TabsTrigger value="media">My Media</TabsTrigger>
             <TabsTrigger value="stats">Stats</TabsTrigger>
           </TabsList>
         </motion.div>
@@ -182,8 +184,8 @@ export default function DashboardPage() {
             exit="exit"
             transition={{ duration: 0.2 }}
           >
-            <TabsContent value="images" forceMount>
-              {activeTab === "images" && (
+            <TabsContent value="media" forceMount>
+              {activeTab === "media" && (
                 <motion.div
                   className="grid gap-6 lg:gap-8"
                   variants={staggerContainer}
@@ -192,7 +194,7 @@ export default function DashboardPage() {
                     className="flex justify-between items-center"
                     variants={fadeIn}
                   >
-                    <h2 className="text-xl font-semibold">Your Images</h2>
+                    <h2 className="text-xl font-semibold">Your Media</h2>
                     <Link href="/upload">
                       <Button>
                         <Upload className="mr-2 h-4 w-4" />
@@ -203,20 +205,20 @@ export default function DashboardPage() {
 
                   {isLoading ? (
                     <motion.div className="text-center py-8" variants={fadeIn}>
-                      Loading your images...
+                      Loading your media...
                     </motion.div>
-                  ) : images.length === 0 ? (
+                  ) : mediaItems.length === 0 ? (
                     <motion.div variants={fadeIn}>
                       <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12">
                           <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
                           <p className="text-muted-foreground mb-4">
-                            You haven&apos;t uploaded any images yet
+                            You haven't uploaded any media yet
                           </p>
                           <Link href="/upload">
                             <Button>
                               <Upload className="mr-2 h-4 w-4" />
-                              Upload Your First Image
+                              Upload Your First Media
                             </Button>
                           </Link>
                         </CardContent>
@@ -227,45 +229,51 @@ export default function DashboardPage() {
                       className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                       variants={staggerContainer}
                     >
-                      {images.map((image) => (
-                        <motion.div
-                          key={image.id}
-                          variants={fadeIn}
-                          layoutId={image.id}
-                        >
+                      {mediaItems.map((item) => (
+                        <motion.div key={item.id} variants={fadeIn} layoutId={item.id}>
                           <Card className="h-full">
                             <div className="aspect-square relative overflow-hidden">
-                              <Image
-                                src={image.url || "/placeholder.svg"}
-                                alt={image.filename}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              />
+                              {item.type === 'VIDEO' ? (
+                                <video
+                                  src={item.url}
+                                  controls
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Image
+                                  src={item.url || "/placeholder.svg"}
+                                  alt={item.filename}
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                />
+                              )}
                             </div>
                             <CardContent className="p-4 lg:p-6">
                               <div className="flex justify-between items-center">
                                 <div className="truncate mr-2">
-                                  <p className="font-medium truncate">
-                                    {image.filename}
-                                  </p>
+                                  <p className="font-medium truncate">{item.filename}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    {new Date(
-                                      image.createdAt,
-                                    ).toLocaleDateString()}
+                                    {new Date(item.createdAt).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: '2-digit'
+                                    })}
+                                    {item.type === 'VIDEO' && item.duration && (
+                                      <span className="ml-2">
+                                        {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                                      </span>
+                                    )}
                                   </p>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Button
-                                    size="icon"
-                                    onClick={() => handleCopyUrl(image.id)}
-                                  >
+                                  <Button size="icon" onClick={() => handleCopyUrl(item.id)}>
                                     <Copy className="h-4 w-4" />
                                   </Button>
                                   <Button
                                     variant="destructive"
                                     size="icon"
-                                    onClick={() => handleDeleteImage(image.id)}
+                                    onClick={() => handleDeleteMedia(item.id)}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>

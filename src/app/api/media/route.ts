@@ -3,7 +3,39 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/auth";
-import { uploadImage, STORAGE_LIMITS } from "@/lib/upload";
+import { uploadFile, STORAGE_LIMITS } from "@/lib/upload";
+
+interface MediaItem {
+  id: string;
+  domain: string | null;
+  displayUrl: string;
+}
+
+interface PaginationInfo {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+interface StatsInfo {
+  totalUploads: number;
+  storageUsed: number;
+  storageLimit: number;
+  apiRequests: number;
+  isAdmin: boolean;
+}
+
+interface ApiResponse {
+  media: MediaItem[];
+  pagination: PaginationInfo;
+  stats: StatsInfo;
+  baseUrl: string;
+}
+
+interface MediaItemResponse extends MediaItem {
+  displayUrl: string;
+}
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -42,13 +74,13 @@ export async function GET(req: NextRequest) {
 
   const skip = (page - 1) * limit;
 
-  const [total, images, storageStats, apiRequests, user, settings] =
+  const [total, mediaItems, storageStats, apiRequests, user, settings] =
     await Promise.all([
-      prisma.image.count({
+      prisma.media.count({
         where: { userId },
       }),
 
-      prisma.image.findMany({
+      prisma.media.findMany({
         where: { userId },
         orderBy: {
           [sort === "filename"
@@ -61,7 +93,7 @@ export async function GET(req: NextRequest) {
         take: limit,
       }),
 
-      prisma.image.aggregate({
+      prisma.media.aggregate({
         where: { userId },
         _sum: {
           size: true,
@@ -95,14 +127,14 @@ export async function GET(req: NextRequest) {
       ? STORAGE_LIMITS.PREMIUM
       : STORAGE_LIMITS.FREE;
 
-  return NextResponse.json({
-    images: images.map((image) => ({
-      ...image,
-      displayUrl: image.domain
-        ? `https://${image.domain}/${image.id}`
+  return NextResponse.json<ApiResponse>({
+    media: mediaItems.map((item: { id: string; domain: string | null }): MediaItemResponse => ({
+      ...item,
+      displayUrl: item.domain
+        ? `https://${item.domain}/${item.id}`
         : settings?.customDomain
-          ? `https://${settings.customDomain}/${image.id}`
-          : `${baseUrl}/${image.id}`,
+          ? `https://${settings.customDomain}/${item.id}`
+          : `${baseUrl}/${item.id}`,
     })),
     pagination: {
       total,
@@ -156,7 +188,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const uploadResult = await uploadImage(file, userId.toString());
+    const uploadResult = await uploadFile(file, userId.toString());
 
     const image = await prisma.image.create({
       data: {

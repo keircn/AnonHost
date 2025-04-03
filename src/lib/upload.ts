@@ -8,6 +8,8 @@ interface UploadResult {
   size: number;
   width: number;
   height: number;
+  duration?: number;
+  type: 'image' | 'video';
 }
 
 export const STORAGE_LIMITS = {
@@ -16,8 +18,14 @@ export const STORAGE_LIMITS = {
 };
 
 export const FILE_SIZE_LIMITS = {
-  PREMIUM: 100 * 1024 * 1024,
-  FREE: 50 * 1024 * 1024,
+  PREMIUM: {
+    IMAGE: 100 * 1024 * 1024,
+    VIDEO: 500 * 1024 * 1024,
+  },
+  FREE: {
+    IMAGE: 50 * 1024 * 1024,
+    VIDEO: 200 * 1024 * 1024,
+  },
 };
 
 interface StorageStats {
@@ -75,13 +83,14 @@ const s3Client = new S3Client({
   },
 });
 
-export async function uploadImage(
+export async function uploadFile(
   file: File,
   userId: string,
 ): Promise<UploadResult> {
   try {
     const filename = `${userId}/${nanoid()}-${file.name}`;
     const buffer = Buffer.from(await file.arrayBuffer());
+    const fileType = file.type.startsWith('image/') ? 'image' : 'video';
 
     const upload = new Upload({
       client: s3Client,
@@ -104,9 +113,11 @@ export async function uploadImage(
       size: file.size,
       width: 0,
       height: 0,
+      type: fileType,
+      ...(fileType === 'video' ? { duration: 0 } : {}),
     };
   } catch (error) {
-    console.error("Error uploading image:", error);
-    throw new Error("Failed to upload image");
+    console.error("Error uploading file:", error);
+    throw new Error("Failed to upload file");
   }
 }

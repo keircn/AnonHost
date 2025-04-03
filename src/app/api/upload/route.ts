@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { uploadImage } from "@/lib/upload";
+import { uploadFile } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
@@ -40,48 +40,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const uploadResult = await uploadImage(file, userId.toString());
+    // Validate file type
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      return NextResponse.json({ error: "Invalid file type. Only images and videos are allowed" }, { status: 400 });
+    }
+
+    const uploadResult = await uploadFile(file, userId.toString());
 
     const settings = await prisma.settings.findUnique({
       where: { userId },
       select: { customDomain: true },
     });
 
-    const image = await prisma.image.create({
+    const media = await prisma.media.create({
       data: {
         url: uploadResult.url,
         filename: uploadResult.filename,
         size: uploadResult.size,
         width: uploadResult.width,
         height: uploadResult.height,
+        duration: uploadResult.duration,
+        type: uploadResult.type === 'video' ? 'VIDEO' : 'IMAGE',
         userId,
         public: formData.get("public") === "true",
         domain: customDomain || null,
       },
     });
 
-    const imageUrl = image.domain
-      ? `https://${image.domain}/${image.id}`
+    const mediaUrl = media.domain
+      ? `https://${media.domain}/${media.id}`
       : settings?.customDomain
-        ? `https://${settings.customDomain}/${image.id}`
-        : `${baseUrl}/${image.id}`;
+        ? `https://${settings.customDomain}/${media.id}`
+        : `${baseUrl}/${media.id}`;
 
     return NextResponse.json({
-      id: image.id,
-      url: imageUrl,
-      filename: image.filename,
-      size: image.size,
-      width: image.width,
-      height: image.height,
-      public: image.public,
-      domain: image.domain,
-      createdAt: image.createdAt,
+      id: media.id,
+      url: mediaUrl,
+      filename: media.filename,
+      size: media.size,
+      width: media.width,
+      height: media.height,
+      duration: media.duration,
+      type: media.type,
+      public: media.public,
+      domain: media.domain,
+      createdAt: media.createdAt,
       baseUrl: baseUrl,
     });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload image" },
+      { error: "Failed to upload file" },
       { status: 500 },
     );
   }

@@ -1,13 +1,13 @@
 import { Metadata } from "next";
-import { ImageActions } from "@/components/image-actions";
+import { MediaActions } from "@/components/media-actions";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface Props {
-  params: Promise<{ id?: string[] }>; // Make 'id' optional
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // Add searchParams
+  params: Promise<{ id?: string[] }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 function formatBytes(bytes: number): string {
@@ -28,17 +28,17 @@ function formatDate(date: Date): string {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const { id } = params;
-  const imageId = id?.[0]; // Use optional chaining
+  const mediaId = id?.[0];
 
-  if (!imageId) {
+  if (!mediaId) {
     return {
-      title: "Image not found",
-      description: "The requested image could not be found.",
+      title: "Media not found",
+      description: "The requested media could not be found.",
     };
   }
 
-  const image = await prisma.image.findUnique({
-    where: { id: imageId },
+  const media = await prisma.media.findUnique({
+    where: { id: mediaId },
     include: {
       user: {
         select: { name: true },
@@ -46,52 +46,52 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     },
   });
 
-  if (!image) {
+  if (!media) {
     return {
-      title: "Image not found",
-      description: "The requested image could not be found.",
+      title: "Media not found",
+      description: "The requested media could not be found.",
     };
   }
 
-  const description = `Uploaded by ${image.user?.name || "Anonymous"} • ${formatBytes(image.size)} • ${formatDate(image.createdAt)}`;
+  const description = `Uploaded by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`;
 
   return {
-    title: image.filename,
+    title: media.filename,
     description,
     openGraph: {
-      title: image.filename,
+      title: media.filename,
       description,
       images: [
         {
-          url: image.url,
-          width: image.width || 1200,
-          height: image.height || 630,
-          alt: image.filename,
+          url: media.url,
+          width: media.width || 1200,
+          height: media.height || 630,
+          alt: media.filename,
         },
       ],
-      type: "website",
+      type: media.type === 'VIDEO' ? 'video' : 'website',
     },
     twitter: {
       card: "summary_large_image",
-      title: image.filename,
+      title: media.filename,
       description,
-      images: [image.url],
+      images: [media.url],
     },
   };
 }
 
-export default async function ImagePage(props: Props) {
+export default async function MediaPage(props: Props) {
   const params = await props.params;
   const { id } = params;
-  const imageId = id?.[0]; // Use optional chaining
+  const mediaId = id?.[0];
 
-  if (!imageId) {
+  if (!mediaId) {
     notFound();
-    return null; // Add a return statement to satisfy TypeScript
+    return null;
   }
 
-  const image = await prisma.image.findUnique({
-    where: { id: imageId },
+  const media = await prisma.media.findUnique({
+    where: { id: mediaId },
     include: {
       user: {
         select: { name: true },
@@ -99,39 +99,61 @@ export default async function ImagePage(props: Props) {
     },
   });
 
-  if (!image) {
+  if (!media) {
     notFound();
-    return null; // Add a return statement to satisfy TypeScript
+    return null;
   }
 
   return (
     <div className="container py-8">
       <Card className="max-w-4xl mx-auto">
         <div className="relative aspect-video">
-          <Image
-            src={image.url}
-            alt={image.filename}
-            fill
-            className="object-contain py-8"
-            priority
-          />
+          {media.type === 'VIDEO' ? (
+            <video
+              src={media.url}
+              controls
+              className="w-full h-full"
+              autoPlay
+              playsInline
+            />
+          ) : (
+            <Image
+              src={media.url}
+              alt={media.filename}
+              fill
+              className="object-contain py-8"
+              priority
+            />
+          )}
         </div>
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold text-foreground">
-              {image.filename}
+              {media.filename}
             </h1>
-            <ImageActions url={image.url} filename={image.filename} />
+            <MediaActions
+              url={media.url}
+              filename={media.filename}
+              type={media.type as 'IMAGE' | 'VIDEO'}
+            />
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-4 gap-6">
             <Card>
               <CardHeader className="p-4">
                 <h3 className="text-sm font-medium text-foreground">
                   Uploader
                 </h3>
                 <p className="text-sm font-semibold text-muted-foreground">
-                  {image.user?.name || "Anonymous"}
+                  {media.user?.name || "Anonymous"}
+                </p>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="p-4">
+                <h3 className="text-sm font-medium text-foreground">Type</h3>
+                <p className="text-sm font-semibold text-muted-foreground">
+                  {media.type}
                 </p>
               </CardHeader>
             </Card>
@@ -139,7 +161,7 @@ export default async function ImagePage(props: Props) {
               <CardHeader className="p-4">
                 <h3 className="text-sm font-medium text-foreground">Size</h3>
                 <p className="text-sm font-semibold text-muted-foreground">
-                  {formatBytes(image.size)}
+                  {formatBytes(media.size)}
                 </p>
               </CardHeader>
             </Card>
@@ -149,11 +171,24 @@ export default async function ImagePage(props: Props) {
                   Uploaded
                 </h3>
                 <p className="text-sm font-semibold text-muted-foreground">
-                  {formatDate(image.createdAt)}
+                  {formatDate(media.createdAt)}
                 </p>
               </CardHeader>
             </Card>
           </div>
+
+          {media.type === 'VIDEO' && media.duration && (
+            <Card className="mt-6">
+              <CardHeader className="p-4">
+                <h3 className="text-sm font-medium text-foreground">
+                  Duration
+                </h3>
+                <p className="text-sm font-semibold text-muted-foreground">
+                  {Math.floor(media.duration / 60)}:{(media.duration % 60).toString().padStart(2, '0')}
+                </p>
+              </CardHeader>
+            </Card>
+          )}
         </CardContent>
       </Card>
     </div>

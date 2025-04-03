@@ -74,7 +74,7 @@ The AnonHost Team`,
       <p style="color: #ffffff; font-size: 24px; letter-spacing: 0.5em; margin: 0;">
         ${code}
       </p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?email=${encodeURIComponent(email)}&otp=${code}" 
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?email=${encodeURIComponent(email)}&otp=${code}${type ? `&type=${type}` : ''}" 
         style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 500;">
         Verify Automatically
       </a>

@@ -22,6 +22,8 @@ function VerifyForm() {
     setIsVerifying(true);
 
     try {
+      const type = searchParams.get("type");
+
       const result = await signIn("email-otp", {
         email,
         otp: code || otp,
@@ -35,6 +37,27 @@ function VerifyForm() {
 
       if (result?.url) {
         window.location.href = result.url;
+      }
+
+      if (type === "email-change") {
+        const response = await fetch("/api/settings/email/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ otp: code || otp }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to verify email change");
+        }
+
+        toast({
+          title: "Email Changed",
+          description: "Your email has been successfully updated",
+        });
+
+        window.location.href = "/settings";
+        return;
       }
     } catch (error) {
       toast({

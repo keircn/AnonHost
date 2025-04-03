@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    const { subject, text, html } = verificationEmailTemplate(otp, email);
+    const { subject, text, html } = verificationEmailTemplate(otp, email, "email-change");
     await sendEmail({
       to: email,
       subject,

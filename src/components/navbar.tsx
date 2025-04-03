@@ -35,11 +35,10 @@ export function Navbar() {
         { href: "/dashboard", label: "Dashboard" },
         { href: "/upload", label: "Upload" },
         { href: "/api", label: "API" },
-        { href: "/privacy", label: "Privacy" },
         session?.user?.admin && { href: "/admin", label: "Admin" },
       ]
-        .filter(Boolean)
-        .map((link: NavLink) => (
+        .filter((link): link is NavLink => Boolean(link))
+        .map((link) => (
           <Link
             key={link.href}
             href={link.href}

@@ -23,6 +23,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   storageUsed   Int       @default(0)
+  OTP           OTP[]
 }
 
 model Account {
@@ -80,10 +81,25 @@ model ApiKey {
 
 model Settings {
   id                  Int     @id @default(autoincrement())
-  userId              BigInt  @db.BigInt @unique
+  userId              BigInt  @unique @db.BigInt
   user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   enableNotifications Boolean @default(true)
   makeImagesPublic    Boolean @default(false)
   enableDirectLinks   Boolean @default(true)
   customDomain        String?
+}
+
+model OTP {
+  id        String   @id @default(cuid())
+  userId    BigInt?  @db.BigInt
+  email     String
+  code      String
+  type      String   @default("LOGIN")
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([userId])
 }

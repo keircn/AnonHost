@@ -2,13 +2,50 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { FaDiscord as Discord } from "react-icons/fa6";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) throw new Error("Failed to send OTP");
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a one-time password to login",
+      });
+
+      window.location.href = `/verify?email=${encodeURIComponent(email)}`;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send login code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-[80vh] items-center justify-center p-4">
       <motion.div
@@ -39,30 +76,40 @@ export default function RegisterPage() {
               transition={{ delay: 0.3 }}
               className="space-y-4"
             >
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button className="w-full" type="submit" disabled={isLoading}>
+                  {isLoading ? "Sending..." : "Continue with Email"}
+                </Button>
+              </form>
+
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase mt-4">
+                <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
-                    Continue with
+                    Or continue with
                   </span>
                 </div>
               </div>
 
-              <div className="flex justify-center my-8">
-                <Button
-                  className="w-full max-w-64 gap-2"
-                  size="lg"
-                  onClick={() =>
-                    signIn("discord", { callbackUrl: "/dashboard" })
-                  }
-                >
-                  <Discord className="h-5 w-5" />
-                  Authenticate with Discord
-                  <ArrowRight className="h-4 w-4 ml-auto" />
-                </Button>
-              </div>
+              <Button
+                className="w-full gap-2"
+                onClick={() => signIn("discord", { callbackUrl: "/dashboard" })}
+              >
+                <Discord className="h-5 w-5" />
+                Continue with Discord
+                <ArrowRight className="h-4 w-4 ml-auto" />
+              </Button>
 
               <p className="px-8 text-center text-sm text-muted-foreground">
                 By clicking continue, you agree to our{" "}

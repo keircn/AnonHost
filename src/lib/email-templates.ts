@@ -51,3 +51,39 @@ export const welcomeEmailTemplate = (name: string) => ({
 
     `,
 });
+
+export const verificationEmailTemplate = (code: string) => ({
+  subject: "Your Verification Code 🔐",
+  text: `Your verification code is: ${code}
+            
+        This code will expire in 15 minutes.
+
+        If you didn't request this code, please ignore this email.
+
+        Best regards,
+        The AnonHost Team`,
+  html: `
+                <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #c6cdd4; background: #18181b;">
+                    <h1 style="color: #ffffff; margin-bottom: 24px; font-size: 24px;">Your Verification Code 🔐</h1>
+
+                    <div style="background: #27272a; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                        <p style="color: #ffffff; font-size: 24px; text-align: center; letter-spacing: 0.5em; margin: 0;">
+                            ${code}
+                        </p>
+                    </div>
+
+                    <p style="margin-bottom: 16px; color: #c6cdd4; font-size: 16px;">
+                        This code will expire in 15 minutes.
+                    </p>
+
+                    <p style="color: #94a3b8; font-size: 14px;">
+                        If you didn't request this code, please ignore this email.
+                    </p>
+
+                    <p style="color: #94a3b8; font-size: 16px; margin-top: 24px;">
+                        Best regards,<br>
+                        The AnonHost Team
+                    </p>
+                </div>
+            `,
+});

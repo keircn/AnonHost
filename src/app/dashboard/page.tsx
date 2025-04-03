@@ -52,11 +52,6 @@ const slideAnimation = {
   exit: { opacity: 0, x: 20 },
 };
 
-const cardHover = {
-  scale: 1.02,
-  transition: { duration: 0.2 },
-};
-
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [images, setImages] = useState<ImageData[]>([]);
@@ -237,7 +232,6 @@ export default function DashboardPage() {
                           key={image.id}
                           variants={fadeIn}
                           layoutId={image.id}
-                          whileHover={cardHover}
                         >
                           <Card className="h-full">
                             <div className="aspect-square relative overflow-hidden">

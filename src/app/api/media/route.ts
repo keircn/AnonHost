@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/auth";
 import { uploadFile, STORAGE_LIMITS } from "@/lib/upload";
+import { MediaType } from "@prisma/client";
 
 interface MediaItem {
   id: string;
@@ -164,21 +165,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: number;
+  let userId: bigint;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = Number(user.id);
+    userId = BigInt(user.id);
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = session!.user.id;
+    userId = BigInt(session!.user.id);
   }
 
   try {
@@ -192,40 +193,51 @@ export async function POST(req: NextRequest) {
 
     const uploadResult = await uploadFile(file, userId.toString());
 
-    const image = await prisma.image.create({
+    const media = await prisma.media.create({
       data: {
         url: uploadResult.url,
         filename: uploadResult.filename,
         size: uploadResult.size,
         width: uploadResult.width,
         height: uploadResult.height,
+        duration: uploadResult.duration,
+        type: uploadResult.type.toUpperCase() as MediaType,
         userId,
         public: formData.get("public") === "true",
         domain: customDomain || null,
       },
     });
 
-    const imageUrl = image.domain
-      ? `https://${image.domain}/${image.id}`
-      : `${baseUrl}/${image.id}`;
+    const settings = await prisma.settings.findUnique({
+      where: { userId },
+      select: { customDomain: true },
+    });
+
+    const displayUrl = media.domain
+      ? `https://${media.domain}/${media.id}`
+      : settings?.customDomain
+        ? `https://${settings.customDomain}/${media.id}`
+        : `${baseUrl}/${media.id}`;
 
     return NextResponse.json({
-      id: image.id,
-      url: imageUrl,
-      filename: image.filename,
-      size: image.size,
-      width: image.width,
-      height: image.height,
-      public: image.public,
-      domain: image.domain,
-      createdAt: image.createdAt,
+      id: media.id,
+      url: displayUrl,
+      filename: media.filename,
+      size: media.size,
+      width: media.width,
+      height: media.height,
+      duration: media.duration,
+      type: media.type,
+      public: media.public,
+      domain: media.domain,
+      createdAt: media.createdAt,
       baseUrl: baseUrl,
     });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload image" },
-      { status: 500 },
+      { error: "Failed to upload media" },
+      { status: 500 }
     );
   }
 }

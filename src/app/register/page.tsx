@@ -38,7 +38,7 @@ export default function RegisterPage() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send login code",
+        description: `Failed to send login code, ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 9876",
     "lint": "next lint",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "prisma-dev": "prisma migrate dev --name 'auto' && prisma generate",
+    "prisma-deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@auth/core": "latest",

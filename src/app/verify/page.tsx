@@ -12,26 +12,41 @@ import { signIn } from "next-auth/react";
 function VerifyForm() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
-  const [otp, setOtp] = useState("");
+  const autoOtp = searchParams.get("otp");
+  const [otp, setOtp] = useState(autoOtp || "");
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!email) {
       window.location.href = "/register";
+      return;
     }
-  }, [email]);
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
+    if (autoOtp && autoOtp.length === 6) {
+      handleVerify(null, autoOtp);
+    }
+  }, [email, autoOtp]);
+
+  const handleVerify = async (e: React.FormEvent | null, code?: string) => {
+    if (e) e.preventDefault();
     setIsVerifying(true);
 
     try {
-      await signIn("email-otp", {
+      const result = await signIn("email-otp", {
         email,
-        otp,
+        otp: code || otp,
         callbackUrl: "/dashboard",
+        redirect: false,
       });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      if (result?.url) {
+        window.location.href = result.url;
+      }
     } catch (error) {
       toast({
         title: "Error",

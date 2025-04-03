@@ -52,38 +52,49 @@ export const welcomeEmailTemplate = (name: string) => ({
     `,
 });
 
-export const verificationEmailTemplate = (code: string) => ({
+export const verificationEmailTemplate = (code: string, email: string) => ({
   subject: "Your Verification Code 🔐",
   text: `Your verification code is: ${code}
-            
-        This code will expire in 15 minutes.
+  
+This code will expire in 15 minutes.
 
-        If you didn't request this code, please ignore this email.
+To verify automatically, visit: ${process.env.NEXT_PUBLIC_APP_URL}/verify?otp=${code}
 
-        Best regards,
-        The AnonHost Team`,
+If you didn't request this code, please ignore this email.
+
+Best regards,
+The AnonHost Team`,
   html: `
-                <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #c6cdd4; background: #18181b;">
-                    <h1 style="color: #ffffff; margin-bottom: 24px; font-size: 24px;">Your Verification Code 🔐</h1>
+    <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #c6cdd4; background: #18181b;">
+      <h1 style="color: #ffffff; margin-bottom: 24px; font-size: 24px;">Your Verification Code 🔐</h1>
 
-                    <div style="background: #27272a; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                        <p style="color: #ffffff; font-size: 24px; text-align: center; letter-spacing: 0.5em; margin: 0;">
-                            ${code}
-                        </p>
-                    </div>
+      <div style="background: #27272a; border-radius: 8px; padding: 20px; margin-bottom: 24px; text-align: center;">
+        <p style="color: #ffffff; font-size: 24px; letter-spacing: 0.5em; margin: 0;">
+          ${code}
+        </p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/verify?email=${encodeURIComponent(email)}&otp=${code}" 
+           style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 500;">
+          Verify Automatically
+        </a>
+      </div>
 
-                    <p style="margin-bottom: 16px; color: #c6cdd4; font-size: 16px;">
-                        This code will expire in 15 minutes.
-                    </p>
+      <p style="margin-bottom: 16px; color: #c6cdd4; font-size: 16px;">
+        This code will expire in 15 minutes. You can either:
+      </p>
 
-                    <p style="color: #94a3b8; font-size: 14px;">
-                        If you didn't request this code, please ignore this email.
-                    </p>
+      <ul style="color: #c6cdd4; font-size: 16px; margin-bottom: 24px; padding-left: 20px;">
+        <li style="margin-bottom: 8px;">Click the button above to verify automatically</li>
+        <li style="margin-bottom: 8px;">Enter the code manually in the verification page</li>
+      </ul>
 
-                    <p style="color: #94a3b8; font-size: 16px; margin-top: 24px;">
-                        Best regards,<br>
-                        The AnonHost Team
-                    </p>
-                </div>
-            `,
+      <p style="color: #94a3b8; font-size: 14px; margin-bottom: 24px;">
+        If you didn't request this code, please ignore this email.
+      </p>
+
+      <p style="color: #94a3b8; font-size: 16px; margin-top: 24px; border-top: 1px solid #27272a; padding-top: 24px;">
+        Best regards,<br>
+        The AnonHost Team
+      </p>
+    </div>
+  `,
 });

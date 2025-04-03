@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ function VerifyForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
 
-  const handleVerify = async (e: React.FormEvent | null, code?: string) => {
+  const handleVerify = useCallback(async (e: React.FormEvent | null, code?: string) => {
     if (e) e.preventDefault();
     setIsVerifying(true);
 
@@ -67,7 +67,7 @@ function VerifyForm() {
       });
       setIsVerifying(false);
     }
-  };
+  }, [email, otp, searchParams, toast]);
 
   useEffect(() => {
     if (!email) {

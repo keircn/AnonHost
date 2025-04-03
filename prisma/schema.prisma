@@ -58,7 +58,7 @@ model Session {
 }
 
 model Media {
-  id        String    @id @default(cuid()) @db.Char(6)
+  id        String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
   url       String
   filename  String
   size      Int

@@ -69,7 +69,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
           alt: media.filename,
         },
       ],
-      type: media.type === 'VIDEO' ? 'video' : 'website',
+      type: media.type === "VIDEO" ? "video" : "website",
     },
     twitter: {
       card: "summary_large_image",
@@ -108,7 +108,7 @@ export default async function MediaPage(props: Props) {
     <div className="container py-8">
       <Card className="max-w-4xl mx-auto">
         <div className="relative aspect-video">
-          {media.type === 'VIDEO' ? (
+          {media.type === "VIDEO" ? (
             <video
               src={media.url}
               controls
@@ -134,7 +134,7 @@ export default async function MediaPage(props: Props) {
             <MediaActions
               url={media.url}
               filename={media.filename}
-              type={media.type as 'IMAGE' | 'VIDEO'}
+              type={media.type as "IMAGE" | "VIDEO"}
             />
           </div>
 
@@ -177,14 +177,15 @@ export default async function MediaPage(props: Props) {
             </Card>
           </div>
 
-          {media.type === 'VIDEO' && media.duration && (
+          {media.type === "VIDEO" && media.duration && (
             <Card className="mt-6">
               <CardHeader className="p-4">
                 <h3 className="text-sm font-medium text-foreground">
                   Duration
                 </h3>
                 <p className="text-sm font-semibold text-muted-foreground">
-                  {Math.floor(media.duration / 60)}:{(media.duration % 60).toString().padStart(2, '0')}
+                  {Math.floor(media.duration / 60)}:
+                  {(media.duration % 60).toString().padStart(2, "0")}
                 </p>
               </CardHeader>
             </Card>

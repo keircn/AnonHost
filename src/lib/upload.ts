@@ -9,7 +9,7 @@ interface UploadResult {
   width: number;
   height: number;
   duration?: number;
-  type: 'image' | 'video';
+  type: "image" | "video";
 }
 
 export const STORAGE_LIMITS = {
@@ -90,7 +90,7 @@ export async function uploadFile(
   try {
     const filename = `${userId}/${nanoid()}-${file.name}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileType = file.type.startsWith('image/') ? 'image' : 'video';
+    const fileType = file.type.startsWith("image/") ? "image" : "video";
 
     const upload = new Upload({
       client: s3Client,
@@ -114,7 +114,7 @@ export async function uploadFile(
       width: 0,
       height: 0,
       type: fileType,
-      ...(fileType === 'video' ? { duration: 0 } : {}),
+      ...(fileType === "video" ? { duration: 0 } : {}),
     };
   } catch (error) {
     console.error("Error uploading file:", error);

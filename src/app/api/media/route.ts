@@ -128,14 +128,16 @@ export async function GET(req: NextRequest) {
       : STORAGE_LIMITS.FREE;
 
   return NextResponse.json<ApiResponse>({
-    media: mediaItems.map((item: { id: string; domain: string | null }): MediaItemResponse => ({
-      ...item,
-      displayUrl: item.domain
-        ? `https://${item.domain}/${item.id}`
-        : settings?.customDomain
-          ? `https://${settings.customDomain}/${item.id}`
-          : `${baseUrl}/${item.id}`,
-    })),
+    media: mediaItems.map(
+      (item: { id: string; domain: string | null }): MediaItemResponse => ({
+        ...item,
+        displayUrl: item.domain
+          ? `https://${item.domain}/${item.id}`
+          : settings?.customDomain
+            ? `https://${settings.customDomain}/${item.id}`
+            : `${baseUrl}/${item.id}`,
+      }),
+    ),
     pagination: {
       total,
       page,

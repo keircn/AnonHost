@@ -26,7 +26,7 @@ interface MediaItem {
   filename: string;
   createdAt: string;
   size: number;
-  type: 'IMAGE' | 'VIDEO';
+  type: "IMAGE" | "VIDEO";
   duration?: number;
 }
 
@@ -96,7 +96,8 @@ export default function DashboardPage() {
         ...prev,
         totalUploads: prev.totalUploads - 1,
         storageUsed:
-          prev.storageUsed - (mediaItems.find((item) => item.id === id)?.size || 0),
+          prev.storageUsed -
+          (mediaItems.find((item) => item.id === id)?.size || 0),
       }));
 
       toast({
@@ -213,7 +214,7 @@ export default function DashboardPage() {
                         <CardContent className="flex flex-col items-center justify-center py-12">
                           <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
                           <p className="text-muted-foreground mb-4">
-                            You haven't uploaded any media yet
+                            You haven&apos;t uploaded any media yet
                           </p>
                           <Link href="/upload">
                             <Button>
@@ -230,10 +231,14 @@ export default function DashboardPage() {
                       variants={staggerContainer}
                     >
                       {mediaItems.map((item) => (
-                        <motion.div key={item.id} variants={fadeIn} layoutId={item.id}>
+                        <motion.div
+                          key={item.id}
+                          variants={fadeIn}
+                          layoutId={item.id}
+                        >
                           <Card className="h-full">
                             <div className="aspect-square relative overflow-hidden">
-                              {item.type === 'VIDEO' ? (
+                              {item.type === "VIDEO" ? (
                                 <video
                                   src={item.url}
                                   controls
@@ -252,22 +257,32 @@ export default function DashboardPage() {
                             <CardContent className="p-4 lg:p-6">
                               <div className="flex justify-between items-center">
                                 <div className="truncate mr-2">
-                                  <p className="font-medium truncate">{item.filename}</p>
+                                  <p className="font-medium truncate">
+                                    {item.filename}
+                                  </p>
                                   <p className="text-xs text-muted-foreground">
-                                    {new Date(item.createdAt).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: '2-digit'
+                                    {new Date(
+                                      item.createdAt,
+                                    ).toLocaleDateString("en-US", {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "2-digit",
                                     })}
-                                    {item.type === 'VIDEO' && item.duration && (
+                                    {item.type === "VIDEO" && item.duration && (
                                       <span className="ml-2">
-                                        {Math.floor(item.duration / 60)}:{(item.duration % 60).toString().padStart(2, '0')}
+                                        {Math.floor(item.duration / 60)}:
+                                        {(item.duration % 60)
+                                          .toString()
+                                          .padStart(2, "0")}
                                       </span>
                                     )}
                                   </p>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Button size="icon" onClick={() => handleCopyUrl(item.id)}>
+                                  <Button
+                                    size="icon"
+                                    onClick={() => handleCopyUrl(item.id)}
+                                  >
                                     <Copy className="h-4 w-4" />
                                   </Button>
                                   <Button

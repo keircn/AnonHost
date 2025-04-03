@@ -56,7 +56,7 @@ export const welcomeEmailTemplate = (name: string) => ({
 export const verificationEmailTemplate = (
   code: string,
   email: string,
-  type: "login" | "email-change" = "login"
+  type: "login" | "email-change" = "login",
 ) => ({
   subject: `Your ${type === "email-change" ? "Email Change" : "Login"} Verification Code 🔐`,
   text: `Your verification code is: ${code}

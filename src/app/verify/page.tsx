@@ -17,17 +17,6 @@ function VerifyForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!email) {
-      window.location.href = "/register";
-      return;
-    }
-
-    if (autoOtp && autoOtp.length === 6) {
-      handleVerify(null, autoOtp);
-    }
-  }, [email, autoOtp]);
-
   const handleVerify = async (e: React.FormEvent | null, code?: string) => {
     if (e) e.preventDefault();
     setIsVerifying(true);
@@ -56,6 +45,17 @@ function VerifyForm() {
       setIsVerifying(false);
     }
   };
+
+  useEffect(() => {
+    if (!email) {
+      window.location.href = "/register";
+      return;
+    }
+
+    if (autoOtp && autoOtp.length === 6) {
+      handleVerify(null, autoOtp);
+    }
+  }, [email, autoOtp, handleVerify]);
 
   return (
     <Card className="w-full max-w-md">

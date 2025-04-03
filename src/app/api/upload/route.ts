@@ -41,8 +41,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate file type
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      return NextResponse.json({ error: "Invalid file type. Only images and videos are allowed" }, { status: 400 });
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      return NextResponse.json(
+        { error: "Invalid file type. Only images and videos are allowed" },
+        { status: 400 },
+      );
     }
 
     const uploadResult = await uploadFile(file, userId.toString());
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
         width: uploadResult.width,
         height: uploadResult.height,
         duration: uploadResult.duration,
-        type: uploadResult.type === 'video' ? 'VIDEO' : 'IMAGE',
+        type: uploadResult.type === "video" ? "VIDEO" : "IMAGE",
         userId,
         public: formData.get("public") === "true",
         domain: customDomain || null,

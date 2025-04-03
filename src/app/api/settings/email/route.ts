@@ -22,7 +22,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const { subject, text, html } = verificationEmailTemplate(otp, email, "login");
+    const { subject, text, html } = verificationEmailTemplate(
+      otp,
+      email,
+      "login",
+    );
     await sendEmail({
       to: email,
       subject,
@@ -82,7 +86,11 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    const { subject, text, html } = verificationEmailTemplate(otp, email, otpType);
+    const { subject, text, html } = verificationEmailTemplate(
+      otp,
+      email,
+      otpType,
+    );
     await sendEmail({
       to: email,
       subject,

@@ -92,7 +92,8 @@ export default function UploadPage() {
       ) {
         toast({
           title: "Invalid file type",
-          description: "Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, OGG) are allowed",
+          description:
+            "Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, OGG) are allowed",
           variant: "destructive",
         });
         return false;
@@ -107,8 +108,9 @@ export default function UploadPage() {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
           title: "File too large",
-          description: `Maximum ${isVideo ? "video" : "image"} size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"
-            } users`,
+          description: `Maximum ${isVideo ? "video" : "image"} size is ${limitInMb}MB for ${
+            session?.user?.premium ? "premium" : "free"
+          } users`,
           variant: "destructive",
         });
         return false;
@@ -126,8 +128,9 @@ export default function UploadPage() {
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
-          .filter(file =>
-            file.type.startsWith("image/") || file.type.startsWith("video/")
+          .filter(
+            (file) =>
+              file.type.startsWith("image/") || file.type.startsWith("video/"),
           )
           .filter(validateFile);
 
@@ -149,8 +152,9 @@ export default function UploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
-        .filter(file =>
-          file.type.startsWith("image/") || file.type.startsWith("video/")
+        .filter(
+          (file) =>
+            file.type.startsWith("image/") || file.type.startsWith("video/"),
         )
         .filter(validateFile);
 

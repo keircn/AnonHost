@@ -17,57 +17,60 @@ function VerifyForm() {
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
 
-  const handleVerify = useCallback(async (e: React.FormEvent | null, code?: string) => {
-    if (e) e.preventDefault();
-    setIsVerifying(true);
+  const handleVerify = useCallback(
+    async (e: React.FormEvent | null, code?: string) => {
+      if (e) e.preventDefault();
+      setIsVerifying(true);
 
-    try {
-      const type = searchParams.get("type");
+      try {
+        const type = searchParams.get("type");
 
-      if (type === "email-change") {
-        const response = await fetch("/api/settings/email/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ otp: code || otp }),
-        });
+        if (type === "email-change") {
+          const response = await fetch("/api/settings/email/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ otp: code || otp }),
+          });
 
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to verify email change");
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || "Failed to verify email change");
+          }
+
+          toast({
+            title: "Email Changed",
+            description: "Your email has been successfully updated",
+          });
+
+          window.location.href = "/settings";
+          return;
         }
 
-        toast({
-          title: "Email Changed",
-          description: "Your email has been successfully updated",
+        const result = await signIn("email-otp", {
+          email,
+          otp: code || otp,
+          callbackUrl: "/dashboard",
+          redirect: false,
         });
 
-        window.location.href = "/settings";
-        return;
-      }
+        if (result?.error) {
+          throw new Error(result.error);
+        }
 
-      const result = await signIn("email-otp", {
-        email,
-        otp: code || otp,
-        callbackUrl: "/dashboard",
-        redirect: false,
-      });
-
-      if (result?.error) {
-        throw new Error(result.error);
+        if (result?.url) {
+          window.location.href = result.url;
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `Invalid or expired code, ${error instanceof Error ? error.message : "Unknown error"}`,
+          variant: "destructive",
+        });
+        setIsVerifying(false);
       }
-
-      if (result?.url) {
-        window.location.href = result.url;
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Invalid or expired code, ${error instanceof Error ? error.message : "Unknown error"}`,
-        variant: "destructive",
-      });
-      setIsVerifying(false);
-    }
-  }, [email, otp, searchParams, toast]);
+    },
+    [email, otp, searchParams, toast],
+  );
 
   useEffect(() => {
     if (!email) {

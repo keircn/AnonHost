@@ -15,21 +15,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: number;
+  let userId: bigint;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = Number(user.id);
+    userId = BigInt(user.id);
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = session!.user.id;
+    userId = BigInt(session!.user.id);
   }
 
   try {
@@ -52,14 +52,14 @@ export async function POST(req: NextRequest) {
         height: uploadResult.height,
         duration: uploadResult.duration,
         type: uploadResult.type.toUpperCase() as MediaType,
-        userId: BigInt(userId),
+        userId,
         public: formData.get("public") === "true",
         domain: customDomain || null,
       },
     });
 
     const settings = await prisma.settings.findUnique({
-      where: { userId: BigInt(userId) },
+      where: { userId },
       select: { customDomain: true },
     });
 
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Failed to upload media" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

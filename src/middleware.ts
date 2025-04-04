@@ -8,11 +8,17 @@ const rateLimit = new Map()
 // im still not sure if ill keep these values but it works for now i think
 const RATE_LIMIT_WINDOW = 60 * 1000
 const MAX_REQUESTS_PER_WINDOW = {
-  authenticated: 60,
-  unauthenticated: 10
+  authenticated: 120,
+  unauthenticated: 60
 }
 
+// it kept rate limiting pages lmfao
+const RATE_LIMITED_METHODS = ['POST', 'PUT', 'DELETE']
+
 export async function middleware(request: NextRequest) {
+  if (!RATE_LIMITED_METHODS.includes(request.method)) {
+    return NextResponse.next()
+  }
   try {
     const token = await getToken({ req: request })
 

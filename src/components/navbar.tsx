@@ -34,6 +34,7 @@ export function Navbar() {
       {[
         { href: "/dashboard", label: "Dashboard" },
         { href: "/upload", label: "Upload" },
+        { href: "/shortener", label: "Shortener" },
         { href: "/api", label: "API" },
         session?.user?.admin && { href: "/admin", label: "Admin" },
       ]

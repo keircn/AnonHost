@@ -29,6 +29,7 @@ model User {
   storageUsed   Int       @default(0)
   OTP           OTP[]
   Media         Media[]
+  Shortlink     Shortlink[]
 }
 
 model Account {
@@ -107,4 +108,16 @@ model OTP {
 
   @@index([email])
   @@index([userId])
+}
+
+model Shortlink {
+  id          String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
+  originalUrl String    @db.Text
+  title       String?
+  userId      BigInt    @db.BigInt
+  clicks      Int       @default(0)
+  public      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  expireAt    DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

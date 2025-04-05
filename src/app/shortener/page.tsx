@@ -3,10 +3,7 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +26,14 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, ExternalLink, Copy, Trash2, Clock, BarChart } from "lucide-react";
+import {
+  Link,
+  ExternalLink,
+  Copy,
+  Trash2,
+  Clock,
+  BarChart,
+} from "lucide-react";
 
 interface Shortlink {
   id: string;
@@ -94,7 +98,7 @@ export default function ShortenerPage() {
     if (status === "authenticated") {
       fetchShortlinks();
     }
-  }, [status, toast]); 
+  }, [status, toast]);
 
   const handleCreateShortlink = async () => {
     if (!newUrl) {
@@ -153,7 +157,8 @@ export default function ShortenerPage() {
       console.error("Failed to create shortlink:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create shortlink",
+        description:
+          error instanceof Error ? error.message : "Failed to create shortlink",
         variant: "destructive",
       });
     } finally {
@@ -207,219 +212,226 @@ export default function ShortenerPage() {
       );
     }
 
-  return (
-    <motion.div
-      className="container py-8"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    return (
       <motion.div
-        className="flex items-center justify-between mb-6"
-        variants={fadeIn}
-        initial="initial"
-        animate="animate"
+        className="container py-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
       >
-        <h1 className="text-3xl font-bold">URL Shortener</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Link className="mr-2 h-4 w-4" />
-              Create Shortlink
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create a New Shortlink</DialogTitle>
-              <DialogDescription>
-                Enter the URL you want to shorten. You can optionally add a title and set expiration.
-              </DialogDescription>
-            </DialogHeader>
+        <motion.div
+          className="flex items-center justify-between mb-6"
+          variants={fadeIn}
+          initial="initial"
+          animate="animate"
+        >
+          <h1 className="text-3xl font-bold">URL Shortener</h1>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Link className="mr-2 h-4 w-4" />
+                Create Shortlink
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create a New Shortlink</DialogTitle>
+                <DialogDescription>
+                  Enter the URL you want to shorten. You can optionally add a
+                  title and set expiration.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="url">URL to shorten</Label>
-                <Input
-                  id="url"
-                  placeholder="https://example.com/very-long-url-that-needs-shortening"
-                  value={newUrl}
-                  onChange={(e) => setNewUrl(e.target.value)}
-                />
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="url">URL to shorten</Label>
+                  <Input
+                    id="url"
+                    placeholder="https://example.com/very-long-url-that-needs-shortening"
+                    value={newUrl}
+                    onChange={(e) => setNewUrl(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="title">Title (optional)</Label>
+                  <Input
+                    id="title"
+                    placeholder="My awesome link"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="expires">Expires after</Label>
+                  <Select
+                    value={expiresIn}
+                    onValueChange={(value) => setExpiresIn(value)}
+                  >
+                    <SelectTrigger id="expires">
+                      <SelectValue placeholder="Never" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 day</SelectItem>
+                      <SelectItem value="7">7 days</SelectItem>
+                      <SelectItem value="30">30 days</SelectItem>
+                      <SelectItem value="90">90 days</SelectItem>
+                      <SelectItem value="365">1 year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="public"
+                    checked={isPublic}
+                    onCheckedChange={setIsPublic}
+                  />
+                  <Label htmlFor="public">Public link</Label>
+                </div>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="title">Title (optional)</Label>
-                <Input
-                  id="title"
-                  placeholder="My awesome link"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="expires">Expires after</Label>
-                <Select
-                  value={expiresIn}
-                  onValueChange={(value) => setExpiresIn(value)}
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
                 >
-                  <SelectTrigger id="expires">
-                    <SelectValue placeholder="Never" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 day</SelectItem>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                    <SelectItem value="90">90 days</SelectItem>
-                    <SelectItem value="365">1 year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="public"
-                  checked={isPublic}
-                  onCheckedChange={setIsPublic}
-                />
-                <Label htmlFor="public">Public link</Label>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleCreateShortlink}
-                disabled={isCreating}
-              >
-                {isCreating ? "Creating..." : "Create Shortlink"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </motion.div>
-
-      <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="space-y-6"
-      >
-        {isLoading ? (
-          <motion.div className="text-center py-8" variants={fadeIn}>
-            Loading your shortlinks...
-          </motion.div>
-        ) : shortlinks.length === 0 ? (
-          <motion.div variants={fadeIn}>
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Link className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">You haven&apos;t created any shortlinks yet</p>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Link className="mr-2 h-4 w-4" />
-                  Create Your First Shortlink
+                  Cancel
                 </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ) : (
-          <AnimatePresence>
-            <div className="grid gap-4">
-              {shortlinks.map((link) => (
-                <motion.div
-                  key={link.id}
-                  variants={fadeIn}
-                  layout
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex flex-col space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-1">
-                            <h4 className="font-medium text-lg">
-                              {link.title || "Untitled Link"}
-                            </h4>
-                            <div className="flex items-center text-muted-foreground">
-                              <BarChart className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{link.clicks} clicks</span>
-                              {link.expireAt && (
-                                <>
-                                  <span className="mx-2">•</span>
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  <span className="text-sm">
-                                    Expires: {new Date(link.expireAt).toLocaleDateString()}
-                                  </span>
-                                </>
-                              )}
+                <Button onClick={handleCreateShortlink} disabled={isCreating}>
+                  {isCreating ? "Creating..." : "Create Shortlink"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </motion.div>
+
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="space-y-6"
+        >
+          {isLoading ? (
+            <motion.div className="text-center py-8" variants={fadeIn}>
+              Loading your shortlinks...
+            </motion.div>
+          ) : shortlinks.length === 0 ? (
+            <motion.div variants={fadeIn}>
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Link className="h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">
+                    You haven&apos;t created any shortlinks yet
+                  </p>
+                  <Button onClick={() => setIsDialogOpen(true)}>
+                    <Link className="mr-2 h-4 w-4" />
+                    Create Your First Shortlink
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+            <AnimatePresence>
+              <div className="grid gap-4">
+                {shortlinks.map((link) => (
+                  <motion.div
+                    key={link.id}
+                    variants={fadeIn}
+                    layout
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                  >
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                              <h4 className="font-medium text-lg">
+                                {link.title || "Untitled Link"}
+                              </h4>
+                              <div className="flex items-center text-muted-foreground">
+                                <BarChart className="h-4 w-4 mr-1" />
+                                <span className="text-sm">
+                                  {link.clicks} clicks
+                                </span>
+                                {link.expireAt && (
+                                  <>
+                                    <span className="mx-2">•</span>
+                                    <Clock className="h-4 w-4 mr-1" />
+                                    <span className="text-sm">
+                                      Expires:{" "}
+                                      {new Date(
+                                        link.expireAt,
+                                      ).toLocaleDateString()}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => copyToClipboard(link.shortUrl)}
+                                title="Copy shortlink"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() =>
+                                  window.open(link.shortUrl, "_blank")
+                                }
+                                title="Open shortlink"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => handleDeleteShortlink(link.id)}
+                                title="Delete shortlink"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
 
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => copyToClipboard(link.shortUrl)}
-                              title="Copy shortlink"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => window.open(link.shortUrl, "_blank")}
-                              title="Open shortlink"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => handleDeleteShortlink(link.id)}
-                              title="Delete shortlink"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                          <div className="grid gap-2 text-sm">
+                            <div className="flex flex-col">
+                              <span className="font-medium">Short URL:</span>
+                              <a
+                                href={link.shortUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline truncate"
+                              >
+                                {link.shortUrl}
+                              </a>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium">Original URL:</span>
+                              <span className="truncate text-muted-foreground">
+                                {link.originalUrl}
+                              </span>
+                            </div>
                           </div>
                         </div>
-
-                        <div className="grid gap-2 text-sm">
-                          <div className="flex flex-col">
-                            <span className="font-medium">Short URL:</span>
-                            <a
-                              href={link.shortUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline truncate"
-                            >
-                              {link.shortUrl}
-                            </a>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-medium">Original URL:</span>
-                            <span className="truncate text-muted-foreground">
-                              {link.originalUrl}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </AnimatePresence>
-        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </AnimatePresence>
+          )}
+        </motion.div>
       </motion.div>
-    </motion.div>
-  );
+    );
   };
 
   return renderContent();

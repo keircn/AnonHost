@@ -56,62 +56,67 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const description = `Uploaded by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`;
 
   const openGraphBase = {
-    title: media.filename,
+    title: media.filename || "Untitled",
     description,
   };
 
-  const openGraphMedia = media.type === "VIDEO" 
-  ? {
-      ...openGraphBase,
-      type: "video.other",
-      videos: [{
-        url: media.url,
-        width: media.width,
-        height: media.height,
-        type: "video/mp4",
-      }],
-      images: [{
-        url: media.url,
-        width: media.width,
-        height: media.height,
-        alt: media.filename,
-        type: 'image/jpeg',
-      }],
-    }
-  : {
-      ...openGraphBase,
-      type: "website",
-      images: [{
-        url: media.url,
-        width: media.width,
-        height: media.height,
-        alt: media.filename,
-      }],
-    };
+  const dimensions = {
+    width: typeof media.width === 'number' ? media.width : 1280,
+    height: typeof media.height === 'number' ? media.height : 720,
+  };
 
-return {
-  title: media.filename,
-  description,
-  openGraph: {
-    ...openGraphMedia,
-  },
-  twitter: {
-    card: media.type === "VIDEO" ? "player" : "summary_large_image",
-    title: media.filename,
-    description,
-    images: media.type === "VIDEO" ? [`${media.url}?thumb=1`] : [media.url],
-    ...(media.type === "VIDEO" && {
-      players: {
-        player: {
+  const openGraphMedia = media.type === "VIDEO" 
+    ? {
+        ...openGraphBase,
+        type: "video.other",
+        videos: [{
           url: media.url,
-          width: media.width,
-          height: media.height,
-          stream: true,
-        }
+          width: dimensions.width,
+          height: dimensions.height,
+          type: "video/mp4",
+        }],
+        images: [{
+          url: `${media.url}?thumb=1`,
+          width: dimensions.width,
+          height: dimensions.height,
+          alt: media.filename || "Video preview",
+          type: 'image/jpeg',
+        }],
       }
-    })
-  },
-};
+    : {
+        ...openGraphBase,
+        type: "website",
+        images: [{
+          url: media.url,
+          width: dimensions.width,
+          height: dimensions.height,
+          alt: media.filename || "Image",
+        }],
+      };
+
+  return {
+    title: media.filename || "Untitled",
+    description,
+    openGraph: {
+      ...openGraphMedia,
+    },
+    twitter: {
+      card: media.type === "VIDEO" ? "player" : "summary_large_image",
+      title: media.filename || "Untitled",
+      description,
+      images: media.type === "VIDEO" ? [`${media.url}?thumb=1`] : [media.url],
+      ...(media.type === "VIDEO" && {
+        players: {
+          player: {
+            url: media.url,
+            width: dimensions.width,
+            height: dimensions.height,
+            stream: true,
+          }
+        }
+      })
+    },
+  };
 }
 
 export default async function MediaPage(props: Props) {

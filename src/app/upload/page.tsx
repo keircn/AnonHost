@@ -337,7 +337,7 @@ export default function UploadPage() {
                   Drag and drop your media here
                   </h3>
                   <p className="text-sm lg:text-base text-muted-foreground">
-                  click to browse from your device, or paste from your clipboard
+                  Click to browse from your device, or paste from your clipboard
                   </p>
                 </motion.div>
                 <input

@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, Download } from "lucide-react";
 import { SiSharex } from "react-icons/si";
 import {
   Dialog,
@@ -47,6 +47,18 @@ const slideAnimation = {
     animate: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: 20 },
   },
+};
+
+const downloadShareXConfig = (config: object, apiKeyName: string) => {
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `anonhost-${apiKeyName.toLowerCase().replace(/\s+/g, '-')}.sxcu`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 
 interface ApiKey {
@@ -234,14 +246,69 @@ export default function SettingsPage() {
     };
   }
 
-  const handleCopyShareXConfig = (apiKey: string) => {
-    const config = generateShareXConfig(apiKey, window.location.origin);
-    const configString = JSON.stringify(config, null, 2);
-    navigator.clipboard.writeText(configString);
-    toast({
-      title: "Copied to clipboard",
-      description: "ShareX configuration copied to clipboard",
-    });
+  const handleShareXConfig = (apiKey: ApiKey) => {
+    const config = generateShareXConfig(apiKey.key, window.location.origin);
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <motion.div whileHover={{ scale: 1.1 }}>
+            <Button
+              variant="outline"
+              size="icon"
+              title="Export ShareX Config"
+            >
+              <SiSharex className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Export ShareX Configuration</DialogTitle>
+            <DialogDescription>
+              Choose how you want to use the ShareX configuration file.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              To use this configuration in ShareX, you need to import it. You can either download the config file or copy it to your clipboard.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={() => downloadShareXConfig(config, apiKey.name)}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download Config File
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  navigator.clipboard.writeText(JSON.stringify(config, null, 2));
+                  toast({
+                    title: "Copied to clipboard",
+                    description: "ShareX configuration copied to clipboard",
+                  });
+                }}
+                className="gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                Copy to Clipboard
+              </Button>
+            </div>
+            <p className="text-sm">
+              <a 
+                href="https://getsharex.com/docs/custom-uploader" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Learn how to import ShareX configurations →
+              </a>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   if (status === "loading") {
@@ -576,21 +643,8 @@ export default function SettingsPage() {
                                               <Copy className="h-4 w-4" />
                                             </Button>
                                           </motion.div>
-                                          <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                          >
-                                            <Button
-                                              variant="outline"
-                                              size="icon"
-                                              onClick={() =>
-                                                handleCopyShareXConfig(
-                                                  apiKey.key,
-                                                )
-                                              }
-                                              title="Copy ShareX Config"
-                                            >
-                                              <SiSharex className="h-4 w-4" />
-                                            </Button>
+                                          <motion.div whileHover={{ scale: 1.1 }}>
+                                            {handleShareXConfig(apiKey)}
                                           </motion.div>
                                           <Dialog>
                                             <DialogTrigger asChild>

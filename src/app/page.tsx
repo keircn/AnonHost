@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -19,6 +20,7 @@ import {
   CheckCircle,
   Copy,
   Terminal,
+  AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -103,6 +105,15 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
+        <Alert variant="destructive" className="mx-auto max-w-3xl mt-4 mb-8">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="ml-2">
+            Notice: All accounts were reset due to a recent backend migration.
+            While this upgrade brings lower latency and increased storage
+            capacity, data migration wasn&apos;t possible. We apologize for any
+            inconvenience - please create a new account.
+          </AlertDescription>
+        </Alert>
         <TransFlag />
         <section className="w-full pt-12 sm:pt-16 md:pt-24 lg:pt-32 xl:pt-40 2xl:pt-48 overflow-hidden relative min-h-[80vh] md:min-h-screen lg:min-h-1/2">
           <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">

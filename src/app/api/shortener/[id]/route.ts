@@ -182,22 +182,22 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: bigint;
+  let userId: string;
 
-  if (apiKey) {
-    const user = await verifyApiKey(apiKey);
-    if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
-    }
-    userId = BigInt(user.id);
-
-    await prisma.apiKey.update({
-      where: { key: apiKey },
-      data: { lastUsed: new Date() },
-    });
-  } else {
-    userId = BigInt(session!.user.id);
+if (apiKey) {
+  const user = await verifyApiKey(apiKey);
+  if (!user) {
+    return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
   }
+  userId = user.id;
+
+  await prisma.apiKey.update({
+    where: { key: apiKey },
+    data: { lastUsed: new Date() },
+  });
+} else {
+  userId = session!.user.id;
+}
 
   try {
     const shortlink = await prisma.shortlink.findUnique({
@@ -213,7 +213,7 @@ export async function DELETE(
       );
     }
 
-    if (BigInt(shortlink.userId) !== userId && !session?.user.admin) {
+    if (BigInt(shortlink.userId) !== BigInt(userId) && !session?.user.admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

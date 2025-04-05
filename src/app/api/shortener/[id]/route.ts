@@ -131,7 +131,7 @@ export async function PUT(
     if (originalUrl) {
       try {
         new URL(originalUrl);
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           { error: "Invalid URL format" },
           { status: 400 }

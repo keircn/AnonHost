@@ -55,7 +55,7 @@ const staggerContainer = {
 };
 
 export default function ShortenerPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const { toast } = useToast();
   const [shortlinks, setShortlinks] = useState<Shortlink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,16 +66,6 @@ export default function ShortenerPage() {
   const [isPublic, setIsPublic] = useState(false);
   const [expiresIn, setExpiresIn] = useState<string | undefined>(undefined);
   const [isCreating, setIsCreating] = useState(false);
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      redirect("/register");
-    }
-
-    if (status === "authenticated") {
-      fetchShortlinks();
-    }
-  }, [status]);
 
   const fetchShortlinks = async () => {
     setIsLoading(true);
@@ -108,7 +98,7 @@ export default function ShortenerPage() {
 
     try {
       new URL(newUrl);
-    } catch (e) {
+    } catch {
       toast({
         title: "Invalid URL",
         description: "Please enter a valid URL including http:// or https://",
@@ -144,7 +134,6 @@ export default function ShortenerPage() {
         description: "Your shortlink has been created successfully",
       });
 
-      // Reset form
       setNewUrl("");
       setNewTitle("");
       setIsPublic(false);
@@ -206,6 +195,16 @@ export default function ShortenerPage() {
       </motion.div>
     );
   }
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      redirect("/register");
+    }
+
+    if (status === "authenticated") {
+      fetchShortlinks();
+    }
+  }, [status, fetchShortlinks]);
 
   return (
     <motion.div

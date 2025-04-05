@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     try {
       new URL(originalUrl);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Invalid URL format" },
         { status: 400 }

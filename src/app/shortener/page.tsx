@@ -409,7 +409,7 @@ export default function ShortenerPage() {
                                 href={link.shortUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary hover:underline truncate"
+                                className="text-primary hover:underline"
                               >
                                 {link.shortUrl}
                               </a>

@@ -1,81 +1,82 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-const rateLimit = new Map()
+const rateLimit = new Map();
 
-const RATE_LIMIT_WINDOW = 60 * 1000
+const RATE_LIMIT_WINDOW = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = {
   authenticated: 120,
-  unauthenticated: 60
-}
+  unauthenticated: 60,
+};
 
 // it kept rate limiting pages lmfao
-const RATE_LIMITED_METHODS = ['POST', 'PUT', 'DELETE']
+const RATE_LIMITED_METHODS = ["POST", "PUT", "DELETE"];
 
 export async function middleware(request: NextRequest) {
   if (!RATE_LIMITED_METHODS.includes(request.method)) {
-    return NextResponse.next()
+    return NextResponse.next();
   }
   try {
-    const token = await getToken({ req: request })
+    const token = await getToken({ req: request });
 
-    const ip = request.headers.get('x-forwarded-for') || 'unknown'
-    const key = `${ip}:${token ? 'auth' : 'unauth'}`
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const key = `${ip}:${token ? "auth" : "unauth"}`;
 
-    const now = Date.now()
+    const now = Date.now();
     const windowData = rateLimit.get(key) || {
       start: now,
-      count: 0
-    }
+      count: 0,
+    };
 
     if (now - windowData.start > RATE_LIMIT_WINDOW) {
-      windowData.start = now
-      windowData.count = 0
+      windowData.start = now;
+      windowData.count = 0;
     }
 
-    windowData.count++
+    windowData.count++;
 
-    rateLimit.set(key, windowData)
+    rateLimit.set(key, windowData);
 
-    const maxRequests = token 
-      ? MAX_REQUESTS_PER_WINDOW.authenticated 
-      : MAX_REQUESTS_PER_WINDOW.unauthenticated
+    const maxRequests = token
+      ? MAX_REQUESTS_PER_WINDOW.authenticated
+      : MAX_REQUESTS_PER_WINDOW.unauthenticated;
 
     if (windowData.count > maxRequests) {
       return new NextResponse(
         JSON.stringify({
           success: false,
-          message: 'Too Many Requests',
+          message: "Too Many Requests",
         }),
         {
           status: 429,
           headers: {
-            'Content-Type': 'application/json',
-            'X-RateLimit-Limit': maxRequests.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': (windowData.start + RATE_LIMIT_WINDOW).toString(),
-          }
-        }
-      )
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": maxRequests.toString(),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": (
+              windowData.start + RATE_LIMIT_WINDOW
+            ).toString(),
+          },
+        },
+      );
     }
 
-    const response = NextResponse.next()
-    response.headers.set('X-RateLimit-Limit', maxRequests.toString())
+    const response = NextResponse.next();
+    response.headers.set("X-RateLimit-Limit", maxRequests.toString());
     response.headers.set(
-      'X-RateLimit-Remaining', 
-      Math.max(0, maxRequests - windowData.count).toString()
-    )
+      "X-RateLimit-Remaining",
+      Math.max(0, maxRequests - windowData.count).toString(),
+    );
     response.headers.set(
-      'X-RateLimit-Reset',
-      (windowData.start + RATE_LIMIT_WINDOW).toString()
-    )
+      "X-RateLimit-Reset",
+      (windowData.start + RATE_LIMIT_WINDOW).toString(),
+    );
 
-    return response
-
+    return response;
   } catch (error) {
-    console.error('Rate limiting error:', error)
-    return NextResponse.next()
+    console.error("Rate limiting error:", error);
+    return NextResponse.next();
   }
 }
 
@@ -87,6 +88,6 @@ export const config = {
      * 2. /_next/* (Next.js internals)
      * 3. /favicon.ico, /sitemap.xml (static files)
      */
-    '/((?!api/auth|_next|favicon.ico|sitemap.xml).*)',
+    "/((?!api/auth|_next|favicon.ico|sitemap.xml).*)",
   ],
-}
+};

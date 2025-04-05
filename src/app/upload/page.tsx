@@ -179,46 +179,48 @@ export default function UploadPage() {
     async (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
       if (!items) return;
-  
+
       const mediaItems = Array.from(items).filter(
-        item => item.type.startsWith('image/') || item.type.startsWith('video/')
+        (item) =>
+          item.type.startsWith("image/") || item.type.startsWith("video/"),
       );
-  
+
       if (mediaItems.length === 0) return;
-  
+
       const newFiles = await Promise.all(
-        mediaItems.map(item => {
+        mediaItems.map((item) => {
           const file = item.getAsFile();
           if (!file) return null;
           return validateFile(file) ? file : null;
-        })
+        }),
       );
-  
+
       const validFiles = newFiles.filter((file): file is File => file !== null);
-  
+
       if (validFiles.length === 0) {
         toast({
           title: "Invalid files",
-          description: "Pasted files must be valid media and within size limits",
+          description:
+            "Pasted files must be valid media and within size limits",
           variant: "destructive",
         });
         return;
       }
-  
-      setFiles(prev => [...prev, ...validFiles]);
-      
+
+      setFiles((prev) => [...prev, ...validFiles]);
+
       toast({
         title: "Files added",
-        description: `Added ${validFiles.length} file${validFiles.length > 1 ? 's' : ''} from clipboard`,
+        description: `Added ${validFiles.length} file${validFiles.length > 1 ? "s" : ""} from clipboard`,
       });
     },
-    [validateFile, toast]
+    [validateFile, toast],
   );
 
   useEffect(() => {
-    document.addEventListener('paste', handlePaste);
+    document.addEventListener("paste", handlePaste);
     return () => {
-      document.removeEventListener('paste', handlePaste);
+      document.removeEventListener("paste", handlePaste);
     };
   }, [handlePaste]);
 
@@ -334,10 +336,11 @@ export default function UploadPage() {
                   variants={fadeIn}
                 >
                   <h3 className="text-lg lg:text-2xl font-semibold">
-                  Drag and drop your media here
+                    Drag and drop your media here
                   </h3>
                   <p className="text-sm lg:text-base text-muted-foreground">
-                  Click to browse from your device, or paste from your clipboard
+                    Click to browse from your device, or paste from your
+                    clipboard
                   </p>
                 </motion.div>
                 <input

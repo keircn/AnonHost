@@ -3,10 +3,7 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +26,14 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, ExternalLink, Copy, Trash2, Clock, BarChart } from "lucide-react";
+import {
+  Link,
+  ExternalLink,
+  Copy,
+  Trash2,
+  Clock,
+  BarChart,
+} from "lucide-react";
 
 interface Shortlink {
   id: string;
@@ -143,7 +147,8 @@ export default function ShortenerPage() {
       console.error("Failed to create shortlink:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create shortlink",
+        description:
+          error instanceof Error ? error.message : "Failed to create shortlink",
         variant: "destructive",
       });
     } finally {
@@ -231,7 +236,8 @@ export default function ShortenerPage() {
             <DialogHeader>
               <DialogTitle>Create a New Shortlink</DialogTitle>
               <DialogDescription>
-                Enter the URL you want to shorten. You can optionally add a title and set expiration.
+                Enter the URL you want to shorten. You can optionally add a
+                title and set expiration.
               </DialogDescription>
             </DialogHeader>
 
@@ -286,16 +292,10 @@ export default function ShortenerPage() {
             </div>
 
             <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsDialogOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleCreateShortlink}
-                disabled={isCreating}
-              >
+              <Button onClick={handleCreateShortlink} disabled={isCreating}>
                 {isCreating ? "Creating..." : "Create Shortlink"}
               </Button>
             </DialogFooter>
@@ -318,7 +318,9 @@ export default function ShortenerPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Link className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">You haven&apos;t created any shortlinks yet</p>
+                <p className="text-muted-foreground mb-4">
+                  You haven&apos;t created any shortlinks yet
+                </p>
                 <Button onClick={() => setIsDialogOpen(true)}>
                   <Link className="mr-2 h-4 w-4" />
                   Create Your First Shortlink
@@ -348,13 +350,18 @@ export default function ShortenerPage() {
                             </h4>
                             <div className="flex items-center text-muted-foreground">
                               <BarChart className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{link.clicks} clicks</span>
+                              <span className="text-sm">
+                                {link.clicks} clicks
+                              </span>
                               {link.expireAt && (
                                 <>
                                   <span className="mx-2">•</span>
                                   <Clock className="h-4 w-4 mr-1" />
                                   <span className="text-sm">
-                                    Expires: {new Date(link.expireAt).toLocaleDateString()}
+                                    Expires:{" "}
+                                    {new Date(
+                                      link.expireAt,
+                                    ).toLocaleDateString()}
                                   </span>
                                 </>
                               )}
@@ -373,7 +380,9 @@ export default function ShortenerPage() {
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => window.open(link.shortUrl, "_blank")}
+                              onClick={() =>
+                                window.open(link.shortUrl, "_blank")
+                              }
                               title="Open shortlink"
                             >
                               <ExternalLink className="h-4 w-4" />

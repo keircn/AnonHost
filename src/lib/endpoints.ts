@@ -228,7 +228,8 @@ export const endpoints: Endpoint[] = [
         {
           name: "public",
           type: "Boolean",
-          description: "Whether the shortlink should be public (default: false)",
+          description:
+            "Whether the shortlink should be public (default: false)",
         },
       ],
     },

@@ -58,8 +58,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const mediaUrl = `${baseUrl}/${media.id}`;
 
   const dimensions = {
-    width: typeof media.width === 'number' ? media.width : 1280,
-    height: typeof media.height === 'number' ? media.height : 720,
+    width: typeof media.width === "number" ? media.width : 1280,
+    height: typeof media.height === "number" ? media.height : 720,
   };
 
   if (media.type === "VIDEO") {

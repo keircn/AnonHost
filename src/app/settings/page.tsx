@@ -50,11 +50,13 @@ const slideAnimation = {
 };
 
 const downloadShareXConfig = (config: object, apiKeyName: string) => {
-  const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(config, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `anonhost-${apiKeyName.toLowerCase().replace(/\s+/g, '-')}.sxcu`;
+  a.download = `anonhost-${apiKeyName.toLowerCase().replace(/\s+/g, "-")}.sxcu`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -255,29 +257,31 @@ export default function SettingsPage() {
       RequestURL: `${baseUrl}/api/shortener`,
       Headers: {
         Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       Body: "JSON",
-      Data: "{\"originalUrl\":\"$input$\"}",
+      Data: '{"originalUrl":"$input$"}',
       URL: "{json:shortUrl}",
       DeletionURL: `${baseUrl}/api/shortener/{json:id}`,
-      ErrorMessage: "$json:error$"
+      ErrorMessage: "$json:error$",
     };
   }
 
   const handleShareXConfig = (apiKey: ApiKey) => {
-    const uploaderConfig = generateShareXConfig(apiKey.key, window.location.origin);
-    const shortenerConfig = generateShareXShortenerConfig(apiKey.key, window.location.origin);
-  
+    const uploaderConfig = generateShareXConfig(
+      apiKey.key,
+      window.location.origin,
+    );
+    const shortenerConfig = generateShareXShortenerConfig(
+      apiKey.key,
+      window.location.origin,
+    );
+
     return (
       <Dialog>
         <DialogTrigger asChild>
           <motion.div whileHover={{ scale: 1.1 }}>
-            <Button
-              variant="outline"
-              size="icon"
-              title="Export ShareX Config"
-            >
+            <Button variant="outline" size="icon" title="Export ShareX Config">
               <SiSharex className="h-4 w-4" />
             </Button>
           </motion.div>
@@ -297,21 +301,30 @@ export default function SettingsPage() {
               <Card className="p-4">
                 <CardHeader className="p-0">
                   <CardTitle className="text-base">Image Uploader</CardTitle>
-                  <CardDescription>Upload images directly to AnonHost</CardDescription>
+                  <CardDescription>
+                    Upload images directly to AnonHost
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 pt-4">
                   <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => downloadShareXConfig(uploaderConfig, `${apiKey.name}-uploader`)}
+                    <Button
+                      onClick={() =>
+                        downloadShareXConfig(
+                          uploaderConfig,
+                          `${apiKey.name}-uploader`,
+                        )
+                      }
                       className="gap-2"
                     >
                       <Download className="h-4 w-4" />
                       Download
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
-                        navigator.clipboard.writeText(JSON.stringify(uploaderConfig, null, 2));
+                        navigator.clipboard.writeText(
+                          JSON.stringify(uploaderConfig, null, 2),
+                        );
                         toast({
                           title: "Copied to clipboard",
                           description: "Image uploader configuration copied",
@@ -325,7 +338,7 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
-  
+
               <Card className="p-4">
                 <CardHeader className="p-0">
                   <CardTitle className="text-base">URL Shortener</CardTitle>
@@ -333,17 +346,24 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="p-0 pt-4">
                   <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => downloadShareXConfig(shortenerConfig, `${apiKey.name}-shortener`)}
+                    <Button
+                      onClick={() =>
+                        downloadShareXConfig(
+                          shortenerConfig,
+                          `${apiKey.name}-shortener`,
+                        )
+                      }
                       className="gap-2"
                     >
                       <Download className="h-4 w-4" />
                       Download
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
-                        navigator.clipboard.writeText(JSON.stringify(shortenerConfig, null, 2));
+                        navigator.clipboard.writeText(
+                          JSON.stringify(shortenerConfig, null, 2),
+                        );
                         toast({
                           title: "Copied to clipboard",
                           description: "URL shortener configuration copied",
@@ -359,9 +379,9 @@ export default function SettingsPage() {
               </Card>
             </div>
             <p className="text-sm">
-              <a 
-                href="https://getsharex.com/docs/custom-uploader#sxcu-file" 
-                target="_blank" 
+              <a
+                href="https://getsharex.com/docs/custom-uploader#sxcu-file"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
@@ -706,7 +726,9 @@ export default function SettingsPage() {
                                               <Copy className="h-4 w-4" />
                                             </Button>
                                           </motion.div>
-                                          <motion.div whileHover={{ scale: 1.1 }}>
+                                          <motion.div
+                                            whileHover={{ scale: 1.1 }}
+                                          >
                                             {handleShareXConfig(apiKey)}
                                           </motion.div>
                                           <Dialog>

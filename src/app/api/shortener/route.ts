@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     console.error("Error fetching shortlinks:", error);
     return NextResponse.json(
       { error: "Failed to fetch shortlinks" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     if (!originalUrl) {
       return NextResponse.json(
         { error: "Original URL is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     } catch {
       return NextResponse.json(
         { error: "Invalid URL format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     console.error("Error creating shortlink:", error);
     return NextResponse.json(
       { error: "Failed to create shortlink" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

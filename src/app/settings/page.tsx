@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Trash2, Download } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
+import { SiSharex } from "react-icons/si";
 import {
   Dialog,
   DialogContent,
@@ -588,7 +589,7 @@ export default function SettingsPage() {
                                               }
                                               title="Copy ShareX Config"
                                             >
-                                              <Download className="h-4 w-4" />
+                                              <SiSharex className="h-4 w-4" />
                                             </Button>
                                           </motion.div>
                                           <Dialog>

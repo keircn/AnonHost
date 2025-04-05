@@ -55,27 +55,42 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const description = `Uploaded by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`;
 
+  const openGraphBase = {
+    title: media.filename,
+    description,
+  };
+
+  const openGraphMedia = media.type === "VIDEO" 
+    ? {
+        ...openGraphBase,
+        type: "video.other",
+        videos: [{
+          url: media.url,
+          width: media.width,
+          height: media.height,
+          type: "video/mp4",
+        }],
+      }
+    : {
+        ...openGraphBase,
+        type: "website",
+        images: [{
+          url: media.url,
+          width: media.width,
+          height: media.height,
+          alt: media.filename,
+        }],
+      };
+
   return {
     title: media.filename,
     description,
-    openGraph: {
-      title: media.filename,
-      description,
-      images: [
-        {
-          url: media.url,
-          width: media.width || 1200,
-          height: media.height || 630,
-          alt: media.filename,
-        },
-      ],
-      type: media.type === "VIDEO" ? "video" : "website",
-    },
+    openGraph: openGraphMedia,
     twitter: {
       card: "summary_large_image",
       title: media.filename,
       description,
-      images: [media.url],
+      images: media.type === "VIDEO" ? undefined : [media.url],
     },
   };
 }
@@ -134,7 +149,7 @@ export default async function MediaPage(props: Props) {
             <MediaActions
               url={media.url}
               filename={media.filename}
-              type={media.type as "IMAGE" | "VIDEO"}
+              // type={media.type}
             />
           </div>
 

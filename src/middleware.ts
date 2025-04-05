@@ -2,10 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-// using ram because redis is for plebs
 const rateLimit = new Map()
 
-// im still not sure if ill keep these values but it works for now i think
 const RATE_LIMIT_WINDOW = 60 * 1000
 const MAX_REQUESTS_PER_WINDOW = {
   authenticated: 120,

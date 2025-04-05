@@ -402,10 +402,10 @@ export default function ShortenerPage() {
                             </div>
                           </div>
 
+                          {link.shortUrl ? (
                           <div className="grid gap-2 text-sm">
                             <div className="flex flex-col">
                               <span className="font-medium">Short URL:</span>
-                              {link.shortUrl ? (
                                 <a
                                   href={link.shortUrl}
                                   target="_blank"
@@ -414,11 +414,6 @@ export default function ShortenerPage() {
                                 >
                                   {link.shortUrl}
                                 </a>
-                              ) : (
-                                <span className="text-muted-foreground">
-                                  Unable to fetch short URL
-                                </span>
-                              )}
                             </div>
                             <div className="flex flex-col">
                               <span className="font-medium">Original URL:</span>
@@ -427,6 +422,9 @@ export default function ShortenerPage() {
                               </span>
                             </div>
                           </div>
+                          ) : (
+                            <></>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

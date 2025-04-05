@@ -405,14 +405,20 @@ export default function ShortenerPage() {
                           <div className="grid gap-2 text-sm">
                             <div className="flex flex-col">
                               <span className="font-medium">Short URL:</span>
-                              <a
-                                href={link.shortUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline"
-                              >
-                                {link.shortUrl}
-                              </a>
+                              {link.shortUrl ? (
+                                <a
+                                  href={link.shortUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  {link.shortUrl}
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  Unable to fetch short URL
+                                </span>
+                              )}
                             </div>
                             <div className="flex flex-col">
                               <span className="font-medium">Original URL:</span>

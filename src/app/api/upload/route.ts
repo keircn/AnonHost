@@ -15,21 +15,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: bigint;
+  let userId: string;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = BigInt(user.id);
+    userId = user.id.toString();
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = BigInt(session!.user.id);
+    userId = session!.user.id.toString();
   }
 
   try {

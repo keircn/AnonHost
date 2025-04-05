@@ -40,7 +40,8 @@ interface User {
   admin: boolean;
   createdAt: string;
   _count: {
-    images: number;
+    Media: number;
+    Shortlink: number;
     apiKeys: number;
   };
   settings?: {
@@ -197,7 +198,7 @@ export default function AdminPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{user._count.images}</TableCell>
+                      <TableCell>{user._count.Media}</TableCell>
                       <TableCell>{user._count.apiKeys}</TableCell>
                       <TableCell>
                         {user.settings?.customDomain || "—"}
@@ -303,7 +304,7 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">
-                  {users.reduce((acc, user) => acc + user._count.images, 0)}
+                  {users.reduce((acc, user) => acc + user._count.Media, 0)}
                 </div>
               </CardContent>
             </Card>

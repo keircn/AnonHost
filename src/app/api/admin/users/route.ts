@@ -14,7 +14,8 @@ export async function GET() {
     include: {
       _count: {
         select: {
-          images: true,
+          Media: true,
+          Shortlink: true,
           apiKeys: true,
         },
       },
@@ -26,22 +27,4 @@ export async function GET() {
   });
 
   return NextResponse.json(users);
-}
-
-export async function PUT(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.admin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  }
-
-  const data = await req.json();
-  const { id, premium, admin } = data;
-
-  const user = await prisma.user.update({
-    where: { id },
-    data: { premium, admin },
-  });
-
-  return NextResponse.json(user);
 }

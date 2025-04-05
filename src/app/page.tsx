@@ -53,6 +53,26 @@ const features = [
   },
 ];
 
+const TransFlag = () => (
+  <motion.div
+    className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer"
+    animate={{ rotate: 360 }}
+    transition={{
+      duration: 4,
+      repeat: Infinity,
+      ease: "linear"
+    }}
+  >
+    <div className="w-full h-full rounded-full overflow-hidden">
+      <div className="w-full h-[20%] bg-[#55CDFC]" />
+      <div className="w-full h-[20%] bg-[#F7A8B8]" />
+      <div className="w-full h-[20%] bg-white" />
+      <div className="w-full h-[20%] bg-[#F7A8B8]" />
+      <div className="w-full h-[20%] bg-[#55CDFC]" />
+    </div>
+  </motion.div>
+);
+
 export default function Home() {
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
@@ -80,6 +100,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
+      <TransFlag />
         <section className="w-full pt-12 sm:pt-16 md:pt-24 lg:pt-32 xl:pt-40 2xl:pt-48 overflow-hidden relative min-h-[80vh] md:min-h-screen lg:min-h-1/2">
           <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">
             <div className="grid gap-6 lg:gap-12 items-center max-w-8xl mx-auto">

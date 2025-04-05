@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXTAUTH_URL;
+  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       id: shortlink.id,
       originalUrl: shortlink.originalUrl,
       title: shortlink.title,
-      shortUrl: `${baseUrl}/s/${shortlink.id}`,
+      shortUrl: new URL(`/s/${shortlink.id}`, baseUrl).toString(),
       public: shortlink.public,
       createdAt: shortlink.createdAt,
       expireAt: shortlink.expireAt,

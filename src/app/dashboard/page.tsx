@@ -195,7 +195,7 @@ export default function DashboardPage() {
                     className="flex justify-between items-center"
                     variants={fadeIn}
                   >
-                    <h2 className="text-xl font-semibold">Your Media</h2>
+                    <h2 className="text-xl font-semibold">Your Files</h2>
                     <Link href="/upload">
                       <Button>
                         <Upload className="mr-2 h-4 w-4" />
@@ -206,7 +206,7 @@ export default function DashboardPage() {
 
                   {isLoading ? (
                     <motion.div className="text-center py-8" variants={fadeIn}>
-                      Loading your media...
+                      Loading your files...
                     </motion.div>
                   ) : mediaItems.length === 0 ? (
                     <motion.div variants={fadeIn}>
@@ -214,12 +214,12 @@ export default function DashboardPage() {
                         <CardContent className="flex flex-col items-center justify-center py-12">
                           <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
                           <p className="text-muted-foreground mb-4">
-                            You haven&apos;t uploaded any media yet
+                            You haven&apos;t uploaded any files yet
                           </p>
                           <Link href="/upload">
                             <Button>
                               <Upload className="mr-2 h-4 w-4" />
-                              Upload Your First Media
+                              Upload Your First File
                             </Button>
                           </Link>
                         </CardContent>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                     const statsData = [
                       {
                         title: "Total Uploads",
-                        description: "Number of images you've uploaded",
+                        description: "Number of files you've uploaded",
                         value: stats.totalUploads,
                       },
                       {

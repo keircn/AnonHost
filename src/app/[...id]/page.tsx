@@ -54,72 +54,81 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   const description = `Uploaded by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`;
-
-  const openGraphBase = {
-    title: media.filename || "Untitled",
-    description,
-  };
+  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
+  const mediaUrl = `${baseUrl}/${media.id}`;
 
   const dimensions = {
     width: typeof media.width === 'number' ? media.width : 1280,
     height: typeof media.height === 'number' ? media.height : 720,
   };
 
-  const openGraphMedia = media.type === "VIDEO" 
-    ? {
-        ...openGraphBase,
+  if (media.type === "VIDEO") {
+    return {
+      title: media.filename || "Untitled",
+      description,
+      openGraph: {
+        title: media.filename || "Untitled",
+        description,
         type: "video.other",
-        videos: [{
-          url: media.url || "",
-          width: dimensions.width,
-          height: dimensions.height,
-          type: "video/mp4",
-        }],
-        images: [{
-          url: media.url ? `${media.url}?thumb=1` : "",
-          width: dimensions.width,
-          height: dimensions.height,
-          alt: media.filename || "Video preview",
-          type: 'image/jpeg',
-        }],
-      }
-    : {
-        ...openGraphBase,
-        type: "website",
-        images: [{
-          url: media.url || "",
-          width: dimensions.width,
-          height: dimensions.height,
-          alt: media.filename || "Image",
-        }],
-      };
-
-  const twitterCard = media.type === "VIDEO" ? "player" : "summary_large_image";
-  const twitterImages = media.type === "VIDEO" 
-    ? [media.url ? `${media.url}?thumb=1` : ""] 
-    : [media.url || ""];
+        url: mediaUrl,
+        siteName: "AnonHost",
+        videos: [
+          {
+            url: media.url,
+            width: dimensions.width,
+            height: dimensions.height,
+            type: "video/mp4",
+          },
+        ],
+        images: [
+          {
+            url: `${media.url}?thumb=1`,
+            width: dimensions.width,
+            height: dimensions.height,
+            alt: media.filename || "Video thumbnail",
+          },
+        ],
+      },
+      twitter: {
+        card: "player",
+        title: media.filename || "Untitled",
+        description,
+        images: [`${media.url}?thumb=1`],
+        players: [
+          {
+            playerUrl: media.url,
+            streamUrl: media.url,
+            width: dimensions.width,
+            height: dimensions.height,
+          },
+        ],
+      },
+    };
+  }
 
   return {
     title: media.filename || "Untitled",
     description,
     openGraph: {
-      ...openGraphMedia,
-    },
-    twitter: {
-      card: twitterCard,
       title: media.filename || "Untitled",
       description,
-      images: twitterImages,
-      ...(media.type === "VIDEO" && media.url && {
-        players: [{
-          player: {
-            url: media.url,
-            width: dimensions.width,
-            height: dimensions.height,
-            stream: true,
-          }
-        }]
-      })
+      type: "website",
+      url: mediaUrl,
+      siteName: "AnonHost",
+      images: [
+        {
+          url: media.url,
+          width: dimensions.width,
+          height: dimensions.height,
+          alt: media.filename || "Image",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: media.filename || "Untitled",
+      description,
+      images: [media.url],
     },
   };
 }

@@ -240,14 +240,35 @@ export default function SettingsPage() {
       Body: "MultipartFormData",
       FileFormName: "file",
       URL: "{json:url}",
-      ThumbnailURL: "$json:url$",
-      DeletionURL: "",
+      ThumbnailURL: "{json:url}",
+      DeletionURL: `${baseUrl}/api/media/{json:id}`,
       ErrorMessage: "$json:error$",
     };
   }
 
+  function generateShareXShortenerConfig(apiKey: string, baseUrl: string) {
+    return {
+      Version: "17.0.0",
+      Name: "AnonHost Shortener",
+      DestinationType: "URLShortener",
+      RequestMethod: "POST",
+      RequestURL: `${baseUrl}/api/shortener`,
+      Headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      Body: "JSON",
+      Data: "{\"originalUrl\":\"$input$\"}",
+      URL: "{json:shortUrl}",
+      DeletionURL: `${baseUrl}/api/shortener/{json:id}`,
+      ErrorMessage: "$json:error$"
+    };
+  }
+
   const handleShareXConfig = (apiKey: ApiKey) => {
-    const config = generateShareXConfig(apiKey.key, window.location.origin);
+    const uploaderConfig = generateShareXConfig(apiKey.key, window.location.origin);
+    const shortenerConfig = generateShareXShortenerConfig(apiKey.key, window.location.origin);
+  
     return (
       <Dialog>
         <DialogTrigger asChild>
@@ -265,35 +286,77 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle>Export ShareX Configuration</DialogTitle>
             <DialogDescription>
-              Choose how you want to use the ShareX configuration file.
+              Choose which ShareX configuration you want to use.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
             <p className="text-sm text-muted-foreground">
-              To use this configuration in ShareX, you need to import it. You can either download the config file or copy it to your clipboard.
+              Select the type of configuration you want to export for ShareX.
             </p>
-            <div className="flex flex-col gap-2">
-              <Button 
-                onClick={() => downloadShareXConfig(config, apiKey.name)}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Download Config File
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-                  toast({
-                    title: "Copied to clipboard",
-                    description: "ShareX configuration copied to clipboard",
-                  });
-                }}
-                className="gap-2"
-              >
-                <Copy className="h-4 w-4" />
-                Copy to Clipboard
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <CardHeader className="p-0">
+                  <CardTitle className="text-base">Image Uploader</CardTitle>
+                  <CardDescription>Upload images directly to AnonHost</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0 pt-4">
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={() => downloadShareXConfig(uploaderConfig, `${apiKey.name}-uploader`)}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        navigator.clipboard.writeText(JSON.stringify(uploaderConfig, null, 2));
+                        toast({
+                          title: "Copied to clipboard",
+                          description: "Image uploader configuration copied",
+                        });
+                      }}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+  
+              <Card className="p-4">
+                <CardHeader className="p-0">
+                  <CardTitle className="text-base">URL Shortener</CardTitle>
+                  <CardDescription>Shorten URLs with AnonHost</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0 pt-4">
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={() => downloadShareXConfig(shortenerConfig, `${apiKey.name}-shortener`)}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        navigator.clipboard.writeText(JSON.stringify(shortenerConfig, null, 2));
+                        toast({
+                          title: "Copied to clipboard",
+                          description: "URL shortener configuration copied",
+                        });
+                      }}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
             <p className="text-sm">
               <a 

@@ -17,21 +17,21 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: bigint;
+  let userId: string;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = BigInt(user.id);
+    userId = user.id.toString();
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = BigInt(session!.user.id);
+    userId = session!.user.id.toString();
   }
 
   try {
@@ -48,7 +48,7 @@ export async function GET(
       );
     }
 
-    if (shortlink.userId !== userId && !session?.user.admin) {
+    if (BigInt(shortlink.userId) !== BigInt(userId) && !session?.user.admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -115,7 +115,7 @@ export async function PUT(
       );
     }
 
-    if (shortlink.userId !== userId && !session?.user.admin) {
+    if (BigInt(shortlink.userId) !== userId && !session?.user.admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -213,7 +213,7 @@ export async function DELETE(
       );
     }
 
-    if (shortlink.userId !== userId && !session?.user.admin) {
+    if (BigInt(shortlink.userId) !== userId && !session?.user.admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

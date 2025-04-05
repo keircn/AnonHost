@@ -46,21 +46,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: number;
+  let userId: string;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = Number(user.id);
+    userId = user.id.toString();
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = session!.user.id;
+    userId = session!.user.id.toString();
   }
 
   const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
@@ -78,11 +78,11 @@ export async function GET(req: NextRequest) {
   const [total, mediaItems, storageStats, apiRequests, user, settings] =
     await Promise.all([
       prisma.media.count({
-        where: { userId },
+        where: { userId: userId.toString() },
       }),
 
       prisma.media.findMany({
-        where: { userId },
+        where: { userId: userId.toString() },
         orderBy: {
           [sort === "filename"
             ? "filename"
@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
       }),
 
       prisma.media.aggregate({
-        where: { userId },
+        where: { userId: userId.toString() },
         _sum: {
           size: true,
         },
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
 
       prisma.apiKey.count({
         where: {
-          userId,
+          userId: userId.toString(),
           lastUsed: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
@@ -111,17 +111,17 @@ export async function GET(req: NextRequest) {
       }),
 
       prisma.user.findUnique({
-        where: { id: userId },
+        where: { id: userId.toString() },
         select: { premium: true, admin: true },
       }),
 
       prisma.settings.findUnique({
-        where: { userId },
+        where: { userId: userId.toString() },
         select: { customDomain: true },
       }),
     ]);
 
-  const storageUsed = storageStats._sum.size || 0;
+  const storageUsed = (storageStats._sum?.size ?? 0);
   const storageLimit = user?.admin
     ? Number.MAX_SAFE_INTEGER
     : user?.premium
@@ -165,21 +165,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: bigint;
+  let userId: string;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = BigInt(user.id);
+    userId = user.id.toString();
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = BigInt(session!.user.id);
+    userId = session!.user.id.toString();
   }
 
   try {

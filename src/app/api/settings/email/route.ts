@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Add type for login OTPs
     await prisma.OTP.create({
       data: {
         email,
@@ -61,7 +60,7 @@ export async function PUT(req: NextRequest) {
       where: { email },
     });
 
-    if (existingUser && existingUser.id !== BigInt(session.user.id)) {
+    if (existingUser && existingUser.id.toString() !== session.user.id.toString()) {
       return NextResponse.json(
         { error: "Email already in use" },
         { status: 400 },

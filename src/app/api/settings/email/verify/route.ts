@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.$transaction([
       prisma.user.update({
-        where: { id: BigInt(session.user.id) },
+        where: { id: session.user.id.toString() },
         data: {
           email: otpRecord.email,
           emailVerified: new Date(),

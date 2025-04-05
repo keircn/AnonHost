@@ -297,7 +297,7 @@ export default function SettingsPage() {
             </div>
             <p className="text-sm">
               <a 
-                href="https://getsharex.com/docs/custom-uploader" 
+                href="https://getsharex.com/docs/custom-uploader#sxcu-file" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"

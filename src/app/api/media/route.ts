@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
-  const storageUsed = (storageStats._sum?.size ?? 0);
+  const storageUsed = storageStats._sum?.size ?? 0;
   const storageLimit = user?.admin
     ? Number.MAX_SAFE_INTEGER
     : user?.premium

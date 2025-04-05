@@ -3,30 +3,31 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/auth";
+import type { Session } from "next-auth";
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as Session | null;
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: bigint;
+  let userId: string;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = BigInt(user.id);
+    userId = user.id;
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = BigInt(session!.user.id);
+    userId = session!.user.id;
   }
 
   try {
@@ -61,21 +62,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let userId: bigint;
+  let userId: string;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    userId = BigInt(user.id);
+    userId = user.id;
 
     await prisma.apiKey.update({
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
   } else {
-    userId = BigInt(session!.user.id);
+    userId = session!.user.id;
   }
 
   try {

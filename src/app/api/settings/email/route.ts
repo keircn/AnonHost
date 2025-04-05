@@ -60,7 +60,10 @@ export async function PUT(req: NextRequest) {
       where: { email },
     });
 
-    if (existingUser && existingUser.id.toString() !== session.user.id.toString()) {
+    if (
+      existingUser &&
+      existingUser.id.toString() !== session.user.id.toString()
+    ) {
       return NextResponse.json(
         { error: "Email already in use" },
         { status: 400 },

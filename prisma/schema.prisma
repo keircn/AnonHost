@@ -113,6 +113,7 @@ model OTP {
 
 model Shortlink {
   id          String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
+  uid         Int       @default(autoincrement()) @unique
   originalUrl String    @db.Text
   title       String?
   userId      String

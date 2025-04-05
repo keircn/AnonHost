@@ -40,7 +40,10 @@ export async function PUT(request: Request) {
     const { id, premium, admin } = await request.json();
 
     if (!id) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 },
+      );
     }
 
     const updatedUser = await prisma.user.update({
@@ -56,7 +59,7 @@ export async function PUT(request: Request) {
     console.error("Failed to update user:", error);
     return NextResponse.json(
       { error: "Failed to update user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

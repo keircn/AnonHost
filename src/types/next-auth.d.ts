@@ -4,10 +4,10 @@ import { AdapterUser } from "@auth/core/adapters";
 declare module "next-auth" {
   interface Session {
     user: {
-      id: number;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
+      id: string;
+      email: string | null;
+      name: string | null;
+      image: string | null;
       admin: boolean;
       premium: boolean;
     };

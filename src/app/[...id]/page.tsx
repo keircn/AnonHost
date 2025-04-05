@@ -70,13 +70,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         ...openGraphBase,
         type: "video.other",
         videos: [{
-          url: media.url,
+          url: media.url || "",
           width: dimensions.width,
           height: dimensions.height,
           type: "video/mp4",
         }],
         images: [{
-          url: `${media.url}?thumb=1`,
+          url: media.url ? `${media.url}?thumb=1` : "",
           width: dimensions.width,
           height: dimensions.height,
           alt: media.filename || "Video preview",
@@ -87,12 +87,17 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         ...openGraphBase,
         type: "website",
         images: [{
-          url: media.url,
+          url: media.url || "",
           width: dimensions.width,
           height: dimensions.height,
           alt: media.filename || "Image",
         }],
       };
+
+  const twitterCard = media.type === "VIDEO" ? "player" : "summary_large_image";
+  const twitterImages = media.type === "VIDEO" 
+    ? [media.url ? `${media.url}?thumb=1` : ""] 
+    : [media.url || ""];
 
   return {
     title: media.filename || "Untitled",
@@ -101,19 +106,19 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       ...openGraphMedia,
     },
     twitter: {
-      card: media.type === "VIDEO" ? "player" : "summary_large_image",
+      card: twitterCard,
       title: media.filename || "Untitled",
       description,
-      images: media.type === "VIDEO" ? [`${media.url}?thumb=1`] : [media.url],
-      ...(media.type === "VIDEO" && {
-        players: {
+      images: twitterImages,
+      ...(media.type === "VIDEO" && media.url && {
+        players: [{
           player: {
             url: media.url,
             width: dimensions.width,
             height: dimensions.height,
             stream: true,
           }
-        }
+        }]
       })
     },
   };

@@ -18,14 +18,8 @@ export const STORAGE_LIMITS = {
 };
 
 export const FILE_SIZE_LIMITS = {
-  PREMIUM: {
-    IMAGE: 100 * 1024 * 1024,
-    VIDEO: 500 * 1024 * 1024,
-  },
-  FREE: {
-    IMAGE: 50 * 1024 * 1024,
-    VIDEO: 200 * 1024 * 1024,
-  },
+  PREMIUM: 500 * 1024 * 1024,
+  FREE: 100 * 1024 * 1024,
 };
 
 interface StorageStats {

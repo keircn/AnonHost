@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { uploadFile } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
+import { FILE_SIZE_LIMITS } from "@/lib/upload";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   let userId: string;
+  let isPremium = false;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
@@ -23,6 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
     userId = user.id.toString();
+    isPremium = user.premium;
 
     await prisma.apiKey.update({
       where: { key: apiKey },
@@ -30,6 +33,7 @@ export async function POST(req: NextRequest) {
     });
   } else {
     userId = session!.user.id.toString();
+    isPremium = session!.user.premium || false;
   }
 
   try {
@@ -39,6 +43,39 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "video/mp4",
+      "video/webm",
+      "video/ogg",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid file type. Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, OGG) are allowed",
+        },
+        { status: 400 },
+      );
+    }
+
+    const sizeLimit = isPremium
+      ? FILE_SIZE_LIMITS.PREMIUM
+      : FILE_SIZE_LIMITS.FREE;
+    if (file.size > sizeLimit) {
+      const limitInMb = sizeLimit / (1024 * 1024);
+      return NextResponse.json(
+        {
+          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users`,
+        },
+        { status: 400 },
+      );
     }
 
     const uploadResult = await uploadFile(file, userId.toString());

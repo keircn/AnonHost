@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, ImageIcon, X, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FILE_SIZE_LIMITS } from "@/lib/upload";
 import { FileSettingsModal } from "@/components/file-settings-modal";
 import type { FileSettings } from "@/types/file-settings";
 
@@ -52,7 +51,7 @@ const dropZoneVariants = {
 };
 
 export default function UploadPage() {
-  const { data: session, status } = useSession();
+  const status = useSession();
   const router = useRouter();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
@@ -65,7 +64,7 @@ export default function UploadPage() {
     null,
   );
 
-  if (status === "unauthenticated") {
+  if (status.status === "unauthenticated") {
     redirect("/");
   }
 
@@ -81,15 +80,17 @@ export default function UploadPage() {
 
   const validateFile = useCallback(
     (file: File): boolean => {
-      const allowedTypes = {
-        image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
-        video: ["video/mp4", "video/webm", "video/ogg"],
-      };
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
+      ];
 
-      if (
-        !allowedTypes.image.includes(file.type) &&
-        !allowedTypes.video.includes(file.type)
-      ) {
+      if (!allowedTypes.includes(file.type)) {
         toast({
           title: "Invalid file type",
           description:
@@ -99,26 +100,9 @@ export default function UploadPage() {
         return false;
       }
 
-      const isVideo = file.type.startsWith("video/");
-      const sizeLimit = session?.user?.premium
-        ? FILE_SIZE_LIMITS.PREMIUM[isVideo ? "VIDEO" : "IMAGE"]
-        : FILE_SIZE_LIMITS.FREE[isVideo ? "VIDEO" : "IMAGE"];
-
-      if (file.size > sizeLimit) {
-        const limitInMb = sizeLimit / (1024 * 1024);
-        toast({
-          title: "File too large",
-          description: `Maximum ${isVideo ? "video" : "image"} size is ${limitInMb}MB for ${
-            session?.user?.premium ? "premium" : "free"
-          } users`,
-          variant: "destructive",
-        });
-        return false;
-      }
-
       return true;
     },
-    [session, toast],
+    [toast],
   );
 
   const onDrop = useCallback(

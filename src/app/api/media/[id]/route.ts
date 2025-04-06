@@ -26,15 +26,13 @@ export async function DELETE(
   }
 
   const userId = apiKey
-    ? BigInt(
-        (
-          await prisma.apiKey.findUnique({
-            where: { key: apiKey },
-            select: { userId: true },
-          })
-        )?.userId ?? 0,
-      )
-    : BigInt(session!.user.id);
+    ? (
+        await prisma.apiKey.findUnique({
+          where: { key: apiKey },
+          select: { userId: true },
+        })
+      )?.userId ?? ''
+    : session!.user.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
@@ -65,7 +63,7 @@ export async function DELETE(
       ),
       prisma.media.delete({ where: { id } }),
       prisma.user.update({
-        where: { id: userId },
+        where: { id: userId.toString() },
         data: { storageUsed: { decrement: media.size } },
       }),
     ]);

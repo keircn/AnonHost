@@ -39,6 +39,7 @@
     "next-auth": "latest",
     "next-themes": "latest",
     "nodemailer": "latest",
+    "p-limit": "^6.2.0",
     "prisma": "latest",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

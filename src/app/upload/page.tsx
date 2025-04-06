@@ -12,6 +12,8 @@ import { Upload, ImageIcon, X, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/file-settings-modal";
 import type { FileSettings } from "@/types/file-settings";
+import { FILE_SIZE_LIMITS } from "@/lib/upload";
+import pLimit from "p-limit";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -48,6 +50,19 @@ const dropZoneVariants = {
     borderColor: "rgba(var(--primary),1)",
     backgroundColor: "rgba(var(--primary),0.1)",
   },
+};
+
+const formatFileSize = (bytes: number): string => {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
+  
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+  
+  return `${size.toFixed(1)} ${units[unitIndex]}`;
 };
 
 export default function UploadPage() {
@@ -100,9 +115,23 @@ export default function UploadPage() {
         return false;
       }
 
+      const sizeLimit = status.data?.user.premium 
+        ? FILE_SIZE_LIMITS.PREMIUM 
+        : FILE_SIZE_LIMITS.FREE;
+      
+      if (file.size > sizeLimit) {
+        const limitInMb = sizeLimit / (1024 * 1024);
+        toast({
+          title: "File too large",
+          description: `Maximum file size is ${limitInMb}MB for ${status.data?.user.premium ? "premium" : "free"} users`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
       return true;
     },
-    [toast],
+    [toast, status.data?.user.premium],
   );
 
   const onDrop = useCallback(
@@ -112,10 +141,10 @@ export default function UploadPage() {
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
-          .filter(
-            (file) =>
-              file.type.startsWith("image/") || file.type.startsWith("video/"),
-          )
+          .filter((file) => {
+        console.log(file.type);
+        return file.type.startsWith("image/") || file.type.startsWith("video/");
+          })
           .filter(validateFile);
 
         if (newFiles.length === 0) {
@@ -219,43 +248,83 @@ export default function UploadPage() {
     }
 
     setIsUploading(true);
+    console.log(`Starting upload of ${files.length} files...`);
 
     try {
-      const uploadPromises = files.map(async (file, index) => {
-        const settings = fileSettings[index] || { public: false };
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("public", String(settings.public));
+      const limit = pLimit(3);
+      let completedUploads = 0;
+      const startTime = Date.now();
+      
+      const uploadPromises = files.map((file, index) => 
+        limit(async () => {
+          console.log(`Starting upload for ${file.name} (${formatFileSize(file.size)})`);
+          const uploadStartTime = Date.now();
 
-        if (settings.domain && settings.domain !== "keiran.cc") {
-          formData.append("domain", settings.domain);
-        }
+          const settings = fileSettings[index] || { public: false };
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("public", String(settings.public));
 
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
+          if (settings.domain && settings.domain !== "keiran.cc") {
+            formData.append("domain", settings.domain);
+          }
+
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            console.error(`Failed to upload ${file.name}:`, error);
+            throw new Error(error.error || `Failed to upload ${file.name}`);
+          }
+
+          const result = await response.json();
+          completedUploads++;
+          const uploadDuration = (Date.now() - uploadStartTime) / 1000;
+          const uploadSpeed = (file.size / uploadDuration / 1024 / 1024).toFixed(2);
+          
+          console.log(`✅ Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`);
+          console.log(`Progress: ${completedUploads}/${files.length} files completed`);
+          
+          return result;
+        })
+      );
+
+      const results = await Promise.allSettled(uploadPromises);
+      const totalDuration = (Date.now() - startTime) / 1000;
+      
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+      const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+      
+      console.log('\nUpload Summary:');
+      console.log(`✅ Successfully uploaded: ${successful} files`);
+      console.log(`❌ Failed uploads: ${failed} files`);
+      console.log(`📦 Total size: ${formatFileSize(totalSize)}`);
+      console.log(`⏱️ Total duration: ${totalDuration.toFixed(1)}s`);
+      console.log(`📈 Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`);
+
+      if (successful > 0) {
+        toast({
+          title: "Upload complete",
+          description: `Successfully uploaded ${successful} file${successful > 1 ? 's' : ''}${failed > 0 ? `. ${failed} file${failed > 1 ? 's' : ''} failed.` : ''}`,
+          variant: failed ? "destructive" : "default"
         });
-
-        if (!response.ok) {
-          throw new Error(`Failed to upload ${file.name}`);
-        }
-
-        return await response.json();
-      });
-
-      await Promise.all(uploadPromises);
-
-      toast({
-        title: "Upload successful",
-        description: `${files.length} file${files.length > 1 ? "s" : ""} uploaded successfully`,
-      });
-
-      router.push("/dashboard");
+        router.push("/dashboard");
+      } else {
+        toast({
+          title: "Upload failed",
+          description: "All files failed to upload",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Upload failed:", error);
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your images",
+        description: "There was an error uploading your files",
         variant: "destructive",
       });
     } finally {

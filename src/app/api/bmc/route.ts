@@ -62,7 +62,6 @@ export async function POST(req: NextRequest) {
     try {
         const existingTransaction = await prisma.transaction.findFirst({
             where: { 
-                transactionId,
                 processed: true
             }
         });

@@ -66,7 +66,7 @@ const features = [
   },
   {
     title: "Community Driven",
-    description: "Funded by donations and maintained by passionate developers.",
+    description: "Funded by donations and maintained by a passionate developer.",
     icon: <Heart className="h-5 w-5 text-primary" />,
   },
 ];

@@ -11,6 +11,9 @@
     "prisma-dev": "prisma migrate dev --name 'auto' && prisma generate",
     "prisma-deploy": "prisma migrate deploy"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@auth/core": "latest",
     "@auth/prisma-adapter": "latest",

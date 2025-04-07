@@ -69,7 +69,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     where: { id: mediaId },
     include: {
       user: {
-        select: { 
+        select: {
+          id: true,
           name: true,
           premium: true
         },
@@ -85,13 +86,12 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   const badges = getUserBadges(media.user);
-  const badgeString = badges.length 
-    ? `\n${badges.map(b => `${b.emoji} ${b.label}`).join(" • ")}` 
+  const badgeString = badges.length
+    ? `\n${badges.map(b => `${b.emoji} ${b.label}`).join(" • ")}`
     : "";
 
-  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
-    media.user?.name || "Anonymous"
-  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badgeString}`;
+  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${media.user?.name || "Anonymous"
+    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badgeString}`;
 
   const premiumTheme = media.user?.premium ? {
     themeColor: badges[0]?.color || "#a855f7",
@@ -197,9 +197,10 @@ export default async function MediaPage(props: Props) {
     where: { id: mediaId },
     include: {
       user: {
-        select: { 
+        select: {
+          id: true,
           name: true,
-          premium: true 
+          premium: true
         },
       },
     },
@@ -241,6 +242,11 @@ export default async function MediaPage(props: Props) {
               {media.user?.premium && (
                 <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
                   Premium
+                </span>
+              )}
+              {media.user?.id && betaMembers.includes(media.user.id) && (
+                <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full">
+                  Beta
                 </span>
               )}
             </div>

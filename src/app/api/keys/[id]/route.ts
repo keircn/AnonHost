@@ -15,7 +15,7 @@ export async function DELETE(
   }
 
   const userId = session.user.id;
-  const id = parseInt(params.id, 10); // Convert string ID to number
+  const { id } = params;
 
   const apiKey = await prisma.apiKey.findUnique({
     where: { id },

@@ -13,21 +13,22 @@ enum MediaType {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  uid           Int       @default(autoincrement()) @unique
+  id            String        @id @default(uuid())
+  uid           Int           @default(autoincrement()) @unique
   name          String?
-  email         String?   @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
-  premium       Boolean   @default(false)
-  admin         Boolean   @default(false)
+  premium       Boolean       @default(false)
+  transactions  Transaction[]
+  admin         Boolean       @default(false)
   accounts      Account[]
   sessions      Session[]
   apiKeys       ApiKey[]
   settings      Settings?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  storageUsed   Int       @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  storageUsed   Int           @default(0)
   OTP           OTP[]
   Media         Media[]
   Shortlink     Shortlink[]
@@ -124,4 +125,18 @@ model Shortlink {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([originalUrl])
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  transactionId String   @unique
+  userId        String
+  amount        Float
+  currency      String
+  type          String
+  createdAt     DateTime @default(now())
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }

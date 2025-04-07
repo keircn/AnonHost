@@ -64,6 +64,10 @@ export default function SettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [isChangingEmail, setIsChangingEmail] = useState(false);
 
+  const [transactionId, setTransactionId] = useState("");
+  const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
+  const [isCheckingSupport, setIsCheckingSupport] = useState(false);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       redirect("/");
@@ -105,6 +109,78 @@ export default function SettingsPage() {
       fetchData();
     }
   }, [status, toast]);
+
+  const handleCheckBmcSupport = async () => {
+    setIsCheckingSupport(true);
+    try {
+      const res = await fetch("/api/bmc/check-support", {
+        method: "GET",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to verify support");
+      }
+
+      if (data.supported) {
+        toast({
+          title: "Premium Activated",
+          description: "Thank you for your support! Your account has been upgraded to Premium.",
+        });
+      } else {
+        toast({
+          title: "No Support Found",
+          description: "We couldn't find a qualifying donation. You can still manually enter a transaction ID or make a new donation.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Verification Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingSupport(false);
+    }
+  };
+
+  const handleUpgradePremium = async () => {
+    if (!transactionId.trim()) {
+      toast({
+        title: "Transaction ID required",
+        description:
+          "Please enter your BuyMeACoffee Transaction ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsProcessingTransaction(true);
+    try {
+      const res = await fetch("/api/bmc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Upgrade failed");
+      }
+      toast({
+        title: "Premium Activated",
+        description: "Your account has been upgraded to Premium.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upgrade Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingTransaction(false);
+      setTransactionId("");
+    }
+  };
 
   const handleCreateApiKey = async () => {
     if (!newKeyName.trim()) {
@@ -527,6 +603,51 @@ export default function SettingsPage() {
                             })
                           }
                         />
+                      </motion.div>
+
+                      <motion.div className="space-y-2" variants={fadeIn}>
+                        <Label htmlFor="transactionId">
+                          BuyMeACoffee Premium Upgrade
+                        </Label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Support the project with $5 USD via BuyMeACoffee to get Premium access.
+                        </p>
+
+                        <div className="flex flex-col gap-3">
+                          <Button
+                            variant="default"
+                            onClick={handleCheckBmcSupport}
+                            disabled={isCheckingSupport}
+                            className="w-full"
+                          >
+                            {isCheckingSupport ? "Checking..." : "Check for BuyMeACoffee Support"}
+                          </Button>
+
+                          <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                              <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                              <span className="bg-background px-2 text-muted-foreground">Or enter transaction ID manually</span>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Input
+                              id="transactionId"
+                              placeholder="Enter Transaction ID"
+                              value={transactionId}
+                              onChange={(e) => setTransactionId(e.target.value)}
+                            />
+                            <Button
+                              variant="outline"
+                              onClick={handleUpgradePremium}
+                              disabled={isProcessingTransaction}
+                            >
+                              {isProcessingTransaction ? "Processing..." : "Upgrade"}
+                            </Button>
+                          </div>
+                        </div>
                       </motion.div>
                     </motion.div>
 

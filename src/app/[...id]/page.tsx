@@ -4,6 +4,7 @@ import Image from "next/image";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { betaMembers } from "@/lib/beta";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -24,6 +25,32 @@ function formatDate(date: Date): string {
     timeStyle: "short",
     hour12: false,
   }).format(date);
+}
+
+function getUserBadges(user: { id?: string; premium?: boolean } | null) {
+  const badges: Array<{
+    emoji: string;
+    label: string;
+    color?: string;
+  }> = [];
+
+  if (user?.premium) {
+    badges.push({
+      emoji: "💎",
+      label: "Premium",
+      color: "#a855f7",
+    });
+  }
+
+  if (user?.id && betaMembers.includes(user.id)) {
+    badges.push({
+      emoji: "🧪",
+      label: "Beta",
+      color: "#3b82f6",
+    });
+  }
+
+  return badges;
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -57,18 +84,24 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     };
   }
 
-  const description = media.user?.premium 
-    ? `⭐ Premium upload by ${media.user?.name || "Anonymous"}\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}`
-    : `Uploaded by ${media.user?.name || "Anonymous"}\n${formatBytes(media.size)}\n${formatDate(media.createdAt)}`;
+  const badges = getUserBadges(media.user);
+  const badgeString = badges.length 
+    ? `\n${badges.map(b => `${b.emoji} ${b.label}`).join(" • ")}` 
+    : "";
 
-  const baseUrl = process.env.NEXTAUTH_URL || "https://anon.love";
-  const mediaUrl = `${baseUrl}/${media.id}`;
+  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
+    media.user?.name || "Anonymous"
+  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badgeString}`;
 
   const premiumTheme = media.user?.premium ? {
-    themeColor: "#a855f7",
+    themeColor: badges[0]?.color || "#a855f7",
     colorScheme: "dark" as const,
     creator: media.user.name,
     applicationName: "AnonHost Premium",
+    other: {
+      badges: badges.map(b => `${b.emoji} ${b.label}`),
+      ...(badges[0]?.color && { badgeColor: badges[0].color })
+    }
   } : {};
 
   const dimensions = {
@@ -78,14 +111,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (media.type === "VIDEO") {
     return {
-      title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
+      title: `${badges.map(b => b.emoji).join("")}${media.filename || "Untitled"}`,
       description,
       ...premiumTheme,
       openGraph: {
-        title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
+        title: `${badges.map(b => b.emoji).join(" ")}${media.filename || "Untitled"}`,
         description,
         type: "video.other",
-        url: mediaUrl,
+        url: media.url,
         siteName: media.user?.premium ? "AnonHost Premium" : "AnonHost",
         videos: [
           {
@@ -124,12 +157,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return {
     title: media.filename || "Untitled",
     description,
+    ...premiumTheme,
     openGraph: {
-      title: media.filename || "Untitled",
+      title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
       description,
       type: "website",
-      url: mediaUrl,
-      siteName: "AnonHost",
+      url: media.url,
+      siteName: media.user?.premium ? "AnonHost Premium" : "AnonHost",
       images: [
         {
           url: media.url,
@@ -141,9 +175,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: media.filename || "Untitled",
+      title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
       description,
       images: [media.url],
+      creator: media.user?.premium ? media.user.name ?? undefined : undefined,
     },
   };
 }

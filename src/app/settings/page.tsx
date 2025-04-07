@@ -615,7 +615,7 @@ export default function SettingsPage() {
 
                         <div className="flex flex-col gap-3">
                           <Button
-                            variant="default"
+                            variant="outline"
                             onClick={handleCheckBmcSupport}
                             disabled={isCheckingSupport}
                             className="w-full"

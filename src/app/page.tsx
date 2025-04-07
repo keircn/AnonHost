@@ -19,6 +19,9 @@ import {
   CheckCircle,
   Copy,
   Terminal,
+  Shield,
+  Leaf,
+  Heart,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -50,6 +53,21 @@ const features = [
     title: "API Access",
     description: "Integrate with our powerful API for programmatic uploads.",
     icon: <ExternalLink className="h-5 w-5 text-primary" />,
+  },
+  {
+    title: "European Privacy",
+    description: "Based in Europe with full GDPR compliance for your privacy.",
+    icon: <Shield className="h-5 w-5 text-primary" />,
+  },
+  {
+    title: "Eco-Friendly",
+    description: "Powered by 100% renewable energy for sustainable hosting.",
+    icon: <Leaf className="h-5 w-5 text-primary" />,
+  },
+  {
+    title: "Community Driven",
+    description: "Funded by donations and maintained by passionate developers.",
+    icon: <Heart className="h-5 w-5 text-primary" />,
   },
 ];
 

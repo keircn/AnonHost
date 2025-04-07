@@ -63,11 +63,20 @@ export async function POST(req: NextRequest) {
   let parsedBody;
   try {
     parsedBody = JSON.parse(rawBody);
+    
+    if (parsedBody.originalUrl === '$input$' || parsedBody.originalUrl === '{input}') {
+      return NextResponse.json(
+        { error: "ShareX variable not substituted. Please try copying the URL first." },
+        { status: 400 }
+      );
+    }
+    
     console.log('Parsed Body:', parsedBody);
   } catch (e) {
     console.error('Failed to parse body:', e);
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
+
 
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];

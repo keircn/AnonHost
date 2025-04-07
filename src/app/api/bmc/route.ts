@@ -4,6 +4,24 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 
 async function verifyBmcTransaction(transactionId: string) {
+    if (process.env.NODE_ENV === 'development' && transactionId.startsWith('BMC_TEST_')) {
+        console.log('Development mode: Using test transaction data');
+        
+        const testTransaction = await prisma.transaction.findUnique({
+            where: { transactionId }
+        });
+
+        if (testTransaction) {
+            return {
+                amount: testTransaction.amount.toString(),
+                currency: testTransaction.currency,
+                email: "keiran0@proton.me",
+                transactionId: testTransaction.transactionId,
+                createdAt: testTransaction.createdAt
+            };
+        }
+    }
+
     const accessToken = process.env.BMC_ACCESS_TOKEN;
     if (!accessToken) {
         throw new Error("BMC_ACCESS_TOKEN not configured");
@@ -28,16 +46,6 @@ async function verifyBmcTransaction(transactionId: string) {
 
     const data = await response.json();
     console.log('Full BMC API response:', JSON.stringify(data, null, 2));
-
-    if (process.env.NODE_ENV === 'development' && transactionId.startsWith('BMC_TEST_')) {
-        return {
-            amount: "5.00",
-            currency: "USD",
-            email: "keiran0@proton.me",
-            transactionId: transactionId,
-            createdAt: new Date()
-        };
-    }
 
     const transaction = data?.data?.find((supporter: any) =>
         supporter.transaction_id === transactionId

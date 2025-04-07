@@ -53,15 +53,15 @@ const dropZoneVariants = {
 };
 
 const formatFileSize = (bytes: number): string => {
-  const units = ['B', 'KB', 'MB', 'GB'];
+  const units = ["B", "KB", "MB", "GB"];
   let size = bytes;
   let unitIndex = 0;
-  
+
   while (size >= 1024 && unitIndex < units.length - 1) {
     size /= 1024;
     unitIndex++;
   }
-  
+
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 };
 
@@ -115,10 +115,10 @@ export default function UploadPage() {
         return false;
       }
 
-      const sizeLimit = status.data?.user.premium 
-        ? FILE_SIZE_LIMITS.PREMIUM 
+      const sizeLimit = status.data?.user.premium
+        ? FILE_SIZE_LIMITS.PREMIUM
         : FILE_SIZE_LIMITS.FREE;
-      
+
       if (file.size > sizeLimit) {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
@@ -142,8 +142,10 @@ export default function UploadPage() {
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
           .filter((file) => {
-        console.log(file.type);
-        return file.type.startsWith("image/") || file.type.startsWith("video/");
+            console.log(file.type);
+            return (
+              file.type.startsWith("image/") || file.type.startsWith("video/")
+            );
           })
           .filter(validateFile);
 
@@ -254,10 +256,12 @@ export default function UploadPage() {
       const limit = pLimit(3);
       let completedUploads = 0;
       const startTime = Date.now();
-      
-      const uploadPromises = files.map((file, index) => 
+
+      const uploadPromises = files.map((file, index) =>
         limit(async () => {
-          console.log(`Starting upload for ${file.name} (${formatFileSize(file.size)})`);
+          console.log(
+            `Starting upload for ${file.name} (${formatFileSize(file.size)})`,
+          );
           const uploadStartTime = Date.now();
 
           const settings = fileSettings[index] || { public: false };
@@ -283,34 +287,45 @@ export default function UploadPage() {
           const result = await response.json();
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;
-          const uploadSpeed = (file.size / uploadDuration / 1024 / 1024).toFixed(2);
-          
-          console.log(`✅ Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`);
-          console.log(`Progress: ${completedUploads}/${files.length} files completed`);
-          
+          const uploadSpeed = (
+            file.size /
+            uploadDuration /
+            1024 /
+            1024
+          ).toFixed(2);
+
+          console.log(
+            `✅ Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`,
+          );
+          console.log(
+            `Progress: ${completedUploads}/${files.length} files completed`,
+          );
+
           return result;
-        })
+        }),
       );
 
       const results = await Promise.allSettled(uploadPromises);
       const totalDuration = (Date.now() - startTime) / 1000;
-      
-      const successful = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
+
+      const successful = results.filter((r) => r.status === "fulfilled").length;
+      const failed = results.filter((r) => r.status === "rejected").length;
       const totalSize = files.reduce((acc, file) => acc + file.size, 0);
-      
-      console.log('\nUpload Summary:');
+
+      console.log("\nUpload Summary:");
       console.log(`✅ Successfully uploaded: ${successful} files`);
       console.log(`❌ Failed uploads: ${failed} files`);
       console.log(`📦 Total size: ${formatFileSize(totalSize)}`);
       console.log(`⏱️ Total duration: ${totalDuration.toFixed(1)}s`);
-      console.log(`📈 Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`);
+      console.log(
+        `📈 Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`,
+      );
 
       if (successful > 0) {
         toast({
           title: "Upload complete",
-          description: `Successfully uploaded ${successful} file${successful > 1 ? 's' : ''}${failed > 0 ? `. ${failed} file${failed > 1 ? 's' : ''} failed.` : ''}`,
-          variant: failed ? "destructive" : "default"
+          description: `Successfully uploaded ${successful} file${successful > 1 ? "s" : ""}${failed > 0 ? `. ${failed} file${failed > 1 ? "s" : ""} failed.` : ""}`,
+          variant: failed ? "destructive" : "default",
         });
         router.push("/dashboard");
       } else {

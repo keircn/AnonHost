@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -56,25 +55,6 @@ export function FileSettingsModal({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="public">Public Access</Label>
-              <div className="text-sm text-muted-foreground">
-                Allow anyone with the link to view this file
-              </div>
-            </div>
-            <Switch
-              id="public"
-              checked={localSettings.public}
-              onCheckedChange={(checked: boolean) =>
-                setLocalSettings((prev: FileSettings) => ({
-                  ...prev,
-                  public: checked,
-                }))
-              }
-            />
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="domain">Custom Domain</Label>
             <Select

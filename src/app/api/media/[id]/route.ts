@@ -26,12 +26,12 @@ export async function DELETE(
   }
 
   const userId = apiKey
-    ? (
+    ? ((
         await prisma.apiKey.findUnique({
           where: { key: apiKey },
           select: { userId: true },
         })
-      )?.userId ?? ''
+      )?.userId ?? "")
     : session!.user.id;
 
   if (!userId) {

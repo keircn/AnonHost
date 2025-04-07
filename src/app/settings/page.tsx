@@ -80,7 +80,6 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
   const [settings, setSettings] = useState({
     enableNotifications: true,
-    makeImagesPublic: false,
     enableDirectLinks: true,
     customDomain: "",
   });
@@ -101,7 +100,6 @@ export default function SettingsPage() {
             const data = await settingsResponse.json();
             setSettings({
               enableNotifications: data.enableNotifications,
-              makeImagesPublic: data.makeImagesPublic,
               enableDirectLinks: data.enableDirectLinks,
               customDomain: data.customDomain || "",
             });
@@ -516,18 +514,6 @@ export default function SettingsPage() {
                             setSettings({
                               ...settings,
                               enableNotifications: checked,
-                            }),
-                        },
-                        {
-                          id: "public-images",
-                          title: "Public Images",
-                          description:
-                            "Make all your uploaded images publicly accessible",
-                          checked: settings.makeImagesPublic,
-                          onChange: (checked: boolean) =>
-                            setSettings({
-                              ...settings,
-                              makeImagesPublic: checked,
                             }),
                         },
                         {

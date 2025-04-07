@@ -104,16 +104,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen py-8">
-      <main className="flex-1">
-        <Alert variant="destructive" className="mx-auto max-w-3xl mt-4 mb-8">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription className="ml-2">
-            Notice: All accounts were reset due to a recent backend migration.
-            While this upgrade brings lower latency and increased storage
-            capacity, data migration wasn&apos;t possible. We apologize for any
-            inconvenience - please create a new account.
-          </AlertDescription>
-        </Alert>
+      <main className="flex-1 pt-24">
         <TransFlag />
         <section className="w-full overflow-hidden relative min-h-[80vh] md:min-h-screen lg:min-h-1/2 pb-24 pt-8">
           <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">
@@ -148,7 +139,7 @@ export default function Home() {
                   <Link href="/dashboard">
                     <Button
                       size="lg"
-                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer"
+                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer hover:bg-primary/80 transition-all"
                     >
                       Get Started
                       <ArrowRight className="h-4 w-4" />
@@ -158,7 +149,7 @@ export default function Home() {
                     <Button
                       size="lg"
                       variant="outline"
-                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer"
+                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer hover:bg-secondary/30"
                     >
                       API Documentation
                       <ExternalLink className="h-4 w-4" />

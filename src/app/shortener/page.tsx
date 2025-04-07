@@ -67,7 +67,6 @@ export default function ShortenerPage() {
 
   const [newUrl, setNewUrl] = useState("");
   const [newTitle, setNewTitle] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
   const [expiresIn, setExpiresIn] = useState<string | undefined>(undefined);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -130,7 +129,7 @@ export default function ShortenerPage() {
         body: JSON.stringify({
           originalUrl: newUrl,
           title: newTitle || null,
-          public: isPublic,
+          public: true,
           expiresIn: expiresIn,
         }),
       });
@@ -150,7 +149,6 @@ export default function ShortenerPage() {
 
       setNewUrl("");
       setNewTitle("");
-      setIsPublic(false);
       setExpiresIn(undefined);
       setIsDialogOpen(false);
     } catch (error) {
@@ -280,15 +278,6 @@ export default function ShortenerPage() {
                       <SelectItem value="365">1 year</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="public"
-                    checked={isPublic}
-                    onCheckedChange={setIsPublic}
-                  />
-                  <Label htmlFor="public">Public link</Label>
                 </div>
               </div>
 

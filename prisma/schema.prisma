@@ -134,6 +134,7 @@ model Transaction {
   amount        Float
   currency      String
   type          String
+  processed     Boolean  @default(false)
   createdAt     DateTime @default(now())
   
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)

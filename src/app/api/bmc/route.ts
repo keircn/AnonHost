@@ -60,8 +60,11 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const existingTransaction = await prisma.transaction.findUnique({
-            where: { transactionId }
+        const existingTransaction = await prisma.transaction.findFirst({
+            where: { 
+                transactionId,
+                processed: true
+            }
         });
 
         if (existingTransaction) {
@@ -87,21 +90,27 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        await prisma.user.update({
-            where: { id: session.user.id },
-            data: { premium: true },
-        });
-
-        await prisma.transaction.create({
-            data: {
-                transactionId,
-                userId: session.user.id,
-                amount: parseFloat(transaction.amount),
-                currency: transaction.currency,
-                type: "bmc",
-                createdAt: new Date()
-            }
-        });
+        await prisma.$transaction([
+            prisma.user.update({
+                where: { id: session.user.id },
+                data: { premium: true },
+            }),
+            prisma.transaction.upsert({
+                where: { transactionId },
+                create: {
+                    transactionId,
+                    userId: session.user.id,
+                    amount: parseFloat(transaction.amount),
+                    currency: transaction.currency,
+                    type: "bmc",
+                    processed: true,
+                    createdAt: new Date()
+                },
+                update: {
+                    processed: true
+                }
+            })
+        ]);
 
         return NextResponse.json(
             { message: "User upgraded to premium" },

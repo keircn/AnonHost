@@ -94,9 +94,9 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const transaction = transactionId;
+        const transaction = await verifyBmcTransaction(transactionId);
         
-        console.log('BMC API Response:', transaction);
+        console.log('Transaction verification result:', transaction);
 
         if (!transaction) {
             return NextResponse.json(
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
                     currency: transaction.currency,
                     type: "bmc",
                     processed: true,
-                    createdAt: new Date()
+                    createdAt: transaction.createdAt
                 },
                 update: {
                     processed: true

@@ -25,7 +25,7 @@ export const generateShareXShortenerConfig = (
   baseUrl: string,
 ): ShareXConfig => ({
   Version: "17.0.0",
-  Name: "AnonHost Shortener",
+  Name: "AnonHost URL Shortener",
   DestinationType: "URLShortener",
   RequestMethod: "POST",
   RequestURL: `${baseUrl}/api/shortener`,
@@ -34,11 +34,9 @@ export const generateShareXShortenerConfig = (
     "Content-Type": "application/json"
   },
   Body: "JSON",
-  Data: `{
-    "originalUrl": "$input$"
-  }`,
-  URL: "$json:shortUrl$",
-  ErrorMessage: "$json:error$"
+  Data: "{\"originalUrl\":\"$input$\"}",
+  URL: "{json:shortUrl}",
+  ErrorMessage: "{json:error}"
 });
 
 export const downloadShareXConfig = (

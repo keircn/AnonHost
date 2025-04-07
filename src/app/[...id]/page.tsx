@@ -147,7 +147,10 @@ export default async function MediaPage(props: Props) {
     where: { id: mediaId },
     include: {
       user: {
-        select: { name: true },
+        select: { 
+          name: true,
+          premium: true 
+        },
       },
     },
   });
@@ -181,13 +184,19 @@ export default async function MediaPage(props: Props) {
         </div>
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-foreground">
-              {media.filename}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold text-foreground">
+                {media.filename}
+              </h1>
+              {media.user?.premium && (
+                <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                  Premium
+                </span>
+              )}
+            </div>
             <MediaActions
               url={media.url}
               filename={media.filename}
-              // type={media.type}
             />
           </div>
 

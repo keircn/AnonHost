@@ -91,10 +91,19 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      new URL(originalUrl);
-    } catch {
+      const url = new URL(originalUrl);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return NextResponse.json(
+          { error: "URL must use HTTP or HTTPS protocol" },
+          { status: 400 },
+        );
+      }
+    } catch (urlError) {
       return NextResponse.json(
-        { error: "Invalid URL format" },
+        { 
+          error: "Invalid URL format",
+          details: "Please provide a valid URL including protocol (e.g., https://example.com)" 
+        },
         { status: 400 },
       );
     }

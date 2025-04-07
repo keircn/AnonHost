@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const transaction = await verifyBmcTransaction(transactionId);
+        const transaction = transactionId;
         
         console.log('BMC API Response:', transaction);
 

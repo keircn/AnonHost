@@ -16,7 +16,6 @@ export const generateShareXConfig = (
   FileFormName: "file",
   URL: "{json:url}",
   ThumbnailURL: "{json:url}",
-  DeletionURL: `${baseUrl}/api/media/{json:id}`,
   ErrorMessage: "$json:error$",
   Data: {},
 });
@@ -36,14 +35,16 @@ export const generateShareXShortenerConfig = (
   },
   Body: "JSON",
   Data: {
-    originalUrl: "$input$",
-    title: null,
-    public: false,
-    expiresIn: null
+    "originalUrl": "$input$",
+    "title": "",
+    "public": false,
+    "expiresIn": null
   },
+  RegexList: [
+    ".*"
+  ],
   URL: "$json:shortUrl$",
-  DeletionURL: "",
-  ErrorMessage: "$json:error$"
+  ErrorMessage: "$json:error$",
 });
 
 export const downloadShareXConfig = (

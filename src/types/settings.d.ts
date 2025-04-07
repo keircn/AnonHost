@@ -27,6 +27,6 @@ export interface ShareXConfig {
   Data: string | { [key: string]: unknown };
   URL: string;
   ThumbnailURL?: string;
-  DeletionURL: string;
+  RegexList?: string[];
   ErrorMessage: string;
 }

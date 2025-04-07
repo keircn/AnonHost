@@ -54,29 +54,21 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  console.log('--- Incoming Shortener Request ---');
-  console.log('Headers:', Object.fromEntries(req.headers.entries()));
-  
   const rawBody = await req.text();
-  console.log('Raw Body:', rawBody);
-  
+
   let parsedBody;
   try {
     parsedBody = JSON.parse(rawBody);
-    
+
     if (parsedBody.originalUrl === '$input$' || parsedBody.originalUrl === '{input}') {
       return NextResponse.json(
         { error: "ShareX variable not substituted. Please try copying the URL first." },
         { status: 400 }
       );
     }
-    
-    console.log('Parsed Body:', parsedBody);
   } catch (e) {
-    console.error('Failed to parse body:', e);
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-
 
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
@@ -105,15 +97,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const { originalUrl, title, expiresIn, public: isPublic } = parsedBody;
-
-    console.log('Processed Request:', {
-      originalUrl,
-      title,
-      expiresIn,
-      isPublic,
-      apiKey: apiKey ? '***' : undefined,
-      userId
-    });
 
     if (!originalUrl) {
       return NextResponse.json(
@@ -166,7 +149,6 @@ export async function POST(req: NextRequest) {
       expireAt: shortlink.expireAt,
     });
   } catch (error) {
-    console.error("Error creating shortlink:", error);
     return NextResponse.json(
       { error: "Failed to create shortlink" },
       { status: 500 },

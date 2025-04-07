@@ -34,7 +34,7 @@ export const generateShareXShortenerConfig = (
     "Content-Type": "application/json"
   },
   Body: "JSON",
-  Data: "{\"originalUrl\":\"{input}\"}",
+  Data: JSON.stringify({ originalUrl: "{input}" }),
   URL: "$json:shortUrl$",
   ErrorMessage: "$json:error$"
 });

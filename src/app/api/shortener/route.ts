@@ -54,6 +54,21 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  console.log('--- Incoming Shortener Request ---');
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
+  
+  const rawBody = await req.text();
+  console.log('Raw Body:', rawBody);
+  
+  let parsedBody;
+  try {
+    parsedBody = JSON.parse(rawBody);
+    console.log('Parsed Body:', parsedBody);
+  } catch (e) {
+    console.error('Failed to parse body:', e);
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
   const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
@@ -80,8 +95,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const { originalUrl, title, expiresIn, public: isPublic } = body;
+    const { originalUrl, title, expiresIn, public: isPublic } = parsedBody;
+
+    console.log('Processed Request:', {
+      originalUrl,
+      title,
+      expiresIn,
+      isPublic,
+      apiKey: apiKey ? '***' : undefined,
+      userId
+    });
 
     if (!originalUrl) {
       return NextResponse.json(

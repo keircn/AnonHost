@@ -41,7 +41,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     where: { id: mediaId },
     include: {
       user: {
-        select: { name: true },
+        select: { 
+          name: true,
+          premium: true
+        },
       },
     },
   });
@@ -53,9 +56,19 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     };
   }
 
-  const description = `Uploaded by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`;
-  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
+  const description = media.user?.premium 
+    ? `⭐ Premium upload by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`
+    : `Uploaded by ${media.user?.name || "Anonymous"} • ${formatBytes(media.size)} • ${formatDate(media.createdAt)}`;
+
+  const baseUrl = process.env.NEXTAUTH_URL || "https://anon.love";
   const mediaUrl = `${baseUrl}/${media.id}`;
+
+  const premiumTheme = media.user?.premium ? {
+    themeColor: "#a855f7",
+    colorScheme: "dark" as const,
+    creator: media.user.name,
+    applicationName: "AnonHost Premium",
+  } : {};
 
   const dimensions = {
     width: typeof media.width === "number" ? media.width : 1280,
@@ -64,14 +77,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (media.type === "VIDEO") {
     return {
-      title: media.filename || "Untitled",
+      title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
       description,
+      ...premiumTheme,
       openGraph: {
-        title: media.filename || "Untitled",
+        title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
         description,
         type: "video.other",
         url: mediaUrl,
-        siteName: "AnonHost",
+        siteName: media.user?.premium ? "AnonHost Premium" : "AnonHost",
         videos: [
           {
             url: media.url,

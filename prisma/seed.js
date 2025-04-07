@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 async function main() {
@@ -7,7 +7,7 @@ async function main() {
     update: {},
     create: {
       email: 'keiran0@proton.me',
-      name: 'q4ow',
+      name: 'Keiran',
       premium: false,
       transactions: {
         create: {

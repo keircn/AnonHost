@@ -54,25 +54,25 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text();
-
-  let parsedBody;
-  try {
-    parsedBody = JSON.parse(rawBody);
-
-    if (parsedBody.originalUrl === '$input$' || parsedBody.originalUrl === '{input}') {
-      return NextResponse.json(
-        { error: "ShareX variable not substituted. Please try copying the URL first." },
-        { status: 400 }
-      );
-    }
-  } catch (e) {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
+  
+  let originalUrl, title, isPublic, expiresIn;
+
+  const contentType = req.headers.get("content-type");
+  if (contentType?.includes("application/json")) {
+    const jsonData = await req.json();
+    originalUrl = jsonData.originalUrl;
+    title = jsonData.title;
+    isPublic = jsonData.public === "true";
+    expiresIn = jsonData.expiresIn;
+  } else {
+    const formData = await req.formData();
+    originalUrl = formData.get("originalUrl");
+    title = formData.get("title");
+    isPublic = formData.get("public") === "true";
+    expiresIn = formData.get("expiresIn");
+  }
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -96,8 +96,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { originalUrl, title, expiresIn, public: isPublic } = parsedBody;
-
     if (!originalUrl) {
       return NextResponse.json(
         { error: "Original URL is required" },
@@ -106,7 +104,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const url = new URL(originalUrl);
+      const url = new URL(originalUrl as string);
       if (!["http:", "https:"].includes(url.protocol)) {
         return NextResponse.json(
           { error: "URL must use HTTP or HTTPS protocol" },
@@ -126,16 +124,16 @@ export async function POST(req: NextRequest) {
     let expireAt: Date | null = null;
     if (expiresIn) {
       expireAt = new Date();
-      expireAt.setDate(expireAt.getDate() + parseInt(expiresIn));
+      expireAt.setDate(expireAt.getDate() + parseInt(expiresIn as string));
     }
 
     const shortlink = await prisma.shortlink.create({
       data: {
-        originalUrl,
-        title: title || null,
+        originalUrl: originalUrl.toString(),
+        title: title?.toString() || null,
         userId,
-        public: isPublic || false,
-        expireAt: expireAt,
+        public: isPublic,
+        expireAt: expiresIn ? new Date(Date.now() + parseInt(expiresIn as string) * 86400000) : null,
       },
     });
 
@@ -143,7 +141,7 @@ export async function POST(req: NextRequest) {
       id: shortlink.id,
       originalUrl: shortlink.originalUrl,
       title: shortlink.title,
-      shortUrl: new URL(`/s/${shortlink.id}`, baseUrl).toString(),
+      shortUrl: new URL(`/s/${shortlink.id}`, process.env.NEXTAUTH_URL || "https://anon.love").toString(),
       public: shortlink.public,
       createdAt: shortlink.createdAt,
       expireAt: shortlink.expireAt,

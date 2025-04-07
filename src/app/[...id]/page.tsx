@@ -91,7 +91,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     : "";
 
   const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${media.user?.name || "Anonymous"
-    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badgeString}`;
+    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
 
   const premiumTheme = media.user?.premium ? {
     themeColor: badges[0]?.color || "#a855f7",

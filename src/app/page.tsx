@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -20,7 +19,6 @@ import {
   CheckCircle,
   Copy,
   Terminal,
-  AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 

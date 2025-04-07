@@ -11,7 +11,8 @@ async function verifyBmcTransaction(transactionId: string) {
 
     const response = await fetch("https://developers.buymeacoffee.com/api/v1/supporters", {
         headers: {
-            'Authorization': `Bearer ${accessToken}`
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
         }
     });
 
@@ -26,6 +27,17 @@ async function verifyBmcTransaction(transactionId: string) {
     }
 
     const data = await response.json();
+    console.log('Full BMC API response:', JSON.stringify(data, null, 2));
+
+    if (process.env.NODE_ENV === 'development' && transactionId.startsWith('BMC_TEST_')) {
+        return {
+            amount: "5.00",
+            currency: "USD",
+            email: "keiran0@proton.me",
+            transactionId: transactionId,
+            createdAt: new Date()
+        };
+    }
 
     const transaction = data?.data?.find((supporter: any) =>
         supporter.transaction_id === transactionId
@@ -62,6 +74,7 @@ export async function POST(req: NextRequest) {
     try {
         const existingTransaction = await prisma.transaction.findFirst({
             where: { 
+                transactionId,
                 processed: true
             }
         });
@@ -74,6 +87,8 @@ export async function POST(req: NextRequest) {
         }
 
         const transaction = await verifyBmcTransaction(transactionId);
+        
+        console.log('BMC API Response:', transaction);
 
         if (!transaction) {
             return NextResponse.json(

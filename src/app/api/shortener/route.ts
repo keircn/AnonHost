@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { 
           error: "Invalid URL format",
-          details: "Please provide a valid URL including protocol (e.g., https://example.com)" 
+          details: `Please provide a valid URL including protocol (e.g., https://example.com): ${urlError}`,
         },
         { status: 400 },
       );

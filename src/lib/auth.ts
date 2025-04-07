@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 export async function verifyApiKey(apiKey: string): Promise<User | null> {
   if (!apiKey) return null;
 
-  const key = await prisma.apiKey.findUnique({
+  const key = await prisma.apiKey.findFirst({
     where: { key: apiKey },
     include: { user: true },
   });

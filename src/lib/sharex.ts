@@ -35,17 +35,20 @@ export const generateShareXShortenerConfig = (
   },
   Body: "JSON",
   Data: {
-    "originalUrl": "{input}"
+    originalUrl: "$input$"
   },
-  URL: "{json:shortUrl}",
-  ErrorMessage: "{json:error}"
+  URL: "$json:shortUrl$",
+  ErrorMessage: "$json:error$"
 });
 
 export const downloadShareXConfig = (
   config: ShareXConfig,
   apiKeyName: string,
 ) => {
-  const blob = new Blob([JSON.stringify(config, null, 2)], {
+  const cleanConfig = { ...config };
+  delete (cleanConfig as any).DeletionURL;
+  
+  const blob = new Blob([JSON.stringify(cleanConfig, null, 2)], {
     type: "application/json",
   });
   const url = URL.createObjectURL(blob);

@@ -11,7 +11,7 @@ export async function GET(
   const id = params.id;
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://anon.love";
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

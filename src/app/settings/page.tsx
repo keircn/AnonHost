@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
+import { ApiKey } from "@/types/settings";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -42,11 +43,9 @@ const staggerContainer = {
 };
 
 const slideAnimation = {
-  enter: {
-    initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 20 },
-  },
+  initial: { opacity: 0, x: -20 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 20 },
 };
 
 const downloadShareXConfig = (config: object, apiKeyName: string) => {
@@ -62,14 +61,6 @@ const downloadShareXConfig = (config: object, apiKeyName: string) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
-
-interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: string;
-  lastUsed: string | null;
-}
 
 export default function SettingsPage() {
   const { status } = useSession();
@@ -477,7 +468,7 @@ export default function SettingsPage() {
             key={activeTab}
             initial="initial"
             animate="animate"
-            variants={slideAnimation.enter}
+            variants={slideAnimation}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
             <TabsContent

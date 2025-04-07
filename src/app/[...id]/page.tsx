@@ -19,9 +19,10 @@ function formatBytes(bytes: number): string {
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
+    hour12: false,
   }).format(date);
 }
 
@@ -57,7 +58,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   const description = media.user?.premium 
-    ? `⭐ Premium upload by ${media.user?.name || "Anonymous"}\n${formatBytes(media.size)}\n${formatDate(media.createdAt)}`
+    ? `⭐ Premium upload by ${media.user?.name || "Anonymous"}\n⭐ ${formatBytes(media.size)}\n⭐ ${formatDate(media.createdAt)}`
     : `Uploaded by ${media.user?.name || "Anonymous"}\n${formatBytes(media.size)}\n${formatDate(media.createdAt)}`;
 
   const baseUrl = process.env.NEXTAUTH_URL || "https://anon.love";

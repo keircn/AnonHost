@@ -18,6 +18,7 @@ export const generateShareXConfig = (
   ThumbnailURL: "{json:url}",
   DeletionURL: `${baseUrl}/api/media/{json:id}`,
   ErrorMessage: "$json:error$",
+  Data: {},
 });
 
 export const generateShareXShortenerConfig = (
@@ -31,13 +32,18 @@ export const generateShareXShortenerConfig = (
   RequestURL: `${baseUrl}/api/shortener`,
   Headers: {
     Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
+    "Content-Type": "application/json"
   },
   Body: "JSON",
-  Data: '{"originalUrl":"$input$"}',
-  URL: "{json:shortUrl}",
-  DeletionURL: `${baseUrl}/api/shortener/{json:id}`,
-  ErrorMessage: "$json:error$",
+  Data: {
+    originalUrl: "$input$",
+    title: null,
+    public: false,
+    expiresIn: null
+  },
+  URL: "$json:shortUrl$",
+  DeletionURL: "",
+  ErrorMessage: "$json:error$"
 });
 
 export const downloadShareXConfig = (

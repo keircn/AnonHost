@@ -2,16 +2,6 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { nanoid } from "nanoid";
 
-interface UploadResult {
-  url: string;
-  filename: string;
-  size: number;
-  width: number;
-  height: number;
-  duration?: number;
-  type: "image" | "video";
-}
-
 export const STORAGE_LIMITS = {
   PREMIUM: 1024 * 1024 * 1024,
   FREE: 500 * 1024 * 1024,
@@ -27,6 +17,16 @@ interface StorageStats {
   total: string;
   percentage: string;
   remaining: string;
+}
+
+interface UploadResult {
+  url: string;
+  filename: string;
+  size: number;
+  width: number | null;
+  height: number | null;
+  duration?: number | null;
+  type: "image" | "video" | "text" | "document";
 }
 
 function formatFileSize(bytes: number): string {
@@ -84,7 +84,17 @@ export async function uploadFile(
   try {
     const filename = `${userId}/${nanoid()}-${file.name}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileType = file.type.startsWith("image/") ? "image" : "video";
+    
+    let fileType: UploadResult["type"];
+    if (file.type.startsWith("image/")) {
+      fileType = "image";
+    } else if (file.type.startsWith("video/")) {
+      fileType = "video";
+    } else if (file.type.startsWith("text/") || file.type.includes("json") || file.type.includes("xml")) {
+      fileType = "text";
+    } else {
+      fileType = "document";
+    }
 
     const upload = new Upload({
       client: s3Client,
@@ -105,10 +115,10 @@ export async function uploadFile(
       url,
       filename: file.name,
       size: file.size,
-      width: 0,
-      height: 0,
-      type: fileType,
+      width: fileType === "image" ? 0 : null,
+      height: fileType === "image" ? 0 : null,
       ...(fileType === "video" ? { duration: 0 } : {}),
+      type: fileType,
     };
   } catch (error) {
     console.error("Error uploading file:", error);

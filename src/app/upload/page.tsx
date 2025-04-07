@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ImageIcon, X, Settings2 } from "lucide-react";
+import { Upload, ImageIcon, X, Settings2, File, FileText, FileType, Code } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/file-settings-modal";
 import type { FileSettings } from "@/types/file-settings";
@@ -96,20 +96,22 @@ export default function UploadPage() {
   const validateFile = useCallback(
     (file: File): boolean => {
       const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-        "video/mp4",
-        "video/webm",
-        "video/ogg",
+
+        "image/jpeg", "image/png", "image/gif", "image/webp",
+
+        "video/mp4", "video/webm", "video/ogg",
+
+        "text/plain", "text/markdown", "text/html", "text/css", "text/javascript",
+
+        "application/json", "application/xml", "application/pdf",
+        "application/x-httpd-php", "application/x-sh", "application/x-yaml",
+        "application/x-typescript"
       ];
 
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: "Invalid file type",
-          description:
-            "Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, OGG) are allowed",
+          description: "Only images, videos, text files, and documents are allowed",
           variant: "destructive",
         });
         return false;
@@ -141,18 +143,12 @@ export default function UploadPage() {
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const newFiles = Array.from(e.dataTransfer.files)
-          .filter((file) => {
-            console.log(file.type);
-            return (
-              file.type.startsWith("image/") || file.type.startsWith("video/")
-            );
-          })
           .filter(validateFile);
 
         if (newFiles.length === 0) {
           toast({
             title: "Invalid files",
-            description: "Files must be valid media and within size limits",
+            description: "Files must be valid and within size limits",
             variant: "destructive",
           });
           return;
@@ -231,6 +227,46 @@ export default function UploadPage() {
     },
     [validateFile, toast],
   );
+
+  const getFilePreview = (file: File) => {
+    if (file.type.startsWith("image/")) {
+      return (
+        <Image
+          src={URL.createObjectURL(file)}
+          alt={file.name}
+          width={32}
+          height={32}
+          priority
+          className="w-full h-full object-cover"
+        />
+      );
+    }
+
+    if (file.type.startsWith("video/")) {
+      return (
+        <video
+          src={URL.createObjectURL(file)}
+          className="w-full h-full object-cover"
+          controls={false}
+        />
+      );
+    }
+
+    const getFileIcon = () => {
+      if (file.type.startsWith("text/")) {
+        return <FileText className="h-12 w-12 text-muted-foreground" />;
+      }
+      if (file.type.includes("json") || file.type.includes("xml")) {
+        return <Code className="h-12 w-12 text-muted-foreground" />;
+      }
+      if (file.type.includes("pdf")) {
+        return <FileType className="h-12 w-12 text-muted-foreground" />;
+      }
+      return <File className="h-12 w-12 text-muted-foreground" />;
+    };
+
+    return getFileIcon();
+  };
 
   useEffect(() => {
     document.addEventListener("paste", handlePaste);
@@ -404,7 +440,7 @@ export default function UploadPage() {
                   variants={fadeIn}
                 >
                   <h3 className="text-lg lg:text-2xl font-semibold">
-                    Drag and drop your media here
+                    Drag and drop your files here
                   </h3>
                   <p className="text-sm lg:text-base text-muted-foreground">
                     Click to browse from your device, or paste from your
@@ -416,7 +452,7 @@ export default function UploadPage() {
                   id="file-upload"
                   className="hidden"
                   multiple
-                  accept="image/*,video/mp4,video/webm,video/ogg"
+                  accept="image/*,video/*,text/*,.json,.xml,.pdf,.php,.sh,.yaml,.ts"
                   onChange={handleFileChange}
                 />
                 <motion.div whileHover={{ scale: 1.02 }}>
@@ -462,24 +498,7 @@ export default function UploadPage() {
                           <div className="border rounded-lg overflow-hidden">
                             <div className="aspect-square relative bg-muted">
                               <div className="absolute inset-0 flex items-center justify-center">
-                                {file.type.startsWith("image/") ? (
-                                  <Image
-                                    src={URL.createObjectURL(file)}
-                                    alt={file.name}
-                                    width={32}
-                                    height={32}
-                                    priority
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : file.type.startsWith("video/") ? (
-                                  <video
-                                    src={URL.createObjectURL(file)}
-                                    className="w-full h-full object-cover"
-                                    controls={false}
-                                  />
-                                ) : (
-                                  <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                                )}
+                                {getFilePreview(file)}
                               </div>
                             </div>
                             <motion.div

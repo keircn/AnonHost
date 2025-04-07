@@ -50,9 +50,24 @@ export async function POST(req: NextRequest) {
       "image/png",
       "image/gif",
       "image/webp",
+      
       "video/mp4",
       "video/webm",
       "video/ogg",
+      
+      "text/plain",
+      "text/markdown",
+      "text/html",
+      "text/css",
+      "text/javascript",
+      "application/json",
+      "application/xml",
+      
+      "application/pdf",
+      "application/x-httpd-php",
+      "application/x-sh",
+      "application/x-yaml",
+      "application/x-typescript",
     ];
 
     if (!allowedTypes.includes(file.type)) {

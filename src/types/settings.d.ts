@@ -24,7 +24,7 @@ export interface ShareXConfig {
   };
   Body: string;
   FileFormName?: string;
-  Data: string | { [key: string]: any };
+  Data: string | { [key: string]: unknown };
   URL: string;
   ThumbnailURL?: string;
   DeletionURL: string;

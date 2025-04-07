@@ -8,27 +8,29 @@ async function main() {
     create: {
       email: 'keiran0@proton.me',
       name: 'Keiran',
-      premium: false,
-      transactions: {
-        create: {
-          transactionId: 'BMC_TEST_123',
-          amount: 5.00,
-          currency: 'USD',
-          type: 'bmc',
-          createdAt: new Date()
-        }
-      }
+      premium: false
     }
-  })
+  });
 
-  console.log({ user })
+  const transaction = await prisma.transaction.create({
+    data: {
+      transactionId: 'BMC_TEST_123',
+      userId: user.id,
+      amount: 5.00,
+      currency: 'USD',
+      type: 'bmc',
+      createdAt: new Date()
+    }
+  });
+
+  console.log('Seed results:', { user, transaction });
 }
 
 main()
   .catch((e) => {
-    console.error(e)
+    console.error('Seed error:', e)
     process.exit(1)
   })
   .finally(async () => {
     await prisma.$disconnect()
-  })
+  });

@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const url = new URL(originalUrl);
-      if (!['http:', 'https:'].includes(url.protocol)) {
+      if (!["http:", "https:"].includes(url.protocol)) {
         return NextResponse.json(
           { error: "URL must use HTTP or HTTPS protocol" },
           { status: 400 },
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       }
     } catch (urlError) {
       return NextResponse.json(
-        { 
+        {
           error: "Invalid URL format",
           details: `Please provide a valid URL including protocol (e.g., https://example.com): ${urlError}`,
         },

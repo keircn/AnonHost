@@ -5,25 +5,37 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         
+        console.log("BMC Webhook payload:", JSON.stringify(body, null, 2));
+    
         const signature = req.headers.get('x-bmc-signature');
-        if (!verifySignature(signature, JSON.stringify(body), process.env.BMC_WEBHOOK_SECRET)) {
-            return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+        if (signature && process.env.BMC_WEBHOOK_SECRET) {
+            if (!verifySignature(signature, JSON.stringify(body), process.env.BMC_WEBHOOK_SECRET)) {
+                return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+            }
         }
         
-        const { transaction_id, supporter_email, amount, currency, support_type } = body;
+        const data = body.data || body;
         
-        if (!transaction_id || !supporter_email) {
+        const transactionId = data.transaction_id;
+        const supporterEmail = data.supporter_email;
+        const amount = data.amount || data.coffee_price;
+        const currency = data.currency;
+        const supportType = data.support_type;
+        
+        if (!transactionId || !supporterEmail) {
+            console.error("Missing required fields:", { transactionId, supporterEmail });
             return NextResponse.json({ error: "Invalid webhook payload" }, { status: 400 });
         }
-        
-        if (support_type === "coffee" && parseFloat(amount) >= 5 && currency === "USD") {
+
+        const validSupportTypes = ["coffee", "Supporter", "supporter"];
+        if (validSupportTypes.includes(supportType) && parseFloat(amount) >= 5 && currency === "USD") {
             const user = await prisma.user.findUnique({
-                where: { email: supporter_email }
+                where: { email: supporterEmail }
             });
             
             if (user) {
                 const existingTransaction = await prisma.transaction.findUnique({
-                    where: { transactionId: transaction_id }
+                    where: { transactionId }
                 });
                 
                 if (!existingTransaction) {
@@ -34,7 +46,7 @@ export async function POST(req: NextRequest) {
                     
                     await prisma.transaction.create({
                         data: {
-                            transactionId: transaction_id,
+                            transactionId,
                             userId: user.id,
                             amount: parseFloat(amount),
                             currency,
@@ -42,14 +54,25 @@ export async function POST(req: NextRequest) {
                             createdAt: new Date()
                         }
                     });
+                    
+                    console.log(`User ${user.email} upgraded to premium via BMC webhook`);
                 }
+            } else {
+                console.log(`No user found with email: ${supporterEmail}`);
             }
+        } else {
+            console.log("Transaction not eligible for premium upgrade:", { 
+                supportType, 
+                amount, 
+                currency,
+                eligible: validSupportTypes.includes(supportType) && parseFloat(amount) >= 5 && currency === "USD"
+            });
         }
         
         return NextResponse.json({ status: "success" });
         
     } catch (error) {
-        console.error("BMC webhook error:", error);
+        console.error("BMC webhook error:", error)
         return NextResponse.json({ status: "processed" });
     }
 }

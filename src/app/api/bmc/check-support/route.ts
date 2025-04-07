@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 
-async function checkBmcSupport(email: string) {
+async function checkBmcSupport(email: string, userId: string) {
   const accessToken = process.env.BMC_ACCESS_TOKEN;
   if (!accessToken) {
     throw new Error("BMC_ACCESS_TOKEN not configured");
@@ -27,43 +27,82 @@ async function checkBmcSupport(email: string) {
   }
 
   try {
-    const response = await fetch("https://developers.buymeacoffee.com/api/v1/supporters", {
+    const supportersResponse = await fetch("https://developers.buymeacoffee.com/api/v1/supporters", {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     });
 
-    if (!response.ok) {
-      throw new Error(`BMC API error: ${response.status}`);
+    if (!supportersResponse.ok) {
+      console.error(`BMC API error (supporters): ${supportersResponse.status}`);
+    } else {
+      const supportersData = await supportersResponse.json();
+      if (supportersData?.data) {
+        const supporter = supportersData.data.find((s: any) => 
+          s.email?.toLowerCase() === email.toLowerCase() && 
+          parseFloat(s.support_amount) >= 5 &&
+          s.currency === "USD"
+        );
+
+        if (supporter) {
+          await prisma.transaction.create({
+            data: {
+              transactionId: supporter.support_id || `auto-${Date.now()}`,
+              userId,
+              amount: parseFloat(supporter.support_amount),
+              currency: supporter.currency || "USD",
+              type: "bmc",
+              createdAt: new Date(supporter.support_date) || new Date()
+            }
+          });
+          
+          await prisma.user.update({
+            where: { id: userId },
+            data: { premium: true }
+          });
+          
+          return true;
+        }
+      }
+    }
+    
+    const transactionsResponse = await fetch("https://developers.buymeacoffee.com/api/v1/transactions", {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
+    if (!transactionsResponse.ok) {
+      throw new Error(`BMC API error (transactions): ${transactionsResponse.status}`);
     }
 
-    const data = await response.json();
-    if (!data?.data) return false;
+    const transactionsData = await transactionsResponse.json();
+    if (transactionsData?.data) {
+      const transaction = transactionsData.data.find((t: any) => 
+        t.payer_email?.toLowerCase() === email.toLowerCase() && 
+        parseFloat(t.amount) >= 5 &&
+        t.currency === "USD"
+      );
 
-    const supporter = data.data.find((s: any) => 
-      s.email?.toLowerCase() === email.toLowerCase() && 
-      parseFloat(s.support_amount) >= 5 &&
-      s.currency === "USD"
-    );
-
-    if (supporter) {
-      await prisma.transaction.create({
-        data: {
-          transactionId: supporter.support_id || `auto-${Date.now()}`,
-          userId: supporter.user_id,
-          amount: parseFloat(supporter.support_amount),
-          currency: supporter.currency,
-          type: "bmc",
-          createdAt: new Date(supporter.support_date) || new Date()
-        }
-      });
-      
-      await prisma.user.update({
-        where: { email },
-        data: { premium: true }
-      });
-      
-      return true;
+      if (transaction) {
+        await prisma.transaction.create({
+          data: {
+            transactionId: transaction.transaction_id || `auto-tx-${Date.now()}`,
+            userId,
+            amount: parseFloat(transaction.amount),
+            currency: transaction.currency || "USD",
+            type: "bmc",
+            createdAt: new Date(transaction.created_at) || new Date()
+          }
+        });
+        
+        await prisma.user.update({
+          where: { id: userId },
+          data: { premium: true }
+        });
+        
+        return true;
+      }
     }
     
     return false;
@@ -76,16 +115,17 @@ async function checkBmcSupport(email: string) {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
+    if (!session || !session.user?.email || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userEmail = session.user.email;
-    const isSupporter = await checkBmcSupport(userEmail);
+    const userId = session.user.id;
+    const isSupporter = await checkBmcSupport(userEmail, userId);
     
     if (isSupporter) {
       await prisma.user.update({
-        where: { email: userEmail },
+        where: { id: userId },
         data: { premium: true }
       });
       

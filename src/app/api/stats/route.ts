@@ -19,17 +19,16 @@ export async function GET() {
     const [userCount, totalUploads, storageUsed] = await Promise.all([
       prisma.user.count(),
       prisma.media.count(),
-      prisma.user.aggregate({
-        _sum: {
-          storageUsed: true,
-        },
-      }),
+      prisma.$queryRaw<[{ total: bigint }]>`
+        SELECT COALESCE(SUM("size"), 0) as total 
+        FROM "Media"
+      `,
     ]);
 
     const stats: Stats = {
       users: userCount || 0,
       uploads: totalUploads || 0,
-      storage: storageUsed._sum.storageUsed || 0,
+      storage: Number(storageUsed[0]?.total || 0),
     };
 
     cache.data = stats;

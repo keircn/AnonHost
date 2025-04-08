@@ -328,6 +328,7 @@ export default function Home() {
                     bytes(Math.max(0, stats?.storage || 0), {
                       unitSeparator: " ",
                       decimalPlaces: 1,
+                      fixedDecimals: true,
                     })
                   )}
                 </h3>

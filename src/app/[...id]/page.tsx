@@ -90,22 +90,21 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     ? `\n${badges.map((b) => `${b.emoji} ${b.label}`).join(" • ")}`
     : "";
 
-  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
-    media.user?.name || "Anonymous"
-  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
-
   const premiumTheme = media.user?.premium
     ? {
-        themeColor: badges[0]?.color || "#a855f7",
-        colorScheme: "dark" as const,
-        creator: media.user.name,
-        applicationName: "AnonHost Premium",
-        other: {
-          badges: badges.map((b) => `${b.emoji} ${b.label}`),
-          ...(badges[0]?.color && { badgeColor: badges[0].color }),
-        },
-      }
+      themeColor: badges[0]?.color || "#a855f7",
+      creator: media.user.name,
+      applicationName: "AnonHost Premium",
+      viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+      other: {
+        badges: badges.map((b) => `${b.emoji} ${b.label}`),
+        ...(badges[0]?.color && { badgeColor: badges[0].color }),
+      },
+    }
     : {};
+
+  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${media.user?.name || "Anonymous"
+    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
 
   const dimensions = {
     width: typeof media.width === "number" ? media.width : 1280,

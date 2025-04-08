@@ -111,7 +111,7 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
-            filter: "blur(8px) brightness(0.5)",
+            filter: "blur(1px) brightness(0.8)",
           }}
         />
       )}

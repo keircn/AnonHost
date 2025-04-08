@@ -43,7 +43,7 @@ interface Stats {
   totalUploads: number;
   storageUsed: number;
   apiRequests: number;
-  uid?: number;
+  uid: number;
   memberSince?: string;
   accountType?: string;
 }
@@ -89,6 +89,7 @@ export default function DashboardPage() {
     totalUploads: 0,
     storageUsed: 0,
     apiRequests: 0,
+    uid: 0,
   });
 
   const fetchMedia = async (page: number = 1) => {
@@ -414,7 +415,7 @@ export default function DashboardPage() {
                       {
                         title: "User ID",
                         description: "Your unique identifier",
-                        value: session?.user?.uid || "N/A",
+                        value: stats.uid || "N/A",
                         prefix: "#",
                       },
                       {

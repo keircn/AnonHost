@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
         select: { 
           premium: true, 
           admin: true,
-          uid: true
+          uid: true,
         },
       }),
 
@@ -153,10 +153,10 @@ export async function GET(req: NextRequest) {
     stats: {
       totalUploads: total,
       storageUsed: storageUsed,
-      storageLimit: storageLimit,
+      storageLimit,
       apiRequests,
       isAdmin: user?.admin || false,
-      uid: user?.uid || 0
+      uid: user?.uid || 0,
     },
     baseUrl,
   });

@@ -237,7 +237,7 @@ export default function Home() {
           </motion.div>
         </section>
 
-        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-gradient-to-b from-background to-muted/50">
+        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
           <motion.div
             className="container max-w-7xl mx-auto px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}

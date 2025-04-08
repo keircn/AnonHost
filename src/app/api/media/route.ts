@@ -203,7 +203,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         url: uploadResult.url,
         filename: uploadResult.filename,
-        type: uploadResult.type
+        type: uploadResult.type,
       });
     }
 

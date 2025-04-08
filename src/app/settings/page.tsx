@@ -707,7 +707,7 @@ export default function SettingsPage() {
                                 if (!res.ok) {
                                   throw new Error(
                                     data.error ||
-                                    "Failed to verify subscription",
+                                      "Failed to verify subscription",
                                   );
                                 }
 
@@ -779,7 +779,7 @@ export default function SettingsPage() {
                                   if (!res.ok) {
                                     throw new Error(
                                       data.error ||
-                                      "Failed to verify subscription",
+                                        "Failed to verify subscription",
                                     );
                                   }
 

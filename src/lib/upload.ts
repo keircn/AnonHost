@@ -83,11 +83,12 @@ export async function uploadFile(
   type: "avatar" | "banner" | undefined = undefined,
 ): Promise<UploadResult> {
   try {
-    const filename = type === "avatar"
-      ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension(file.name)}`
-      : type === "banner"
-        ? `banners/${userId}/${nanoid()}-banner${getFileExtension(file.name)}`
-        : `${userId}/${nanoid()}-${file.name}`;
+    const filename =
+      type === "avatar"
+        ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension(file.name)}`
+        : type === "banner"
+          ? `banners/${userId}/${nanoid()}-banner${getFileExtension(file.name)}`
+          : `${userId}/${nanoid()}-${file.name}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 

@@ -42,22 +42,26 @@ const staggerChildren = {
 const features = [
   {
     title: "Image Hosting",
-    description: "Upload and share images instantly with direct links, preview pages, and automatic thumbnail generation.",
+    description:
+      "Upload and share images instantly with direct links, preview pages, and automatic thumbnail generation.",
     icon: <LuImage className="h-5 w-5 text-primary" />,
   },
   {
     title: "URL Shortener",
-    description: "Create clean, short links for any URL with custom domains support and click analytics.",
+    description:
+      "Create clean, short links for any URL with custom domains support and click analytics.",
     icon: <LuLink2 className="h-5 w-5 text-primary" />,
   },
   {
     title: "Personal Bio",
-    description: "Showcase your uploads with a customizable profile page featuring themes, banners, and social links.",
+    description:
+      "Showcase your uploads with a customizable profile page featuring themes, banners, and social links.",
     icon: <LuUser className="h-5 w-5 text-primary" />,
   },
   {
     title: "API Access",
-    description: "Integrate with our powerful API for programmatic uploads and URL shortening.",
+    description:
+      "Integrate with our powerful API for programmatic uploads and URL shortening.",
     icon: <LuExternalLink className="h-5 w-5 text-primary" />,
   },
   {
@@ -67,7 +71,8 @@ const features = [
   },
   {
     title: "Community Driven",
-    description: "Funded by donations and maintained by a passionate developer.",
+    description:
+      "Funded by donations and maintained by a passionate developer.",
     icon: <LuHeart className="h-5 w-5 text-primary" />,
   },
 ];
@@ -80,14 +85,14 @@ const TransFlag = () => (
     className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer"
     initial={{ scale: 0.9 }}
     animate={{
-      rotate: [0, 360]
+      rotate: [0, 360],
     }}
     transition={{
       rotate: {
         duration: 20,
         repeat: Infinity,
         ease: "linear",
-      }
+      },
     }}
   >
     <div className="w-full h-full flex items-center justify-center">

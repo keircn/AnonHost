@@ -38,7 +38,7 @@ function getUserBadges(user: { id?: string; premium?: boolean } | null) {
   if (user?.premium) {
     badges.push({
       emoji: "💎",
-      label: "Premium ",
+      label: "Premium",
       color: "#a855f7",
     });
   }
@@ -114,11 +114,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (media.type === "VIDEO") {
     return {
-      title: `${badges.map((b) => b.emoji).join("")}${media.filename || "Untitled"}`,
+      title: `${badges.map((b) => b.emoji + " ").join("")}${media.filename || "Untitled"}`,
       description,
       ...premiumTheme,
       openGraph: {
-        title: `${badges.map((b) => b.emoji).join(" ")}${media.filename || "Untitled"}`,
+        title: `${badges.map((b) => b.emoji + " ").join("")}${media.filename || "Untitled"}`,
         description,
         type: "video.other",
         url: media.url,

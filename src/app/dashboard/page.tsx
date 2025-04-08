@@ -217,183 +217,185 @@ export default function DashboardPage() {
           >
             <TabsContent value="media" forceMount>
               {activeTab === "media" && (
-                <motion.div
-                  className="grid gap-6 lg:gap-8"
-                  variants={staggerContainer}
-                >
+                <>
                   <motion.div
-                    className="flex justify-between items-center"
-                    variants={fadeIn}
+                    className="grid gap-6 lg:gap-8"
+                    variants={staggerContainer}
                   >
-                    <h2 className="text-xl font-semibold">Your Files</h2>
-                    <Link href="/upload">
-                      <Button>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload New
-                      </Button>
-                    </Link>
-                  </motion.div>
-
-                  {isLoading ? (
-                    <motion.div className="text-center py-8" variants={fadeIn}>
-                      Loading your files...
-                    </motion.div>
-                  ) : mediaItems.length === 0 ? (
-                    <motion.div variants={fadeIn}>
-                      <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                          <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground mb-4">
-                            You haven&apos;t uploaded any files yet
-                          </p>
-                          <Link href="/upload">
-                            <Button>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Upload Your First File
-                            </Button>
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ) : (
                     <motion.div
-                      className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-                      variants={staggerContainer}
+                      className="flex justify-between items-center"
+                      variants={fadeIn}
                     >
-                      {mediaItems.map((item) => (
-                        <motion.div
-                          key={item.id}
-                          variants={fadeIn}
-                          layoutId={item.id}
-                        >
-                          <Card className="h-full">
-                            <div className="aspect-square relative overflow-hidden">
-                              {item.type === "VIDEO" ? (
-                                <video
-                                  src={item.url}
-                                  controls
-                                  className="absolute inset-0 w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Image
-                                  src={item.url || "/placeholder.svg"}
-                                  alt={item.filename}
-                                  fill
-                                  className="object-cover"
-                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                />
-                              )}
-                            </div>
-                            <CardContent className="p-4 lg:p-6">
-                              <div className="flex justify-between items-center">
-                                <div className="truncate mr-2">
-                                  <p className="font-medium truncate">
-                                    {item.filename}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {new Date(
-                                      item.createdAt,
-                                    ).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "2-digit",
-                                    })}
-                                    {item.type === "VIDEO" && item.duration && (
-                                      <span className="ml-2">
-                                        {Math.floor(item.duration / 60)}:
-                                        {(item.duration % 60)
-                                          .toString()
-                                          .padStart(2, "0")}
-                                      </span>
-                                    )}
-                                  </p>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    size="icon"
-                                    onClick={() => handleCopyUrl(item.id)}
-                                  >
-                                    <Copy className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    onClick={() => handleDeleteMedia(item.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                      <h2 className="text-xl font-semibold">Your Files</h2>
+                      <Link href="/upload">
+                        <Button>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload New
+                        </Button>
+                      </Link>
+                    </motion.div>
+
+                    {isLoading ? (
+                      <motion.div className="text-center py-8" variants={fadeIn}>
+                        Loading your files...
+                      </motion.div>
+                    ) : mediaItems.length === 0 ? (
+                      <motion.div variants={fadeIn}>
+                        <Card>
+                          <CardContent className="flex flex-col items-center justify-center py-12">
+                            <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground mb-4">
+                              You haven&apos;t uploaded any files yet
+                            </p>
+                            <Link href="/upload">
+                              <Button>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Upload Your First File
+                              </Button>
+                            </Link>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+                        variants={staggerContainer}
+                      >
+                        {mediaItems.map((item) => (
+                          <motion.div
+                            key={item.id}
+                            variants={fadeIn}
+                            layoutId={item.id}
+                          >
+                            <Card className="h-full">
+                              <div className="aspect-square relative overflow-hidden">
+                                {item.type === "VIDEO" ? (
+                                  <video
+                                    src={item.url}
+                                    controls
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Image
+                                    src={item.url || "/placeholder.svg"}
+                                    alt={item.filename}
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                  />
+                                )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                              <CardContent className="p-4 lg:p-6">
+                                <div className="flex justify-between items-center">
+                                  <div className="truncate mr-2">
+                                    <p className="font-medium truncate">
+                                      {item.filename}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {new Date(
+                                        item.createdAt,
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "2-digit",
+                                      })}
+                                      {item.type === "VIDEO" && item.duration && (
+                                        <span className="ml-2">
+                                          {Math.floor(item.duration / 60)}:
+                                          {(item.duration % 60)
+                                            .toString()
+                                            .padStart(2, "0")}
+                                        </span>
+                                      )}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Button
+                                      size="icon"
+                                      onClick={() => handleCopyUrl(item.id)}
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="icon"
+                                      onClick={() => handleDeleteMedia(item.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                  {mediaItems.length > 0 && (
+                    <motion.div
+                      variants={fadeIn}
+                      className="mt-6 flex justify-center"
+                    >
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            {currentPage > 1 && (
+                              <PaginationPrevious
+                                onClick={() =>
+                                  setCurrentPage((p) => Math.max(1, p - 1))
+                                }
+                              />
+                            )}
+                          </PaginationItem>
+
+                          {[...Array(paginationInfo.pages)].map((_, i) => {
+                            const pageNumber = i + 1;
+                            if (
+                              pageNumber === 1 ||
+                              pageNumber === paginationInfo.pages ||
+                              (pageNumber >= currentPage - 1 &&
+                                pageNumber <= currentPage + 1)
+                            ) {
+                              return (
+                                <PaginationItem key={pageNumber}>
+                                  <PaginationLink
+                                    onClick={() => setCurrentPage(pageNumber)}
+                                    isActive={currentPage === pageNumber}
+                                  >
+                                    {pageNumber}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              );
+                            } else if (
+                              pageNumber === currentPage - 2 ||
+                              pageNumber === currentPage + 2
+                            ) {
+                              return (
+                                <PaginationItem key={pageNumber}>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              );
+                            }
+                            return null;
+                          })}
+
+                          <PaginationItem>
+                            {currentPage < paginationInfo.pages && (
+                              <PaginationNext
+                                onClick={() =>
+                                  setCurrentPage((p) =>
+                                    Math.min(paginationInfo.pages, p + 1),
+                                  )
+                                }
+                              />
+                            )}
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </motion.div>
                   )}
-                </motion.div>
-              )}
-              {mediaItems.length > 0 && (
-                <motion.div
-                  variants={fadeIn}
-                  className="mt-6 flex justify-center"
-                >
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        {currentPage > 1 && (
-                          <PaginationPrevious
-                            onClick={() =>
-                              setCurrentPage((p) => Math.max(1, p - 1))
-                            }
-                          />
-                        )}
-                      </PaginationItem>
-
-                      {[...Array(paginationInfo.pages)].map((_, i) => {
-                        const pageNumber = i + 1;
-                        if (
-                          pageNumber === 1 ||
-                          pageNumber === paginationInfo.pages ||
-                          (pageNumber >= currentPage - 1 &&
-                            pageNumber <= currentPage + 1)
-                        ) {
-                          return (
-                            <PaginationItem key={pageNumber}>
-                              <PaginationLink
-                                onClick={() => setCurrentPage(pageNumber)}
-                                isActive={currentPage === pageNumber}
-                              >
-                                {pageNumber}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        } else if (
-                          pageNumber === currentPage - 2 ||
-                          pageNumber === currentPage + 2
-                        ) {
-                          return (
-                            <PaginationItem key={pageNumber}>
-                              <PaginationEllipsis />
-                            </PaginationItem>
-                          );
-                        }
-                        return null;
-                      })}
-
-                      <PaginationItem>
-                        {currentPage < paginationInfo.pages && (
-                          <PaginationNext
-                            onClick={() =>
-                              setCurrentPage((p) =>
-                                Math.min(paginationInfo.pages, p + 1),
-                              )
-                            }
-                          />
-                        )}
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </motion.div>
+                </>
               )}
             </TabsContent>
 

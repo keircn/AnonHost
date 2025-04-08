@@ -11,7 +11,7 @@ const MAX_REQUESTS_PER_WINDOW = {
 };
 
 // it kept rate limiting pages lmfao
-const RATE_LIMITED_METHODS = ["POST", "PUT", "DELETE"];
+const RATE_LIMITED_METHODS = ["POST", "PUT", "DELETE", "GET"];
 
 export async function middleware(request: NextRequest) {
   if (!RATE_LIMITED_METHODS.includes(request.method)) {

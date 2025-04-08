@@ -38,7 +38,7 @@ function getUserBadges(user: { id?: string; premium?: boolean } | null) {
   if (user?.premium) {
     badges.push({
       emoji: "💎",
-      label: "Premium",
+      label: "Premium ",
       color: "#a855f7",
     });
   }

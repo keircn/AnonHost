@@ -440,7 +440,7 @@ export default function DashboardPage() {
                       {
                         title: "Storage Used",
                         description: `${storageStats.used} of ${storageStats.total}`,
-                        value: `${storageStats.percentage}%`,
+                        value: storageStats.percentage,
                       },
                       {
                         title: "API Requests",

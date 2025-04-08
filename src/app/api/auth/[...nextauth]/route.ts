@@ -1,5 +1,6 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth, { AuthOptions, User } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { sendEmail } from "@/lib/mailgun";
@@ -18,6 +19,50 @@ BigInt.prototype.toJSON = function (): string {
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    CredentialsProvider({
+      id: "email-login",
+      name: "Email",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        otp: { label: "OTP", type: "text" }
+      },
+      async authorize(credentials): Promise<User | null> {
+        if (!credentials?.email || !credentials?.otp) return null;
+
+        const dbUser = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        });
+
+        if (!dbUser) return null;
+
+        const otpRecord = await prisma.OTP.findFirst({
+          where: {
+            email: credentials.email,
+            code: credentials.otp,
+            type: "registration",
+            used: false,
+            expiresAt: { gt: new Date() },
+          }
+        });
+
+        if (!otpRecord) return null;
+
+        await prisma.OTP.update({
+          where: { id: otpRecord.id },
+          data: { used: true }
+        });
+
+        return {
+          id: dbUser.id,
+          email: dbUser.email,
+          name: dbUser.name,
+          image: dbUser.image,
+          admin: dbUser.admin,
+          premium: dbUser.premium,
+          emailVerified: dbUser.emailVerified
+        };
+      }
+    }),
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID as string,
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
@@ -29,21 +74,22 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
+  session: {
+    strategy: "jwt"
+  },
   callbacks: {
-    async session({ session, user }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: user.id.toString(),
-          admin: user.admin,
-          premium: user.premium,
-        },
-      };
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.sub!;
+        session.user.admin = token.admin as boolean;
+        session.user.premium = token.premium as boolean;
+      }
+      return session;
     },
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token;
+    async jwt({ token, user }) {
+      if (user) {
+        token.admin = user.admin;
+        token.premium = user.premium;
       }
       return token;
     },

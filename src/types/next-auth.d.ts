@@ -14,7 +14,7 @@ declare module "next-auth" {
   }
 
   interface User extends AdapterUser {
-    id: number;
+    id: string;
     name?: string | null;
     email?: string | null;
     image?: string | null;
@@ -25,6 +25,7 @@ declare module "next-auth" {
 
 declare module "@auth/core/adapters" {
   interface AdapterUser {
+    id: string;
     admin: boolean;
     premium: boolean;
   }

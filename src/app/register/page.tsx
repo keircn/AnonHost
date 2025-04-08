@@ -20,6 +20,16 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/auth/email", {
         method: "POST",
@@ -27,18 +37,21 @@ export default function RegisterPage() {
         body: JSON.stringify({ email }),
       });
 
-      if (!response.ok) throw new Error("Failed to send OTP");
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to send verification code");
+      }
 
       toast({
         title: "Check your email",
-        description: "We've sent you a one-time password to login",
+        description: "We've sent you a verification code to continue",
       });
 
       window.location.href = `/verify?email=${encodeURIComponent(email)}`;
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to send login code, ${error instanceof Error ? error.message : "Unknown error"}`,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
     } finally {

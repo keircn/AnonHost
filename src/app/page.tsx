@@ -24,8 +24,12 @@ import {
   LuLink2,
   LuUser,
   LuHeart,
+  LuHardDrive,
 } from "react-icons/lu";
 import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import bytes from "bytes";
+import useSWR from "swr";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -112,6 +116,12 @@ export default function Home() {
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
   const installCommand = "curl https://keiran.cc/install | bash";
+
+  const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+  const { data: stats } = useSWR("/api/stats", fetcher, {
+    refreshInterval: 300000,
+  });
 
   const handleCopy = async () => {
     try {
@@ -224,6 +234,94 @@ export default function Home() {
                 </CardContent>
               </Card>
             </motion.div>
+          </motion.div>
+        </section>
+
+        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-gradient-to-b from-background to-muted/50">
+          <motion.div
+            className="container max-w-7xl mx-auto px-4 md:px-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
+                Trusted by creators worldwide
+              </h2>
+              <p className="text-muted-foreground max-w-lg mx-auto">
+                Join many of our users who trust AnonHost for their image hosting needs
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+              <motion.div
+                className="relative p-6 rounded-xl bg-card border shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary/10 p-3">
+                  <LuUser className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-4xl font-bold mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+                  <CountUp
+                    end={stats?.users ?? 0}
+                    duration={2.5}
+                    separator=","
+                    formattingFn={(value) => Math.max(0, value).toString()}
+                  />
+                </h3>
+                <p className="text-muted-foreground mt-2">Registered Users</p>
+              </motion.div>
+
+              <motion.div
+                className="relative p-6 rounded-xl bg-card border shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary/10 p-3">
+                  <LuImage className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-4xl font-bold mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+                  <CountUp
+                    end={stats?.uploads ?? 0}
+                    duration={2.5}
+                    separator=","
+                    formattingFn={(value) => Math.max(0, value).toString()}
+                  />
+                </h3>
+                <p className="text-muted-foreground mt-2">Total Uploads</p>
+              </motion.div>
+
+              <motion.div
+                className="relative p-6 rounded-xl bg-card border shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary/10 p-3">
+                  <LuHardDrive className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-4xl font-bold mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+                  {stats ? bytes(Math.max(0, stats.storage || 0), {
+                    unitSeparator: " ",
+                    decimalPlaces: 1,
+                  }) : "0 B"}
+                </h3>
+                <p className="text-muted-foreground mt-2">Storage Used</p>
+              </motion.div>
+            </div>
           </motion.div>
         </section>
 

@@ -13,18 +13,18 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowRight,
-  Upload,
-  ExternalLink,
-  CheckCircle,
-  Copy,
-  Terminal,
-  Shield,
-  Image,
-  Link2,
-  User,
-  Heart,
-} from "lucide-react";
+  LuArrowRight,
+  LuUpload,
+  LuExternalLink,
+  LuCircleCheck,
+  LuCopy,
+  LuTerminal,
+  LuShield,
+  LuImage,
+  LuLink2,
+  LuUser,
+  LuHeart,
+} from "react-icons/lu";
 import { motion } from "framer-motion";
 
 const fadeIn = {
@@ -43,32 +43,32 @@ const features = [
   {
     title: "Image Hosting",
     description: "Upload and share images instantly with direct links, preview pages, and automatic thumbnail generation.",
-    icon: <Image className="h-5 w-5 text-primary" />,
+    icon: <LuImage className="h-5 w-5 text-primary" />,
   },
   {
     title: "URL Shortener",
     description: "Create clean, short links for any URL with custom domains support and click analytics.",
-    icon: <Link2 className="h-5 w-5 text-primary" />,
+    icon: <LuLink2 className="h-5 w-5 text-primary" />,
   },
   {
     title: "Personal Bio",
     description: "Showcase your uploads with a customizable profile page featuring themes, banners, and social links.",
-    icon: <User className="h-5 w-5 text-primary" />,
+    icon: <LuUser className="h-5 w-5 text-primary" />,
   },
   {
     title: "API Access",
     description: "Integrate with our powerful API for programmatic uploads and URL shortening.",
-    icon: <ExternalLink className="h-5 w-5 text-primary" />,
+    icon: <LuExternalLink className="h-5 w-5 text-primary" />,
   },
   {
     title: "European Privacy",
     description: "Based in Europe with full GDPR compliance for your privacy.",
-    icon: <Shield className="h-5 w-5 text-primary" />,
+    icon: <LuShield className="h-5 w-5 text-primary" />,
   },
   {
     title: "Community Driven",
     description: "Funded by donations and maintained by a passionate developer.",
-    icon: <Heart className="h-5 w-5 text-primary" />,
+    icon: <LuHeart className="h-5 w-5 text-primary" />,
   },
 ];
 
@@ -80,15 +80,9 @@ const TransFlag = () => (
     className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer"
     initial={{ scale: 0.9 }}
     animate={{
-      y: [0, -10, 0],
-      rotate: [0, 360],
+      rotate: [0, 360]
     }}
     transition={{
-      y: {
-        duration: 6,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
       rotate: {
         duration: 20,
         repeat: Infinity,
@@ -173,7 +167,7 @@ export default function Home() {
                       className="gap-2 w-full min-[400px]:w-auto cursor-pointer hover:bg-primary/80 transition-all"
                     >
                       Get Started
-                      <ArrowRight className="h-4 w-4" />
+                      <LuArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Link href="/api">
@@ -183,7 +177,7 @@ export default function Home() {
                       className="gap-2 w-full min-[400px]:w-auto cursor-pointer hover:bg-secondary/30"
                     >
                       API Documentation
-                      <ExternalLink className="h-4 w-4" />
+                      <LuExternalLink className="h-4 w-4" />
                     </Button>
                   </Link>
                 </motion.div>
@@ -220,7 +214,7 @@ export default function Home() {
               <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm">
                 <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
                   <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4">
-                    <Upload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
+                    <LuUpload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
                   </div>
                 </CardContent>
               </Card>
@@ -288,7 +282,7 @@ export default function Home() {
             <Card className="overflow-hidden">
               <CardHeader className="bg-muted/50 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <Terminal className="h-6 w-6 text-primary" />
+                  <LuTerminal className="h-6 w-6 text-primary" />
                   <div>
                     <CardTitle className="text-xl sm:text-2xl">
                       Command Line Interface
@@ -315,9 +309,9 @@ export default function Home() {
                     aria-label="Copy install command"
                   >
                     {isCopied ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <LuCircleCheck className="h-4 w-4 text-green-500" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <LuCopy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
@@ -362,7 +356,7 @@ export default function Home() {
                         className="gap-2 w-full sm:w-auto cursor-pointer"
                       >
                         Create Free Account
-                        <ArrowRight className="h-4 w-4" />
+                        <LuArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
                     <Link href="/pricing">

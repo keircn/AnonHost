@@ -60,15 +60,14 @@ export default function SettingsPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [newEmail, setNewEmail] = useState("");
+  const [bmcEmail, setBmcEmail] = useState("");
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [settings, setSettings] = useState({
     enableNotifications: true,
     enableDirectLinks: true,
     customDomain: "",
   });
-  const [newEmail, setNewEmail] = useState("");
-  const [isChangingEmail, setIsChangingEmail] = useState(false);
-
-  const [transactionId, setTransactionId] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -591,13 +590,13 @@ export default function SettingsPage() {
                           <div className="flex gap-2">
                             <Input
                               placeholder="Enter your BuyMeACoffee email"
-                              value={newEmail}
-                              onChange={(e) => setNewEmail(e.target.value)}
+                              value={bmcEmail}
+                              onChange={(e) => setBmcEmail(e.target.value)}
                             />
                             <Button
                               variant="outline"
                               onClick={async () => {
-                                if (!newEmail) {
+                                if (!bmcEmail) {
                                   toast({
                                     title: "Email Required",
                                     description: "Please enter your BuyMeACoffee email address",
@@ -607,7 +606,7 @@ export default function SettingsPage() {
                                 }
 
                                 try {
-                                  const res = await fetch(`/api/bmc/check-subscription?email=${encodeURIComponent(newEmail)}`);
+                                  const res = await fetch(`/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`); // Update to use bmcEmail
                                   const data = await res.json();
 
                                   if (!res.ok) {
@@ -619,7 +618,7 @@ export default function SettingsPage() {
                                       title: "Premium Activated",
                                       description: "Your membership has been verified and Premium access granted.",
                                     });
-                                    setNewEmail("");
+                                    setBmcEmail("");
                                   } else {
                                     toast({
                                       title: "No Active Membership",

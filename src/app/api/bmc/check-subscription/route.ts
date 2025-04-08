@@ -17,7 +17,7 @@ async function checkBmcSubscription(email: string) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -25,12 +25,13 @@ async function checkBmcSubscription(email: string) {
     }
 
     const data = await response.json();
-    
-    const activeSubscription = data.data.find((sub: BMCSubscription) => 
-      sub.payer_email.toLowerCase() === email.toLowerCase() &&
-      !sub.subscription_cancelled_on &&
-      !sub.subscription_is_cancelled &&
-      new Date(sub.subscription_current_period_end) > new Date()
+
+    const activeSubscription = data.data.find(
+      (sub: BMCSubscription) =>
+        sub.payer_email.toLowerCase() === email.toLowerCase() &&
+        !sub.subscription_cancelled_on &&
+        !sub.subscription_is_cancelled &&
+        new Date(sub.subscription_current_period_end) > new Date(),
     );
 
     return activeSubscription || null;
@@ -53,7 +54,7 @@ export async function GET(req: Request) {
     if (!emailToCheck) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
-    
+
     const subscription = await checkBmcSubscription(emailToCheck);
 
     if (subscription) {
@@ -70,7 +71,7 @@ export async function GET(req: Request) {
     console.error("BMC subscription check error:", error);
     return NextResponse.json(
       { error: "Failed to check subscription status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

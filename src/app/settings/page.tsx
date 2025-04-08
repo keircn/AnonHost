@@ -537,7 +537,8 @@ export default function SettingsPage() {
                       <motion.div className="space-y-2" variants={fadeIn}>
                         <Label>BuyMeACoffee Membership</Label>
                         <p className="text-sm text-muted-foreground mb-2">
-                          Support the project with a monthly membership via BuyMeACoffee to get Premium access.
+                          Support the project with a monthly membership via
+                          BuyMeACoffee to get Premium access.
                         </p>
 
                         <div className="flex flex-col gap-3">
@@ -545,29 +546,39 @@ export default function SettingsPage() {
                             variant="outline"
                             onClick={async () => {
                               try {
-                                const res = await fetch("/api/bmc/check-subscription");
+                                const res = await fetch(
+                                  "/api/bmc/check-subscription",
+                                );
                                 const data = await res.json();
 
                                 if (!res.ok) {
-                                  throw new Error(data.error || "Failed to verify subscription");
+                                  throw new Error(
+                                    data.error ||
+                                      "Failed to verify subscription",
+                                  );
                                 }
 
                                 if (data.subscribed) {
                                   toast({
                                     title: "Premium Activated",
-                                    description: "Your membership has been verified and Premium access granted.",
+                                    description:
+                                      "Your membership has been verified and Premium access granted.",
                                   });
                                 } else {
                                   toast({
                                     title: "No Active Membership",
-                                    description: "We couldn't find an active membership for your account. Visit BuyMeACoffee to become a member.",
+                                    description:
+                                      "We couldn't find an active membership for your account. Visit BuyMeACoffee to become a member.",
                                     variant: "destructive",
                                   });
                                 }
                               } catch (error) {
                                 toast({
                                   title: "Verification Failed",
-                                  description: error instanceof Error ? error.message : "An unknown error occurred",
+                                  description:
+                                    error instanceof Error
+                                      ? error.message
+                                      : "An unknown error occurred",
                                   variant: "destructive",
                                 });
                               }
@@ -599,37 +610,48 @@ export default function SettingsPage() {
                                 if (!bmcEmail) {
                                   toast({
                                     title: "Email Required",
-                                    description: "Please enter your BuyMeACoffee email address",
+                                    description:
+                                      "Please enter your BuyMeACoffee email address",
                                     variant: "destructive",
                                   });
                                   return;
                                 }
 
                                 try {
-                                  const res = await fetch(`/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`); // Update to use bmcEmail
+                                  const res = await fetch(
+                                    `/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`,
+                                  ); // Update to use bmcEmail
                                   const data = await res.json();
 
                                   if (!res.ok) {
-                                    throw new Error(data.error || "Failed to verify subscription");
+                                    throw new Error(
+                                      data.error ||
+                                        "Failed to verify subscription",
+                                    );
                                   }
 
                                   if (data.subscribed) {
                                     toast({
                                       title: "Premium Activated",
-                                      description: "Your membership has been verified and Premium access granted.",
+                                      description:
+                                        "Your membership has been verified and Premium access granted.",
                                     });
                                     setBmcEmail("");
                                   } else {
                                     toast({
                                       title: "No Active Membership",
-                                      description: "We couldn't find an active membership for this email address.",
+                                      description:
+                                        "We couldn't find an active membership for this email address.",
                                       variant: "destructive",
                                     });
                                   }
                                 } catch (error) {
                                   toast({
                                     title: "Verification Failed",
-                                    description: error instanceof Error ? error.message : "An unknown error occurred",
+                                    description:
+                                      error instanceof Error
+                                        ? error.message
+                                        : "An unknown error occurred",
                                     variant: "destructive",
                                   });
                                 }

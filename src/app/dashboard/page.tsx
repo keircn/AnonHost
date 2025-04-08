@@ -342,7 +342,9 @@ export default function DashboardPage() {
                       <PaginationItem>
                         {currentPage > 1 && (
                           <PaginationPrevious
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            onClick={() =>
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                            }
                           />
                         )}
                       </PaginationItem>
@@ -352,7 +354,8 @@ export default function DashboardPage() {
                         if (
                           pageNumber === 1 ||
                           pageNumber === paginationInfo.pages ||
-                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                          (pageNumber >= currentPage - 1 &&
+                            pageNumber <= currentPage + 1)
                         ) {
                           return (
                             <PaginationItem key={pageNumber}>
@@ -381,7 +384,9 @@ export default function DashboardPage() {
                         {currentPage < paginationInfo.pages && (
                           <PaginationNext
                             onClick={() =>
-                              setCurrentPage((p) => Math.min(paginationInfo.pages, p + 1))
+                              setCurrentPage((p) =>
+                                Math.min(paginationInfo.pages, p + 1),
+                              )
                             }
                           />
                         )}

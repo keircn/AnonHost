@@ -74,8 +74,7 @@ export async function POST(req: NextRequest) {
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         {
-          error:
-            "Invalid file type.",
+          error: "Invalid file type.",
         },
         { status: 400 },
       );

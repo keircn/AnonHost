@@ -2,44 +2,17 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { BMCSubscription, BMCSingleSubscriptionResponse } from "@/types/bmc";
+import { BMCSubscription } from "@/types/bmc";
 
-async function checkBmcSubscription(email: string, subscriptionId?: string) {
+async function checkBmcSubscription(email: string) {
   const accessToken = process.env.BMC_ACCESS_TOKEN;
   if (!accessToken) {
     throw new Error("BMC_ACCESS_TOKEN not configured");
   }
 
   try {
-    if (subscriptionId) {
-      const response = await fetch(
-        `https://developers.buymeacoffee.com/api/v1/subscriptions/${subscriptionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`BMC API error: ${response.status}`);
-      }
-
-      const subscription: BMCSingleSubscriptionResponse = await response.json();
-      
-      const isActive = !subscription.subscription_cancelled_on && 
-                      !subscription.subscription_is_cancelled &&
-                      new Date(subscription.subscription_current_period_end) > new Date();
-
-      if (isActive && subscription.payer_email.toLowerCase() === email.toLowerCase()) {
-        return subscription;
-      }
-      
-      return null;
-    }
-
     const response = await fetch(
-      "https://developers.buymeacoffee.com/api/v1/subscriptions",
+      "https://developers.buymeacoffee.com/api/v1/subscriptions?status=active",
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -70,14 +43,18 @@ async function checkBmcSubscription(email: string, subscriptionId?: string) {
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email || !session?.user?.id) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const url = new URL(req.url);
-    const subscriptionId = url.searchParams.get("subscriptionId");
+    const emailToCheck = url.searchParams.get("email") || session.user.email;
+
+    if (!emailToCheck) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
     
-    const subscription = await checkBmcSubscription(session.user.email, subscriptionId || undefined);
+    const subscription = await checkBmcSubscription(emailToCheck);
 
     if (subscription) {
       await prisma.user.update({

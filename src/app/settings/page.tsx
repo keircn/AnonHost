@@ -561,7 +561,7 @@ export default function SettingsPage() {
                                 } else {
                                   toast({
                                     title: "No Active Membership",
-                                    description: "We couldn't find an active membership. You can enter your subscription ID or visit BuyMeACoffee to become a member.",
+                                    description: "We couldn't find an active membership for your account. Visit BuyMeACoffee to become a member.",
                                     variant: "destructive",
                                   });
                                 }
@@ -583,31 +583,31 @@ export default function SettingsPage() {
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                               <span className="bg-background px-2 text-muted-foreground">
-                                Or enter subscription ID manually
+                                Or verify with different email
                               </span>
                             </div>
                           </div>
 
                           <div className="flex gap-2">
                             <Input
-                              placeholder="Enter Subscription ID"
-                              value={transactionId}
-                              onChange={(e) => setTransactionId(e.target.value)}
+                              placeholder="Enter your BuyMeACoffee email"
+                              value={newEmail}
+                              onChange={(e) => setNewEmail(e.target.value)}
                             />
                             <Button
                               variant="outline"
                               onClick={async () => {
-                                if (!transactionId) {
+                                if (!newEmail) {
                                   toast({
-                                    title: "ID Required",
-                                    description: "Please enter your subscription ID",
+                                    title: "Email Required",
+                                    description: "Please enter your BuyMeACoffee email address",
                                     variant: "destructive",
                                   });
                                   return;
                                 }
 
                                 try {
-                                  const res = await fetch(`/api/bmc/check-subscription?subscriptionId=${transactionId}`);
+                                  const res = await fetch(`/api/bmc/check-subscription?email=${encodeURIComponent(newEmail)}`);
                                   const data = await res.json();
 
                                   if (!res.ok) {
@@ -619,11 +619,11 @@ export default function SettingsPage() {
                                       title: "Premium Activated",
                                       description: "Your membership has been verified and Premium access granted.",
                                     });
-                                    setTransactionId("");
+                                    setNewEmail("");
                                   } else {
                                     toast({
-                                      title: "Invalid Subscription",
-                                      description: "The provided subscription ID is invalid or inactive.",
+                                      title: "No Active Membership",
+                                      description: "We couldn't find an active membership for this email address.",
                                       variant: "destructive",
                                     });
                                   }

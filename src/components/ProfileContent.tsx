@@ -123,7 +123,7 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
         animate="animate"
         exit="exit"
       >
-        <Card className="backdrop-blur-sm bg-background/80 shadow-xl">
+        <Card className="backdrop-blur-sm bg-background/60 shadow-xl">
           <CardContent className="p-8">
             <motion.div
               className="flex flex-col items-center text-center gap-6"

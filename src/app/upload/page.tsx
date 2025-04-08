@@ -183,12 +183,7 @@ export default function UploadPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files)
-        .filter(
-          (file) =>
-            file.type.startsWith("image/") || file.type.startsWith("video/"),
-        )
-        .filter(validateFile);
+      const newFiles = Array.from(e.target.files).filter(validateFile);
 
       if (newFiles.length === 0) {
         toast({

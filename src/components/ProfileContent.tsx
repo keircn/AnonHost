@@ -203,7 +203,7 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
                       variants={fadeIn}
                     >
                       {user.profile.socialLinks.map(
-                        (link: SocialLink) => (
+                        (link: SocialLink, index: number) => (
                           <TooltipProvider key={link.id}>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -216,6 +216,7 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
                                   whileTap={{ scale: 0.9 }}
                                   initial={{ opacity: 0, scale: 0 }}
                                   animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ opacity: { delay: index * 0.1 }, scale: { delay: 0 } }}
                                 >
                                   {getPlatformIcon(link.platform)}
                                 </motion.a>

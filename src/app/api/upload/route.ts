@@ -68,13 +68,14 @@ export async function POST(req: NextRequest) {
       "application/x-sh",
       "application/x-yaml",
       "application/x-typescript",
+      "application/x-markdown",
     ];
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         {
           error:
-            "Invalid file type. Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, OGG) are allowed",
+            "Invalid file type.",
         },
         { status: 400 },
       );

@@ -126,6 +126,7 @@ export default function UploadPage() {
         "application/x-sh",
         "application/x-yaml",
         "application/x-typescript",
+        "application/x-markdown",
       ];
 
       if (!allowedTypes.includes(file.type)) {

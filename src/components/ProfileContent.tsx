@@ -169,7 +169,6 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
                           <Tooltip>
                             <TooltipTrigger>
                               <motion.div
-                                className="p-1.5 rounded-full hover:bg-background/50 transition-colors"
                                 whileHover={{ scale: 1.2 }}
                                 whileTap={{ scale: 0.9 }}
                               >
@@ -204,7 +203,7 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
                       variants={fadeIn}
                     >
                       {user.profile.socialLinks.map(
-                        (link: SocialLink, index: number) => (
+                        (link: SocialLink) => (
                           <TooltipProvider key={link.id}>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -217,7 +216,6 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
                                   whileTap={{ scale: 0.9 }}
                                   initial={{ opacity: 0, scale: 0 }}
                                   animate={{ opacity: 1, scale: 1 }}
-                                  transition={{ delay: index * 0.1 }}
                                 >
                                   {getPlatformIcon(link.platform)}
                                 </motion.a>

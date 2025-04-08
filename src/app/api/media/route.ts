@@ -113,8 +113,8 @@ export async function GET(req: NextRequest) {
 
       prisma.user.findUnique({
         where: { id: userId.toString() },
-        select: { 
-          premium: true, 
+        select: {
+          premium: true,
           admin: true,
           uid: true,
         },

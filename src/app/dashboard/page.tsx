@@ -240,7 +240,10 @@ export default function DashboardPage() {
                     </motion.div>
 
                     {isLoading ? (
-                      <motion.div className="text-center py-8" variants={fadeIn}>
+                      <motion.div
+                        className="text-center py-8"
+                        variants={fadeIn}
+                      >
                         Loading your files...
                       </motion.div>
                     ) : mediaItems.length === 0 ? (
@@ -303,14 +306,15 @@ export default function DashboardPage() {
                                         month: "long",
                                         day: "2-digit",
                                       })}
-                                      {item.type === "VIDEO" && item.duration && (
-                                        <span className="ml-2">
-                                          {Math.floor(item.duration / 60)}:
-                                          {(item.duration % 60)
-                                            .toString()
-                                            .padStart(2, "0")}
-                                        </span>
-                                      )}
+                                      {item.type === "VIDEO" &&
+                                        item.duration && (
+                                          <span className="ml-2">
+                                            {Math.floor(item.duration / 60)}:
+                                            {(item.duration % 60)
+                                              .toString()
+                                              .padStart(2, "0")}
+                                          </span>
+                                        )}
                                     </p>
                                   </div>
                                   <div className="flex items-center space-x-2">
@@ -413,26 +417,6 @@ export default function DashboardPage() {
                     );
                     const statsData = [
                       {
-                        title: "User ID",
-                        description: "Your unique identifier",
-                        value: stats.uid || "N/A",
-                        prefix: "#",
-                      },
-                      {
-                        title: "Account Type",
-                        description: "Your current subscription tier",
-                        value: session?.user?.premium ? "Premium" : "Free",
-                      },
-                      {
-                        title: "Member Since",
-                        description: "Account creation date",
-                        value: new Date(session?.user?.createdAt || Date.now()).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }),
-                      },
-                      {
                         title: "Total Uploads",
                         description: "Number of files you've uploaded",
                         value: stats.totalUploads,
@@ -447,6 +431,28 @@ export default function DashboardPage() {
                         description: "API requests in the last 30 days",
                         value: stats.apiRequests,
                       },
+                      {
+                        title: "User ID",
+                        description: "Your unique identifier",
+                        value: stats.uid || "N/A",
+                        prefix: "#",
+                      },
+                      {
+                        title: "Account Type",
+                        description: "Your current subscription tier",
+                        value: session?.user?.premium ? "Premium" : "Free",
+                      },
+                      {
+                        title: "Member Since",
+                        description: "Account creation date",
+                        value: new Date(
+                          session?.user?.createdAt || Date.now(),
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }),
+                      },
                     ];
                     return (
                       <motion.div
@@ -459,7 +465,9 @@ export default function DashboardPage() {
                           <motion.div key={stat.title} variants={fadeIn}>
                             <Card className="h-full">
                               <CardHeader>
-                                <CardTitle className="text-xl">{stat.title}</CardTitle>
+                                <CardTitle className="text-xl">
+                                  {stat.title}
+                                </CardTitle>
                                 <CardDescription className="text-sm">
                                   {stat.description}
                                 </CardDescription>

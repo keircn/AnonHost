@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.otp) return null;
-      
+
         const dbUser = await prisma.user.findUnique({
           where: { email: credentials.email },
           select: {

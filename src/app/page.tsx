@@ -107,7 +107,6 @@ const TransFlag = () => (
         <div className="absolute top-[60%] left-0 w-full h-[20%] bg-[#F7A8B8]" />
         <div className="absolute top-[80%] left-0 w-full h-[20%] bg-[#55CDFC]" />
       </div>
-      <div className="w-1 h-6 bg-black ml-1" />
     </div>
   </motion.a>
 );

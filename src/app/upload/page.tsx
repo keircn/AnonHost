@@ -8,7 +8,15 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ImageIcon, X, Settings2, File, FileText, FileType, Code } from "lucide-react";
+import {
+  Upload,
+  X,
+  Settings2,
+  File,
+  FileText,
+  FileType,
+  Code,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/file-settings-modal";
 import type { FileSettings } from "@/types/file-settings";
@@ -96,22 +104,35 @@ export default function UploadPage() {
   const validateFile = useCallback(
     (file: File): boolean => {
       const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
 
-        "image/jpeg", "image/png", "image/gif", "image/webp",
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
 
-        "video/mp4", "video/webm", "video/ogg",
+        "text/plain",
+        "text/markdown",
+        "text/html",
+        "text/css",
+        "text/javascript",
 
-        "text/plain", "text/markdown", "text/html", "text/css", "text/javascript",
-
-        "application/json", "application/xml", "application/pdf",
-        "application/x-httpd-php", "application/x-sh", "application/x-yaml",
-        "application/x-typescript"
+        "application/json",
+        "application/xml",
+        "application/pdf",
+        "application/x-httpd-php",
+        "application/x-sh",
+        "application/x-yaml",
+        "application/x-typescript",
       ];
 
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: "Invalid file type",
-          description: "Only images, videos, text files, and documents are allowed",
+          description:
+            "Only images, videos, text files, and documents are allowed",
           variant: "destructive",
         });
         return false;
@@ -142,8 +163,7 @@ export default function UploadPage() {
       setIsDragging(false);
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        const newFiles = Array.from(e.dataTransfer.files)
-          .filter(validateFile);
+        const newFiles = Array.from(e.dataTransfer.files).filter(validateFile);
 
         if (newFiles.length === 0) {
           toast({

@@ -1,5 +1,3 @@
-import { ShareXConfig } from "@/types/settings";
-
 export function generateShareXConfig(apiKey: string, baseUrl: string) {
   return {
     Version: "17.0.0",

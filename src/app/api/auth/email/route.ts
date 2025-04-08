@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
     const { subject, text, html } = verificationEmailTemplate(
       otp,
       email,
-      "login"
+      "login",
     );
-    
+
     await sendEmail({
       to: email,
       subject,
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     console.error("Failed to send OTP:", error);
     return NextResponse.json(
       { error: "Failed to send verification code" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

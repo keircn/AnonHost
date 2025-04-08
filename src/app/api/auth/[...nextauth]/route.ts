@@ -24,13 +24,13 @@ export const authOptions: AuthOptions = {
       name: "Email",
       credentials: {
         email: { label: "Email", type: "email" },
-        otp: { label: "OTP", type: "text" }
+        otp: { label: "OTP", type: "text" },
       },
       async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.otp) return null;
 
         const dbUser = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
         });
 
         if (!dbUser) return null;
@@ -42,14 +42,14 @@ export const authOptions: AuthOptions = {
             type: "registration",
             used: false,
             expiresAt: { gt: new Date() },
-          }
+          },
         });
 
         if (!otpRecord) return null;
 
         await prisma.OTP.update({
           where: { id: otpRecord.id },
-          data: { used: true }
+          data: { used: true },
         });
 
         return {
@@ -59,9 +59,9 @@ export const authOptions: AuthOptions = {
           image: dbUser.image,
           admin: dbUser.admin,
           premium: dbUser.premium,
-          emailVerified: dbUser.emailVerified
+          emailVerified: dbUser.emailVerified,
         };
-      }
+      },
     }),
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID as string,
@@ -75,7 +75,7 @@ export const authOptions: AuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
   callbacks: {
     async session({ session, token }) {

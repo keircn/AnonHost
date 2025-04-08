@@ -50,11 +50,11 @@ export async function POST(req: NextRequest) {
       "image/png",
       "image/gif",
       "image/webp",
-      
+
       "video/mp4",
       "video/webm",
       "video/ogg",
-      
+
       "text/plain",
       "text/markdown",
       "text/html",
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       "text/javascript",
       "application/json",
       "application/xml",
-      
+
       "application/pdf",
       "application/x-httpd-php",
       "application/x-sh",

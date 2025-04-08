@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  
+
   let originalUrl, title, isPublic, expiresIn;
 
   const contentType = req.headers.get("content-type");
@@ -111,11 +111,12 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
-    } catch (urlError) {
+    } catch {
       return NextResponse.json(
         {
           error: "Invalid URL format",
-          details: `Please provide a valid URL including protocol (e.g., https://example.com): ${urlError}`,
+          details:
+            "Please provide a valid URL including protocol (e.g., https://example.com)",
         },
         { status: 400 },
       );
@@ -133,7 +134,9 @@ export async function POST(req: NextRequest) {
         title: title?.toString() || null,
         userId,
         public: isPublic,
-        expireAt: expiresIn ? new Date(Date.now() + parseInt(expiresIn as string) * 86400000) : null,
+        expireAt: expiresIn
+          ? new Date(Date.now() + parseInt(expiresIn as string) * 86400000)
+          : null,
       },
     });
 
@@ -141,14 +144,17 @@ export async function POST(req: NextRequest) {
       id: shortlink.id,
       originalUrl: shortlink.originalUrl,
       title: shortlink.title,
-      shortUrl: new URL(`/s/${shortlink.id}`, process.env.NEXTAUTH_URL || "https://anon.love").toString(),
+      shortUrl: new URL(
+        `/s/${shortlink.id}`,
+        process.env.NEXTAUTH_URL || "https://anon.love",
+      ).toString(),
       public: shortlink.public,
       createdAt: shortlink.createdAt,
       expireAt: shortlink.expireAt,
     });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to create shortlink" },
+      { error: "Failed to create shortlink:", details: error },
       { status: 500 },
     );
   }

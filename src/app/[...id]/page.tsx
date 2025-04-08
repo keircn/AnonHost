@@ -72,7 +72,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         select: {
           id: true,
           name: true,
-          premium: true
+          premium: true,
         },
       },
     },
@@ -87,22 +87,25 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const badges = getUserBadges(media.user);
   const badgeString = badges.length
-    ? `\n${badges.map(b => `${b.emoji} ${b.label}`).join(" • ")}`
+    ? `\n${badges.map((b) => `${b.emoji} ${b.label}`).join(" • ")}`
     : "";
 
-  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${media.user?.name || "Anonymous"
-    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
+  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
+    media.user?.name || "Anonymous"
+  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
 
-  const premiumTheme = media.user?.premium ? {
-    themeColor: badges[0]?.color || "#a855f7",
-    colorScheme: "dark" as const,
-    creator: media.user.name,
-    applicationName: "AnonHost Premium",
-    other: {
-      badges: badges.map(b => `${b.emoji} ${b.label}`),
-      ...(badges[0]?.color && { badgeColor: badges[0].color })
-    }
-  } : {};
+  const premiumTheme = media.user?.premium
+    ? {
+        themeColor: badges[0]?.color || "#a855f7",
+        colorScheme: "dark" as const,
+        creator: media.user.name,
+        applicationName: "AnonHost Premium",
+        other: {
+          badges: badges.map((b) => `${b.emoji} ${b.label}`),
+          ...(badges[0]?.color && { badgeColor: badges[0].color }),
+        },
+      }
+    : {};
 
   const dimensions = {
     width: typeof media.width === "number" ? media.width : 1280,
@@ -111,11 +114,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (media.type === "VIDEO") {
     return {
-      title: `${badges.map(b => b.emoji).join("")}${media.filename || "Untitled"}`,
+      title: `${badges.map((b) => b.emoji).join("")}${media.filename || "Untitled"}`,
       description,
       ...premiumTheme,
       openGraph: {
-        title: `${badges.map(b => b.emoji).join(" ")}${media.filename || "Untitled"}`,
+        title: `${badges.map((b) => b.emoji).join(" ")}${media.filename || "Untitled"}`,
         description,
         type: "video.other",
         url: media.url,
@@ -178,7 +181,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
       description,
       images: [media.url],
-      creator: media.user?.premium ? media.user.name ?? undefined : undefined,
+      creator: media.user?.premium ? (media.user.name ?? undefined) : undefined,
     },
   };
 }
@@ -200,7 +203,7 @@ export default async function MediaPage(props: Props) {
         select: {
           id: true,
           name: true,
-          premium: true
+          premium: true,
         },
       },
     },
@@ -250,10 +253,7 @@ export default async function MediaPage(props: Props) {
                 </span>
               )}
             </div>
-            <MediaActions
-              url={media.url}
-              filename={media.filename}
-            />
+            <MediaActions url={media.url} filename={media.filename} />
           </div>
 
           <div className="grid grid-cols-4 gap-6">

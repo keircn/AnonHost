@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,8 @@ export default function VerifyPage() {
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
     } finally {

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     if (!otpRecord) {
       return NextResponse.json(
         { error: "Invalid or expired code" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       email,
       otp,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     console.error("Failed to verify OTP:", error);
     return NextResponse.json(
       { error: "Failed to verify code" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

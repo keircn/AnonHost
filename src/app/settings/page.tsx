@@ -29,7 +29,11 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { ApiKey } from "@/types/settings";
-import { generateShareXConfig, downloadShareXConfig, generateShareXShortenerConfig } from "@/lib/sharex";
+import {
+  generateShareXConfig,
+  downloadShareXConfig,
+  generateShareXShortenerConfig,
+} from "@/lib/sharex";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -125,19 +129,22 @@ export default function SettingsPage() {
       if (data.supported) {
         toast({
           title: "Premium Activated",
-          description: "Thank you for your support! Your account has been upgraded to Premium.",
+          description:
+            "Thank you for your support! Your account has been upgraded to Premium.",
         });
       } else {
         toast({
           title: "No Support Found",
-          description: "We couldn't find a qualifying donation. You can still manually enter a transaction ID or make a new donation.",
+          description:
+            "We couldn't find a qualifying donation. You can still manually enter a transaction ID or make a new donation.",
           variant: "destructive",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Verification Failed",
-        description: error.message,
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
     } finally {
@@ -149,8 +156,7 @@ export default function SettingsPage() {
     if (!transactionId.trim()) {
       toast({
         title: "Transaction ID required",
-        description:
-          "Please enter your BuyMeACoffee Transaction ID.",
+        description: "Please enter your BuyMeACoffee Transaction ID.",
         variant: "destructive",
       });
       return;
@@ -170,10 +176,11 @@ export default function SettingsPage() {
         title: "Premium Activated",
         description: "Your account has been upgraded to Premium.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Upgrade Failed",
-        description: error.message,
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
     } finally {
@@ -610,7 +617,8 @@ export default function SettingsPage() {
                           BuyMeACoffee Premium Upgrade
                         </Label>
                         <p className="text-sm text-muted-foreground mb-2">
-                          Support the project with $5 USD via BuyMeACoffee to get Premium access.
+                          Support the project with $5 USD via BuyMeACoffee to
+                          get Premium access.
                         </p>
 
                         <div className="flex flex-col gap-3">
@@ -620,7 +628,9 @@ export default function SettingsPage() {
                             disabled={isCheckingSupport}
                             className="w-full"
                           >
-                            {isCheckingSupport ? "Checking..." : "Check for BuyMeACoffee Support"}
+                            {isCheckingSupport
+                              ? "Checking..."
+                              : "Check for BuyMeACoffee Support"}
                           </Button>
 
                           <div className="relative">
@@ -628,7 +638,9 @@ export default function SettingsPage() {
                               <span className="w-full border-t" />
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
-                              <span className="bg-background px-2 text-muted-foreground">Or enter transaction ID manually</span>
+                              <span className="bg-background px-2 text-muted-foreground">
+                                Or enter transaction ID manually
+                              </span>
                             </div>
                           </div>
 
@@ -644,7 +656,9 @@ export default function SettingsPage() {
                               onClick={handleUpgradePremium}
                               disabled={isProcessingTransaction}
                             >
-                              {isProcessingTransaction ? "Processing..." : "Upgrade"}
+                              {isProcessingTransaction
+                                ? "Processing..."
+                                : "Upgrade"}
                             </Button>
                           </div>
                         </div>

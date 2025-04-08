@@ -84,13 +84,17 @@ export async function uploadFile(
   try {
     const filename = `${userId}/${nanoid()}-${file.name}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    
+
     let fileType: UploadResult["type"];
     if (file.type.startsWith("image/")) {
       fileType = "image";
     } else if (file.type.startsWith("video/")) {
       fileType = "video";
-    } else if (file.type.startsWith("text/") || file.type.includes("json") || file.type.includes("xml")) {
+    } else if (
+      file.type.startsWith("text/") ||
+      file.type.includes("json") ||
+      file.type.includes("xml")
+    ) {
       fileType = "text";
     } else {
       fileType = "document";

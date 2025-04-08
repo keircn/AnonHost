@@ -47,42 +47,55 @@ const getPlatformIcon = (platform: string) => {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  if (!resolvedParams.id || isNaN(parseInt(resolvedParams.id))) {
-    return { title: "Profile not found" };
-  }
-
-  const uid = parseInt(resolvedParams.id);
-  const user = await prisma.user.findUnique({
-    where: { uid },
-    include: {
-      profile: {
-        include: {
-          socialLinks: true,
+    const resolvedParams = await params;
+    if (!resolvedParams.id || isNaN(parseInt(resolvedParams.id))) {
+      return { title: "Profile not found" };
+    }
+  
+    const uid = parseInt(resolvedParams.id);
+    const user = await prisma.user.findUnique({
+      where: { uid },
+      include: {
+        profile: {
+          include: {
+            socialLinks: true,
+          },
+        },
+        Media: {
+          take: 12,
+          orderBy: { createdAt: "desc" },
+          where: { public: true },
         },
       },
-      Media: {
-        take: 12,
-        orderBy: { createdAt: "desc" },
-        where: { public: true },
-      },
-    },
-  });
-
-  if (!user?.profile) {
-    return { title: "Profile not found" };
-  }
-
-  return {
-    title: `${user.profile.title || user.name} - AnonHost`,
-    description: user.profile.description || undefined,
-    openGraph: {
+    });
+  
+    if (!user?.profile) {
+      return { title: "Profile not found" };
+    }
+  
+    return {
       title: `${user.profile.title || user.name} - AnonHost`,
       description: user.profile.description || undefined,
-      images: user.profile.bannerUrl ? [{ url: user.profile.bannerUrl }] : [],
-    },
-  };
-}
+      openGraph: {
+        title: `${user.profile.title || user.name} - AnonHost`,
+        description: user.profile.description || undefined,
+        images: [
+          ...(user.profile.avatarUrl ? [{ 
+            url: user.profile.avatarUrl,
+            width: 400,
+            height: 400,
+            alt: `${user.profile.title || user.name}'s avatar`
+          }] : []),
+        ],
+      },
+      twitter: {
+        card: user.profile.bannerUrl ? "summary_large_image" : "summary",
+        title: `${user.profile.title || user.name} - AnonHost`,
+        description: user.profile.description || undefined,
+        images: user.profile.avatarUrl ? [user.profile.avatarUrl] : undefined,
+      }
+    };
+  }
 
 export default async function ProfilePage({ params }: Props) {
   const resolvedParams = await params;

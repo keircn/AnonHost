@@ -30,6 +30,7 @@ import { motion } from "framer-motion";
 import CountUp from "react-countup";
 import bytes from "bytes";
 import useSWR from "swr";
+import { Stats } from "@/types/stats";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -118,7 +119,7 @@ export default function Home() {
 
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-  const { data: stats } = useSWR("/api/stats", fetcher, {
+  const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
     refreshInterval: 300000,
   });
 
@@ -271,12 +272,16 @@ export default function Home() {
                   <LuUser className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="text-4xl font-bold mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-                  <CountUp
-                    end={stats?.users ?? 0}
-                    duration={2.5}
-                    separator=","
-                    formattingFn={(value) => Math.max(0, value).toString()}
-                  />
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    <CountUp
+                      end={stats?.users ?? 0}
+                      duration={2.5}
+                      separator=","
+                      formattingFn={(value) => Math.max(0, value).toString()}
+                    />
+                  )}
                 </h3>
                 <p className="text-muted-foreground mt-2">Registered Users</p>
               </motion.div>
@@ -292,12 +297,16 @@ export default function Home() {
                   <LuImage className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="text-4xl font-bold mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-                  <CountUp
-                    end={stats?.uploads ?? 0}
-                    duration={2.5}
-                    separator=","
-                    formattingFn={(value) => Math.max(0, value).toString()}
-                  />
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    <CountUp
+                      end={stats?.uploads ?? 0}
+                      duration={2.5}
+                      separator=","
+                      formattingFn={(value) => Math.max(0, value).toString()}
+                    />
+                  )}
                 </h3>
                 <p className="text-muted-foreground mt-2">Total Uploads</p>
               </motion.div>
@@ -313,10 +322,14 @@ export default function Home() {
                   <LuHardDrive className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="text-4xl font-bold mt-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-                  {stats ? bytes(Math.max(0, stats.storage || 0), {
-                    unitSeparator: " ",
-                    decimalPlaces: 1,
-                  }) : "0 B"}
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    bytes(Math.max(0, stats?.storage || 0), {
+                      unitSeparator: " ",
+                      decimalPlaces: 1,
+                    })
+                  )}
                 </h3>
                 <p className="text-muted-foreground mt-2">Storage Used</p>
               </motion.div>

@@ -19,8 +19,7 @@ import {
   FaInstagram,
   FaGlobe,
 } from "react-icons/fa6";
-import { User } from "next-auth";
-import { SocialLink } from "@/types/profile";
+import { SocialLink, UserWithProfile } from "@/types/profile";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -42,15 +41,7 @@ const imageHover = {
 };
 
 interface ProfileContentProps {
-  user: User & {
-    profile: {
-      title: string;
-      description: string;
-      avatarUrl: string;
-      bannerUrl: string;
-      socialLinks: Array<SocialLink>;
-    };
-  };
+  user: UserWithProfile;
   badges: Array<{ label: string; emoji: string }>;
   theme: string;
 }

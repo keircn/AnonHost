@@ -8,7 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/auth-provider";
 import { GridPattern } from "@/components/magicui/grid-pattern";
-import { NavbarProvider } from '@/components/NavbarContext';
+import { NavbarProvider } from "@/components/NavbarContext";
 
 const inter = Inter({ subsets: ["latin"] });
 

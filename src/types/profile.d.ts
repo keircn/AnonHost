@@ -1,11 +1,22 @@
-import { Media, Profile } from "@prisma/client";
+import { Media, Profile, SocialLink } from "@prisma/client";
+import { User } from "next-auth";
 
-export interface UserWithProfile {
+export interface UserWithProfile extends User {
   id: string;
+  uid: number;
   name: string | null;
   email: string | null;
+  emailVerified: Date | null;
   premium: boolean;
-  profile: Profile | null;
+  admin: boolean;
+  createdAt: string;
+  profile: Profile & {
+    title: string | null;
+    description: string | null;
+    avatarUrl: string | null;
+    bannerUrl: string | null;
+    socialLinks: SocialLink[];
+  };
   Media?: Media[];
 }
 

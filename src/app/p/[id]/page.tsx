@@ -2,9 +2,7 @@ import { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { getUserBadges } from "@/lib/utils";
-import { ProfileContent } from "@/components/ProfileContent";
-import { useNavbar } from '@/components/NavbarContext';
-import { useEffect } from "react";
+import { ProfileContainer } from "@/components/ProfileContainer";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -71,16 +69,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProfilePage({ params }: Props) {
   const resolvedParams = await params;
-  const { setShowNavbar } = useNavbar();
-
-  useEffect(() => {
-    setShowNavbar(false);
-    return () => setShowNavbar(true);
-  }, [setShowNavbar]);
-
-  if (!resolvedParams.id || isNaN(parseInt(resolvedParams.id))) {
-    notFound();
-  }
 
   const uid = parseInt(resolvedParams.id);
   const user = await prisma.user.findUnique({
@@ -106,7 +94,7 @@ export default async function ProfilePage({ params }: Props) {
   const badges = getUserBadges(user);
   const theme = user.profile.theme || "default";
 
-  return <ProfileContent user={user} badges={badges} theme={theme} />;
+  return <ProfileContainer user={user} badges={badges} theme={theme} />;
 }
 
 export const dynamic = "force-dynamic";

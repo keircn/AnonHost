@@ -60,6 +60,8 @@ export const authOptions: AuthOptions = {
           admin: dbUser.admin,
           premium: dbUser.premium,
           emailVerified: dbUser.emailVerified,
+          uid: dbUser.uid,
+          createdAt: dbUser.createdAt.toISOString(),
         };
       },
     }),

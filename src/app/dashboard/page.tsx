@@ -43,6 +43,9 @@ interface Stats {
   totalUploads: number;
   storageUsed: number;
   apiRequests: number;
+  uid?: number;
+  memberSince?: string;
+  accountType?: string;
 }
 
 interface PaginationInfo {
@@ -409,6 +412,26 @@ export default function DashboardPage() {
                     );
                     const statsData = [
                       {
+                        title: "User ID",
+                        description: "Your unique identifier",
+                        value: session?.user?.uid || "N/A",
+                        prefix: "#",
+                      },
+                      {
+                        title: "Account Type",
+                        description: "Your current subscription tier",
+                        value: session?.user?.premium ? "Premium" : "Free",
+                      },
+                      {
+                        title: "Member Since",
+                        description: "Account creation date",
+                        value: new Date(session?.user?.createdAt || Date.now()).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }),
+                      },
+                      {
                         title: "Total Uploads",
                         description: "Number of files you've uploaded",
                         value: stats.totalUploads,
@@ -416,7 +439,7 @@ export default function DashboardPage() {
                       {
                         title: "Storage Used",
                         description: `${storageStats.used} of ${storageStats.total}`,
-                        value: storageStats.percentage,
+                        value: `${storageStats.percentage}%`,
                       },
                       {
                         title: "API Requests",
@@ -426,7 +449,7 @@ export default function DashboardPage() {
                     ];
                     return (
                       <motion.div
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                         variants={staggerContainer}
                         initial="initial"
                         animate="animate"
@@ -435,9 +458,7 @@ export default function DashboardPage() {
                           <motion.div key={stat.title} variants={fadeIn}>
                             <Card className="h-full">
                               <CardHeader>
-                                <CardTitle className="text-xl">
-                                  {stat.title}
-                                </CardTitle>
+                                <CardTitle className="text-xl">{stat.title}</CardTitle>
                                 <CardDescription className="text-sm">
                                   {stat.description}
                                 </CardDescription>
@@ -449,6 +470,7 @@ export default function DashboardPage() {
                                   animate={{ scale: 1, opacity: 1 }}
                                   transition={{ delay: index * 0.1 }}
                                 >
+                                  {stat.prefix && stat.prefix}
                                   {stat.value}
                                 </motion.div>
                               </CardContent>

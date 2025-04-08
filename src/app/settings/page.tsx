@@ -69,8 +69,6 @@ export default function SettingsPage() {
   const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const [transactionId, setTransactionId] = useState("");
-  const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
-  const [isCheckingSupport, setIsCheckingSupport] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -113,81 +111,6 @@ export default function SettingsPage() {
       fetchData();
     }
   }, [status, toast]);
-
-  const handleCheckBmcSupport = async () => {
-    setIsCheckingSupport(true);
-    try {
-      const res = await fetch("/api/bmc/check-support", {
-        method: "GET",
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to verify support");
-      }
-
-      if (data.supported) {
-        toast({
-          title: "Premium Activated",
-          description:
-            "Thank you for your support! Your account has been upgraded to Premium.",
-        });
-      } else {
-        toast({
-          title: "No Support Found",
-          description:
-            "We couldn't find a qualifying donation. You can still manually enter a transaction ID or make a new donation.",
-          variant: "destructive",
-        });
-      }
-    } catch (error: unknown) {
-      toast({
-        title: "Verification Failed",
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCheckingSupport(false);
-    }
-  };
-
-  const handleUpgradePremium = async () => {
-    if (!transactionId.trim()) {
-      toast({
-        title: "Transaction ID required",
-        description: "Please enter your BuyMeACoffee Transaction ID.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsProcessingTransaction(true);
-    try {
-      const res = await fetch("/api/bmc", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactionId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Upgrade failed");
-      }
-      toast({
-        title: "Premium Activated",
-        description: "Your account has been upgraded to Premium.",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "Upgrade Failed",
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessingTransaction(false);
-      setTransactionId("");
-    }
-  };
 
   const handleCreateApiKey = async () => {
     if (!newKeyName.trim()) {
@@ -613,24 +536,45 @@ export default function SettingsPage() {
                       </motion.div>
 
                       <motion.div className="space-y-2" variants={fadeIn}>
-                        <Label htmlFor="transactionId">
-                          BuyMeACoffee Premium Upgrade
-                        </Label>
+                        <Label>BuyMeACoffee Membership</Label>
                         <p className="text-sm text-muted-foreground mb-2">
-                          Support the project with $5 USD via BuyMeACoffee to
-                          get Premium access.
+                          Support the project with a monthly membership via BuyMeACoffee to get Premium access.
                         </p>
 
                         <div className="flex flex-col gap-3">
                           <Button
                             variant="outline"
-                            onClick={handleCheckBmcSupport}
-                            disabled={isCheckingSupport}
-                            className="w-full"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/bmc/check-subscription");
+                                const data = await res.json();
+
+                                if (!res.ok) {
+                                  throw new Error(data.error || "Failed to verify subscription");
+                                }
+
+                                if (data.subscribed) {
+                                  toast({
+                                    title: "Premium Activated",
+                                    description: "Your membership has been verified and Premium access granted.",
+                                  });
+                                } else {
+                                  toast({
+                                    title: "No Active Membership",
+                                    description: "We couldn't find an active membership. You can enter your subscription ID or visit BuyMeACoffee to become a member.",
+                                    variant: "destructive",
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Verification Failed",
+                                  description: error instanceof Error ? error.message : "An unknown error occurred",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
                           >
-                            {isCheckingSupport
-                              ? "Checking..."
-                              : "Check for BuyMeACoffee Support"}
+                            Check Membership Status
                           </Button>
 
                           <div className="relative">
@@ -639,26 +583,60 @@ export default function SettingsPage() {
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                               <span className="bg-background px-2 text-muted-foreground">
-                                Or enter transaction ID manually
+                                Or enter subscription ID manually
                               </span>
                             </div>
                           </div>
 
                           <div className="flex gap-2">
                             <Input
-                              id="transactionId"
-                              placeholder="Enter Transaction ID"
+                              placeholder="Enter Subscription ID"
                               value={transactionId}
                               onChange={(e) => setTransactionId(e.target.value)}
                             />
                             <Button
                               variant="outline"
-                              onClick={handleUpgradePremium}
-                              disabled={isProcessingTransaction}
+                              onClick={async () => {
+                                if (!transactionId) {
+                                  toast({
+                                    title: "ID Required",
+                                    description: "Please enter your subscription ID",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+
+                                try {
+                                  const res = await fetch(`/api/bmc/check-subscription?subscriptionId=${transactionId}`);
+                                  const data = await res.json();
+
+                                  if (!res.ok) {
+                                    throw new Error(data.error || "Failed to verify subscription");
+                                  }
+
+                                  if (data.subscribed) {
+                                    toast({
+                                      title: "Premium Activated",
+                                      description: "Your membership has been verified and Premium access granted.",
+                                    });
+                                    setTransactionId("");
+                                  } else {
+                                    toast({
+                                      title: "Invalid Subscription",
+                                      description: "The provided subscription ID is invalid or inactive.",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                } catch (error) {
+                                  toast({
+                                    title: "Verification Failed",
+                                    description: error instanceof Error ? error.message : "An unknown error occurred",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
                             >
-                              {isProcessingTransaction
-                                ? "Processing..."
-                                : "Upgrade"}
+                              Verify
                             </Button>
                           </div>
                         </div>

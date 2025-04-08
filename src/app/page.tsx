@@ -253,7 +253,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
-                Trusted by creators worldwide
+                Trusted by users worldwide
               </h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
                 Join many of our users who trust AnonHost for their image hosting needs

@@ -18,20 +18,20 @@ export const Root = ({ children }: { children: React.ReactNode }) => {
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <GridPattern
-                className="absolute inset-0 z-0 opacity-10"
-                width={50}
-                height={50}
-                color="bg-accent"
-              />
-              <NavbarProvider>
+            <NavbarProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <GridPattern
+                  className="absolute inset-0 z-0 opacity-10"
+                  width={50}
+                  height={50}
+                  color="bg-accent"
+                />
                 <Navbar />
-              </NavbarProvider>
-              <div className="flex-1 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-[2000px] mx-auto w-full">
-                {children}
+                <div className="flex-1 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-[2000px] mx-auto w-full">
+                  {children}
+                </div>
               </div>
-            </div>
+            </NavbarProvider>
           </AuthProvider>
           <Toaster />
         </ThemeProvider>

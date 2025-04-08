@@ -28,9 +28,20 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.otp) return null;
-
+      
         const dbUser = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            admin: true,
+            premium: true,
+            emailVerified: true,
+            uid: true,
+            createdAt: true,
+          },
         });
 
         if (!dbUser) return null;
@@ -85,6 +96,8 @@ export const authOptions: AuthOptions = {
         session.user.id = token.sub!;
         session.user.admin = token.admin as boolean;
         session.user.premium = token.premium as boolean;
+        session.user.uid = token.uid as number;
+        session.user.createdAt = token.createdAt as string;
       }
       return session;
     },
@@ -92,6 +105,8 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.admin = user.admin;
         token.premium = user.premium;
+        token.uid = user.uid;
+        token.createdAt = user.createdAt;
       }
       return token;
     },

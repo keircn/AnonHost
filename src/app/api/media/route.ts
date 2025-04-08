@@ -25,6 +25,7 @@ interface StatsInfo {
   storageLimit: number;
   apiRequests: number;
   isAdmin: boolean;
+  uid: number;
 }
 
 interface ApiResponse {
@@ -112,7 +113,11 @@ export async function GET(req: NextRequest) {
 
       prisma.user.findUnique({
         where: { id: userId.toString() },
-        select: { premium: true, admin: true },
+        select: { 
+          premium: true, 
+          admin: true,
+          uid: true
+        },
       }),
 
       prisma.settings.findUnique({
@@ -151,6 +156,7 @@ export async function GET(req: NextRequest) {
       storageLimit: storageLimit,
       apiRequests,
       isAdmin: user?.admin || false,
+      uid: user?.uid || 0
     },
     baseUrl,
   });

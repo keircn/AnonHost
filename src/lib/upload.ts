@@ -83,7 +83,7 @@ export async function uploadFile(
   isAvatar: boolean = false,
 ): Promise<UploadResult> {
   try {
-    const filename = isAvatar 
+    const filename = isAvatar
       ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension(file.name)}`
       : `${userId}/${nanoid()}-${file.name}`;
 
@@ -138,6 +138,6 @@ export async function uploadFile(
 }
 
 function getFileExtension(filename: string): string {
-  const ext = filename.split('.').pop();
-  return ext ? `.${ext}` : '';
+  const ext = filename.split(".").pop();
+  return ext ? `.${ext}` : "";
 }

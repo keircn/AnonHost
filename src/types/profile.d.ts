@@ -14,3 +14,10 @@ export interface Badge {
   label: string;
   color?: string;
 }
+
+export interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+  profileId: string;
+}

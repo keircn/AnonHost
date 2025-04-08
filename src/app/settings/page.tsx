@@ -706,7 +706,7 @@ export default function SettingsPage() {
                                 if (!res.ok) {
                                   throw new Error(
                                     data.error ||
-                                    "Failed to verify subscription",
+                                      "Failed to verify subscription",
                                   );
                                 }
 
@@ -778,7 +778,7 @@ export default function SettingsPage() {
                                   if (!res.ok) {
                                     throw new Error(
                                       data.error ||
-                                      "Failed to verify subscription",
+                                        "Failed to verify subscription",
                                     );
                                   }
 
@@ -837,7 +837,9 @@ export default function SettingsPage() {
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => window.open(`/p/${session?.user?.uid}`, '_blank')}
+                  onClick={() =>
+                    window.open(`/p/${session?.user?.uid}`, "_blank")
+                  }
                 >
                   <FaExternalLinkAlt className="h-4 w-4" />
                   View Profile

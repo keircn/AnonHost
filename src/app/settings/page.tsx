@@ -301,6 +301,7 @@ export default function SettingsPage() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("type", "banner");
 
     try {
       const response = await fetch("/api/media", {
@@ -706,7 +707,7 @@ export default function SettingsPage() {
                                 if (!res.ok) {
                                   throw new Error(
                                     data.error ||
-                                      "Failed to verify subscription",
+                                    "Failed to verify subscription",
                                   );
                                 }
 
@@ -778,7 +779,7 @@ export default function SettingsPage() {
                                   if (!res.ok) {
                                     throw new Error(
                                       data.error ||
-                                        "Failed to verify subscription",
+                                      "Failed to verify subscription",
                                     );
                                   }
 

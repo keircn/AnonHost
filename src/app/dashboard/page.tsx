@@ -10,6 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon, Trash2, Copy } from "lucide-react";
@@ -36,6 +45,13 @@ interface Stats {
   apiRequests: number;
 }
 
+interface PaginationInfo {
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -59,20 +75,28 @@ export default function DashboardPage() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("media");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
+    total: 0,
+    page: 1,
+    limit: 20,
+    pages: 1,
+  });
   const [stats, setStats] = useState<Stats>({
     totalUploads: 0,
     storageUsed: 0,
     apiRequests: 0,
   });
 
-  const fetchMedia = async () => {
+  const fetchMedia = async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/media");
+      const response = await fetch(`/api/media?page=${page}&limit=20`);
       if (!response.ok) throw new Error("Failed to fetch media");
       const data = await response.json();
       setMediaItems(data.media || []);
       setStats(data.stats);
+      setPaginationInfo(data.pagination);
     } catch (error) {
       console.error("Failed to fetch media:", error);
       setMediaItems([]);
@@ -124,6 +148,12 @@ export default function DashboardPage() {
       });
     }
   };
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchMedia(currentPage);
+    }
+  }, [currentPage, status]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -300,6 +330,64 @@ export default function DashboardPage() {
                       ))}
                     </motion.div>
                   )}
+                </motion.div>
+              )}
+              {mediaItems.length > 0 && (
+                <motion.div
+                  variants={fadeIn}
+                  className="mt-6 flex justify-center"
+                >
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        {currentPage > 1 && (
+                          <PaginationPrevious
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          />
+                        )}
+                      </PaginationItem>
+
+                      {[...Array(paginationInfo.pages)].map((_, i) => {
+                        const pageNumber = i + 1;
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === paginationInfo.pages ||
+                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={pageNumber}>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(pageNumber)}
+                                isActive={currentPage === pageNumber}
+                              >
+                                {pageNumber}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        } else if (
+                          pageNumber === currentPage - 2 ||
+                          pageNumber === currentPage + 2
+                        ) {
+                          return (
+                            <PaginationItem key={pageNumber}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
+                        return null;
+                      })}
+
+                      <PaginationItem>
+                        {currentPage < paginationInfo.pages && (
+                          <PaginationNext
+                            onClick={() =>
+                              setCurrentPage((p) => Math.min(paginationInfo.pages, p + 1))
+                            }
+                          />
+                        )}
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </motion.div>
               )}
             </TabsContent>

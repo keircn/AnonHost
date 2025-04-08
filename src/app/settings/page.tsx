@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -18,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Trash2, Download } from "lucide-react";
 import { SiSharex } from "react-icons/si";
+import { FaX } from "react-icons/fa6";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { ApiKey } from "@/types/settings";
 import {
@@ -69,6 +79,15 @@ export default function SettingsPage() {
     customDomain: "",
   });
 
+  const [profileSettings, setProfileSettings] = useState({
+    title: "",
+    description: "",
+    avatarUrl: "",
+    bannerUrl: "",
+    theme: "default",
+    socialLinks: [] as Array<{ platform: string; url: string; id?: string }>,
+  });
+
   useEffect(() => {
     if (status === "unauthenticated") {
       redirect("/");
@@ -108,6 +127,7 @@ export default function SettingsPage() {
       };
 
       fetchData();
+      fetchProfileData();
     }
   }, [status, toast]);
 
@@ -207,6 +227,133 @@ export default function SettingsPage() {
         description: "Failed to save settings",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload image");
+
+      const data = await response.json();
+
+      await fetch("/api/settings/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...profileSettings,
+          avatarUrl: data.url,
+        }),
+      });
+
+      setProfileSettings((prev) => ({
+        ...prev,
+        avatarUrl: data.url,
+      }));
+
+      toast({
+        title: "Avatar updated",
+        description: "Your profile picture has been updated successfully",
+      });
+    } catch (error) {
+      console.error("Failed to upload avatar:", error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your avatar",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload image");
+
+      const data = await response.json();
+
+      await fetch("/api/settings/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...profileSettings,
+          bannerUrl: data.url,
+        }),
+      });
+
+      setProfileSettings((prev) => ({
+        ...prev,
+        bannerUrl: data.url,
+      }));
+
+      toast({
+        title: "Banner updated",
+        description: "Your profile banner has been updated successfully",
+      });
+    } catch (error) {
+      console.error("Failed to upload banner:", error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your banner",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchProfileData = async () => {
+    try {
+      const response = await fetch("/api/settings/profile");
+      if (response.ok) {
+        const data = await response.json();
+        setProfileSettings({
+          title: data.title || "",
+          description: data.description || "",
+          avatarUrl: data.avatarUrl || "",
+          bannerUrl: data.bannerUrl || "",
+          theme: data.theme || "default",
+          socialLinks: data.socialLinks || [],
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile settings:", error);
     }
   };
 
@@ -413,6 +560,7 @@ export default function SettingsPage() {
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="api-keys">API Keys</TabsTrigger>
           </TabsList>
         </motion.div>
@@ -620,7 +768,7 @@ export default function SettingsPage() {
                                 try {
                                   const res = await fetch(
                                     `/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`,
-                                  ); // Update to use bmcEmail
+                                  );
                                   const data = await res.json();
 
                                   if (!res.ok) {
@@ -670,6 +818,260 @@ export default function SettingsPage() {
                       </Button>
                     </motion.div>
                   </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="profile">
+              <motion.div className="space-y-2" variants={fadeIn}>
+                <Label>Public Profile</Label>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Customize your public profile page that others can view
+                </p>
+
+                <Card className="p-6">
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="profile-title">Profile Title</Label>
+                      <Input
+                        id="profile-title"
+                        placeholder="Your display name"
+                        value={profileSettings.title || ""}
+                        onChange={(e) =>
+                          setProfileSettings((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="profile-description">Description</Label>
+                      <Textarea
+                        id="profile-description"
+                        placeholder="Tell others about yourself"
+                        value={profileSettings.description || ""}
+                        onChange={(e) =>
+                          setProfileSettings((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Profile Picture</Label>
+                      <div className="flex items-center gap-4">
+                        <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted">
+                          {profileSettings.avatarUrl ? (
+                            <Image
+                              src={profileSettings.avatarUrl}
+                              alt="Avatar preview"
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900" />
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            document.getElementById("avatar-upload")?.click()
+                          }
+                        >
+                          Change Avatar
+                        </Button>
+                        <input
+                          type="file"
+                          id="avatar-upload"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Profile Banner</Label>
+                      <div className="relative aspect-[3/1] rounded-lg overflow-hidden bg-muted">
+                        {profileSettings.bannerUrl ? (
+                          <Image
+                            src={profileSettings.bannerUrl}
+                            alt="Banner preview"
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-r from-gray-900 to-gray-800" />
+                        )}
+                        <Button
+                          variant="secondary"
+                          className="absolute bottom-2 right-2"
+                          onClick={() =>
+                            document.getElementById("banner-upload")?.click()
+                          }
+                        >
+                          Change Banner
+                        </Button>
+                        <input
+                          type="file"
+                          id="banner-upload"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleBannerUpload}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Profile Theme</Label>
+                      <Select
+                        value={profileSettings.theme}
+                        onValueChange={(value) =>
+                          setProfileSettings((prev) => ({
+                            ...prev,
+                            theme: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="default">Default</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                          <SelectItem value="gradient">Gradient</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label>Social Links</Label>
+                      <div className="space-y-4">
+                        {profileSettings.socialLinks?.map((link, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Select
+                              value={link.platform}
+                              onValueChange={(value) => {
+                                const newLinks = [
+                                  ...profileSettings.socialLinks,
+                                ];
+                                newLinks[index].platform = value;
+                                setProfileSettings((prev) => ({
+                                  ...prev,
+                                  socialLinks: newLinks,
+                                }));
+                              }}
+                            >
+                              <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Select platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="github">GitHub</SelectItem>
+                                <SelectItem value="twitter">Twitter</SelectItem>
+                                <SelectItem value="discord">Discord</SelectItem>
+                                <SelectItem value="twitch">Twitch</SelectItem>
+                                <SelectItem value="youtube">YouTube</SelectItem>
+                                <SelectItem value="instagram">
+                                  Instagram
+                                </SelectItem>
+                                <SelectItem value="website">Website</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              placeholder="URL"
+                              value={link.url}
+                              onChange={(e) => {
+                                const newLinks = [
+                                  ...profileSettings.socialLinks,
+                                ];
+                                newLinks[index].url = e.target.value;
+                                setProfileSettings((prev) => ({
+                                  ...prev,
+                                  socialLinks: newLinks,
+                                }));
+                              }}
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => {
+                                const newLinks =
+                                  profileSettings.socialLinks.filter(
+                                    (_, i) => i !== index,
+                                  );
+                                setProfileSettings((prev) => ({
+                                  ...prev,
+                                  socialLinks: newLinks,
+                                }));
+                              }}
+                            >
+                              <FaX className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setProfileSettings((prev) => ({
+                              ...prev,
+                              socialLinks: [
+                                ...prev.socialLinks,
+                                { platform: "website", url: "" },
+                              ],
+                            }));
+                          }}
+                        >
+                          Add Social Link
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end mt-6">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(
+                              "/api/settings/profile",
+                              {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(profileSettings),
+                              },
+                            );
+
+                            if (!response.ok)
+                              throw new Error(
+                                "Failed to save profile settings",
+                              );
+
+                            toast({
+                              title: "Profile updated",
+                              description:
+                                "Your profile settings have been saved successfully",
+                            });
+                          } catch (error) {
+                            console.error(
+                              "Failed to save profile settings:",
+                              error,
+                            );
+                            toast({
+                              title: "Save failed",
+                              description:
+                                "There was an error saving your profile settings",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        Save Profile
+                      </Button>
+                    </div>
+                  </div>
                 </Card>
               </motion.div>
             </TabsContent>

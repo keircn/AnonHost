@@ -14,7 +14,7 @@ enum MediaType {
 
 model User {
   id            String        @id @default(uuid())
-  uid           Int           @default(autoincrement()) @unique
+  uid           Int           @unique @default(autoincrement())
   name          String?
   email         String?       @unique
   emailVerified DateTime?
@@ -32,6 +32,7 @@ model User {
   OTP           OTP[]
   Media         Media[]
   Shortlink     Shortlink[]
+  profile       Profile?
 }
 
 model Account {
@@ -97,16 +98,40 @@ model Settings {
   customDomain        String? @db.VarChar(253)
 }
 
+model Profile {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String?
+  description String?      @db.Text
+  avatarUrl   String?
+  bannerUrl   String?
+  theme       String?      @default("default")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  socialLinks SocialLink[]
+}
+
+model SocialLink {
+  id        String   @id @default(uuid())
+  profileId String
+  platform  String
+  url       String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model OTP {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String?
   email     String
   code      String
-  type      String    @default("LOGIN")
+  type      String   @default("LOGIN")
   expiresAt DateTime
-  used      Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([email])
   @@index([userId])
@@ -114,7 +139,7 @@ model OTP {
 
 model Shortlink {
   id          String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
-  uid         Int       @default(autoincrement()) @unique
+  uid         Int       @unique @default(autoincrement())
   originalUrl String    @db.Text
   title       String?
   userId      String
@@ -136,8 +161,8 @@ model Transaction {
   type          String
   processed     Boolean  @default(false)
   createdAt     DateTime @default(now())
-  
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }

@@ -78,19 +78,39 @@ const TransFlag = () => (
     target="_blank"
     rel="noopener noreferrer"
     className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer"
-    animate={{ rotate: 360 }}
+    initial={{ scale: 0.9 }}
+    animate={{
+      y: [0, -10, 0],
+      rotate: [0, 360],
+      scale: [0.9, 1.1, 0.9],
+    }}
     transition={{
-      duration: 4,
-      repeat: Infinity,
-      ease: "linear",
+      y: {
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+      rotate: {
+        duration: 20,
+        repeat: Infinity,
+        ease: "linear",
+      },
+      scale: {
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }
     }}
   >
-    <div className="w-full h-full rounded overflow-hidden">
-      <div className="w-full h-[20%] bg-[#55CDFC]" />
-      <div className="w-full h-[20%] bg-[#F7A8B8]" />
-      <div className="w-full h-[20%] bg-white" />
-      <div className="w-full h-[20%] bg-[#F7A8B8]" />
-      <div className="w-full h-[20%] bg-[#55CDFC]" />
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="w-10 h-6 relative">
+        <div className="absolute top-0 left-0 w-full h-[20%] bg-[#55CDFC]" />
+        <div className="absolute top-[20%] left-0 w-full h-[20%] bg-[#F7A8B8]" />
+        <div className="absolute top-[40%] left-0 w-full h-[20%] bg-white" />
+        <div className="absolute top-[60%] left-0 w-full h-[20%] bg-[#F7A8B8]" />
+        <div className="absolute top-[80%] left-0 w-full h-[20%] bg-[#55CDFC]" />
+      </div>
+      <div className="w-1 h-6 bg-black ml-1" />
     </div>
   </motion.a>
 );

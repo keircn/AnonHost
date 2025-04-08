@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { betaMembers } from "@/lib/beta";
+import { Viewport } from "next";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -90,12 +91,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     ? `\n${badges.map((b) => `${b.emoji} ${b.label}`).join(" • ")}`
     : "";
 
-  const premiumTheme = media.user?.premium
+    const premiumTheme = media.user?.premium
     ? {
       themeColor: badges[0]?.color || "#a855f7",
       creator: media.user.name,
       applicationName: "AnonHost Premium",
-      viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
       other: {
         badges: badges.map((b) => `${b.emoji} ${b.label}`),
         ...(badges[0]?.color && { badgeColor: badges[0].color }),
@@ -182,6 +182,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       images: [media.url],
       creator: media.user?.premium ? (media.user.name ?? undefined) : undefined,
     },
+  };
+}
+
+export async function generateViewport(): Promise<Viewport> {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
   };
 }
 

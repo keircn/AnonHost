@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Settings, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useNavbar } from "@/components/NavbarContext";
 
 export function Navbar() {
   interface NavLink {
@@ -28,6 +29,9 @@ export function Navbar() {
   const isLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { showNavbar } = useNavbar();
+
+  if (!showNavbar) return null;
 
   const NavigationLinks = () => (
     <>

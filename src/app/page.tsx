@@ -82,7 +82,6 @@ const TransFlag = () => (
     animate={{
       y: [0, -10, 0],
       rotate: [0, 360],
-      scale: [0.9, 1.1, 0.9],
     }}
     transition={{
       y: {
@@ -94,11 +93,6 @@ const TransFlag = () => (
         duration: 20,
         repeat: Infinity,
         ease: "linear",
-      },
-      scale: {
-        duration: 6,
-        repeat: Infinity,
-        ease: "easeInOut",
       }
     }}
   >

@@ -191,10 +191,19 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
+    const type = formData.get("type") as string | null;
     const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    if (type === "avatar") {
+      const uploadResult = await uploadFile(file, `avatars/${userId}`);
+      return NextResponse.json({
+        url: uploadResult.url,
+        filename: uploadResult.filename,
+      });
     }
 
     const uploadResult = await uploadFile(file, userId.toString());

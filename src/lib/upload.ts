@@ -80,9 +80,13 @@ const s3Client = new S3Client({
 export async function uploadFile(
   file: File,
   userId: string,
+  isAvatar: boolean = false,
 ): Promise<UploadResult> {
   try {
-    const filename = `${userId}/${nanoid()}-${file.name}`;
+    const filename = isAvatar 
+      ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension(file.name)}`
+      : `${userId}/${nanoid()}-${file.name}`;
+
     const buffer = Buffer.from(await file.arrayBuffer());
 
     let fileType: UploadResult["type"];
@@ -108,6 +112,9 @@ export async function uploadFile(
         Body: buffer,
         ContentType: file.type,
         ACL: "public-read",
+        ...(isAvatar && {
+          CacheControl: "public, max-age=31536000",
+        }),
       },
     });
 
@@ -128,4 +135,9 @@ export async function uploadFile(
     console.error("Error uploading file:", error);
     throw new Error("Failed to upload file");
   }
+}
+
+function getFileExtension(filename: string): string {
+  const ext = filename.split('.').pop();
+  return ext ? `.${ext}` : '';
 }

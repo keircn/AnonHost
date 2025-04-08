@@ -191,22 +191,23 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const type = formData.get("type") as string | null;
+    const type = formData.get("type") as "avatar" | "banner" | null;
     const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (type === "avatar") {
-      const uploadResult = await uploadFile(file, `avatars/${userId}`);
+    if (type === "avatar" || type === "banner") {
+      const uploadResult = await uploadFile(file, userId, type);
       return NextResponse.json({
         url: uploadResult.url,
         filename: uploadResult.filename,
+        type: uploadResult.type
       });
     }
 
-    const uploadResult = await uploadFile(file, userId.toString());
+    const uploadResult = await uploadFile(file, userId);
 
     const media = await prisma.media.create({
       data: {

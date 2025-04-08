@@ -20,7 +20,9 @@ import {
   Copy,
   Terminal,
   Shield,
-  Leaf,
+  Image,
+  Link2,
+  User,
   Heart,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -39,19 +41,23 @@ const staggerChildren = {
 
 const features = [
   {
-    title: "Lightning Fast",
-    description:
-      "Upload and share your files with blazing speed and reliability.",
-    icon: <ArrowRight className="h-5 w-5 text-primary" />,
+    title: "Image Hosting",
+    description: "Upload and share images instantly with direct links, preview pages, and automatic thumbnail generation.",
+    icon: <Image className="h-5 w-5 text-primary" />,
   },
   {
-    title: "Secure Storage",
-    description: "Your files are encrypted and stored securely on our servers.",
-    icon: <CheckCircle className="h-5 w-5 text-primary" />,
+    title: "URL Shortener",
+    description: "Create clean, short links for any URL with custom domains support and click analytics.",
+    icon: <Link2 className="h-5 w-5 text-primary" />,
+  },
+  {
+    title: "Personal Bio",
+    description: "Showcase your uploads with a customizable profile page featuring themes, banners, and social links.",
+    icon: <User className="h-5 w-5 text-primary" />,
   },
   {
     title: "API Access",
-    description: "Integrate with our powerful API for programmatic uploads.",
+    description: "Integrate with our powerful API for programmatic uploads and URL shortening.",
     icon: <ExternalLink className="h-5 w-5 text-primary" />,
   },
   {
@@ -60,14 +66,8 @@ const features = [
     icon: <Shield className="h-5 w-5 text-primary" />,
   },
   {
-    title: "Eco-Friendly",
-    description: "Powered by 100% renewable energy for sustainable hosting.",
-    icon: <Leaf className="h-5 w-5 text-primary" />,
-  },
-  {
     title: "Community Driven",
-    description:
-      "Funded by donations and maintained by a passionate developer.",
+    description: "Funded by donations and maintained by a passionate developer.",
     icon: <Heart className="h-5 w-5 text-primary" />,
   },
 ];
@@ -85,7 +85,7 @@ const TransFlag = () => (
       ease: "linear",
     }}
   >
-    <div className="w-full h-full rounded-full overflow-hidden">
+    <div className="w-full h-full rounded overflow-hidden">
       <div className="w-full h-[20%] bg-[#55CDFC]" />
       <div className="w-full h-[20%] bg-[#F7A8B8]" />
       <div className="w-full h-[20%] bg-white" />

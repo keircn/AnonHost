@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Trash2, Download } from "lucide-react";
 import { SiSharex } from "react-icons/si";
 import { FaX } from "react-icons/fa6";
+import { FaExternalLinkAlt } from "react-icons/fa";
 import {
   Dialog,
   DialogContent,
@@ -64,7 +65,7 @@ const slideAnimation = {
 };
 
 export default function SettingsPage() {
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const { toast } = useToast();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [newKeyName, setNewKeyName] = useState("");
@@ -352,6 +353,8 @@ export default function SettingsPage() {
           theme: data.theme || "default",
           socialLinks: data.socialLinks || [],
         });
+
+        console.log("Fetched profile data:", data);
       }
     } catch (error) {
       console.error("Failed to fetch profile settings:", error);
@@ -829,6 +832,16 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Customize your public profile page that others can view
                 </p>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => window.open(`/p/${session?.user?.uid}`, '_blank')}
+                >
+                  <FaExternalLinkAlt className="h-4 w-4" />
+                  View Profile
+                </Button>
 
                 <Card className="p-6">
                   <div className="space-y-6">

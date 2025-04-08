@@ -325,11 +325,18 @@ export default function Home() {
                   {isLoading ? (
                     <span className="animate-pulse">...</span>
                   ) : (
-                    bytes(Math.max(0, stats?.storage || 0), {
-                      unitSeparator: " ",
-                      decimalPlaces: 1,
-                      fixedDecimals: true,
-                    })
+                    <CountUp
+                      end={Math.max(0, stats?.storage || 0)}
+                      duration={2.5}
+                      separator=","
+                      formattingFn={(value) =>
+                        bytes(value, {
+                          unitSeparator: " ",
+                          decimalPlaces: 1,
+                          fixedDecimals: true,
+                        }) || "0 B"
+                      }
+                    />
                   )}
                 </h3>
                 <p className="text-muted-foreground mt-2">Storage Used</p>

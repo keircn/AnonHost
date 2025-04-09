@@ -19,7 +19,7 @@ import {
   FaInstagram,
   FaGlobe,
 } from "react-icons/fa6";
-import { ProfileThemeSettings, SocialLink, UserWithProfile } from "@/types/profile";
+import { SocialLink, UserWithProfile } from "@/types/profile";
 import { cn } from "@/lib/utils";
 
 const fadeIn = {
@@ -78,62 +78,38 @@ const getBadgeIcon = (label: string) => {
   }
 };
 
-const getThemeStyles = (theme: string, settings?: ProfileThemeSettings) => {
-  const baseStyles = {
-    background: settings?.colorScheme?.background || "",
-    backdropFilter: `blur(${settings?.blurStrength || 5}px)`,
-    backgroundColor: `rgba(var(--card-rgb), ${(settings?.cardOpacity || 60) / 100})`,
-  };
-
-  switch (theme) {
-    case "dark":
-      return {
-        ...baseStyles,
-        background: "rgb(17, 17, 17)",
-        color: "rgb(229, 229, 229)",
-      };
-    case "light":
-      return {
-        ...baseStyles,
-        background: "rgb(249, 249, 249)",
-        color: "rgb(17, 17, 17)",
-      };
-    case "gradient":
-      return {
-        ...baseStyles,
-        background: "linear-gradient(to right, #00223E, #FFA17F)",
-      };
-    case "glass":
-      return {
-        ...baseStyles,
-        backgroundColor: `rgba(255, 255, 255, ${(settings?.cardOpacity || 60) / 100})`,
-        backdropFilter: `blur(${settings?.blurStrength || 5}px)`,
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-      };
-    case "minimal":
-      return {
-        ...baseStyles,
-        background: "none",
-        backdropFilter: "none",
-      };
-    case "neon":
-      return {
-        ...baseStyles,
-        background: "rgba(0, 0, 0, 0.8)",
-        boxShadow: "0 0 20px rgba(88, 101, 242, 0.5)",
-        border: "1px solid rgb(88, 101, 242)",
-      };
-    default:
-      return baseStyles;
-  }
-};
-
 export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
   const themeStyles = {
     default: "",
     dark: "bg-gray-950",
     gradient: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900",
   };
+
+  const layoutStyles = {
+    default: {
+      container: "max-w-2xl",
+      content: "p-8",
+      avatar: "w-32 h-32",
+    },
+    minimal: {
+      container: "max-w-xl",
+      content: "p-6 bg-transparent",
+      avatar: "w-24 h-24",
+    },
+    centered: {
+      container: "max-w-2xl mx-auto",
+      content: "p-8 text-center",
+      avatar: "w-40 h-40",
+    },
+    grid: {
+      container: "max-w-4xl",
+      content: "p-8 grid grid-cols-1 md:grid-cols-2 gap-6",
+      avatar: "w-32 h-32 md:w-48 md:h-48",
+    },
+  };
+
+  const currentLayout = user.profile.themeSettings?.layout || "default";
+  const layout = layoutStyles[currentLayout as keyof typeof layoutStyles];
 
   return (
     <motion.div
@@ -159,23 +135,14 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
       )}
 
       <motion.div
-        className={cn(
-          "w-full max-w-2xl z-10",
-          {
-            "max-w-4xl": user.profile.themeSettings?.layout === "grid",
-            "max-w-xl": user.profile.themeSettings?.layout === "minimal",
-          }
-        )}
+        className={cn("w-full z-10", layout.container)}
         variants={fadeIn}
         initial="initial"
         animate="animate"
         exit="exit"
       >
-        <Card
-          className="backdrop-blur-sm shadow-xl"
-          style={getThemeStyles(theme, user.profile.themeSettings)}
-        >
-          <CardContent className="p-8">
+        <Card className={cn("backdrop-blur-sm shadow-xl")}>
+          <CardContent className={layout.content}>
             <motion.div
               className="flex flex-col items-center text-center gap-6"
               variants={staggerContainer}
@@ -183,7 +150,10 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
               animate="animate"
             >
               <motion.div
-                className="relative w-32 h-32 rounded-full border-4 border-background/80 overflow-hidden bg-muted shadow-xl"
+                className={cn(
+                  "relative rounded-full border-4 border-background/80 overflow-hidden bg-muted shadow-xl",
+                  layout.avatar,
+                )}
                 variants={fadeIn}
                 whileHover={imageHover.hover}
               >

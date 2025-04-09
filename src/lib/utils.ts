@@ -25,10 +25,6 @@ export function getUserBadges(user: { id?: string; premium?: boolean } | null) {
     });
   }
 
-  console.log("User ID:", user?.id);
-  console.log("Beta members:", betaMembers);
-  console.log("Is beta?", user?.id && betaMembers.includes(user.id));
-
   if (user?.id && betaMembers.includes(user.id)) {
     badges.push({
       emoji: "🧪",

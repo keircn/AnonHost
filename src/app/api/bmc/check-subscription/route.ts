@@ -61,11 +61,11 @@ export async function GET(req: Request) {
 
     if (existingBMCEmail && existingBMCEmail.userId !== session.user.id) {
       return NextResponse.json(
-        { 
+        {
           error: "This BuyMeACoffee email is already linked to another account",
-          code: "EMAIL_ALREADY_USED"
-        }, 
-        { status: 400 }
+          code: "EMAIL_ALREADY_USED",
+        },
+        { status: 400 },
       );
     }
 

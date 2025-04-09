@@ -5,7 +5,7 @@ export interface ProfileThemeSettings {
   name: string;
   cardOpacity: number;
   blurStrength: number;
-  layout: 'default' | 'minimal' | 'centered' | 'grid';
+  layout: "default" | "minimal" | "centered" | "grid";
   colorScheme: {
     background: string;
     text: string;

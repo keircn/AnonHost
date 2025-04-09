@@ -398,20 +398,28 @@ export default function SettingsPage() {
         ...profileSettings,
         themeSettings: {
           cardOpacity: Number(profileSettings.themeSettings?.cardOpacity) || 60,
-          blurStrength: Number(profileSettings.themeSettings?.blurStrength) || 5,
+          blurStrength:
+            Number(profileSettings.themeSettings?.blurStrength) || 5,
           layout: profileSettings.themeSettings?.layout || "default",
           colorScheme: {
-            background: profileSettings.themeSettings?.colorScheme?.background || "",
+            background:
+              profileSettings.themeSettings?.colorScheme?.background || "",
             text: profileSettings.themeSettings?.colorScheme?.text || "",
             accent: profileSettings.themeSettings?.colorScheme?.accent || "",
           },
           effects: {
-            particles: Boolean(profileSettings.themeSettings?.effects?.particles),
-            gradientAnimation: Boolean(profileSettings.themeSettings?.effects?.gradientAnimation),
-            imageParallax: Boolean(profileSettings.themeSettings?.effects?.imageParallax),
+            particles: Boolean(
+              profileSettings.themeSettings?.effects?.particles,
+            ),
+            gradientAnimation: Boolean(
+              profileSettings.themeSettings?.effects?.gradientAnimation,
+            ),
+            imageParallax: Boolean(
+              profileSettings.themeSettings?.effects?.imageParallax,
+            ),
           },
         },
-        socialLinks: profileSettings.socialLinks.map(link => ({
+        socialLinks: profileSettings.socialLinks.map((link) => ({
           platform: link.platform,
           url: link.url,
         })),
@@ -430,7 +438,7 @@ export default function SettingsPage() {
 
       const updatedProfile = await response.json();
 
-      setProfileSettings(prev => ({
+      setProfileSettings((prev) => ({
         ...prev,
         ...updatedProfile,
         themeSettings: updatedProfile.themeSettings || prev.themeSettings,
@@ -446,7 +454,10 @@ export default function SettingsPage() {
       console.error("Failed to save profile:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save profile settings",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to save profile settings",
         variant: "destructive",
       });
     } finally {
@@ -793,7 +804,8 @@ export default function SettingsPage() {
                               if (!bmcEmail) {
                                 toast({
                                   title: "Email Required",
-                                  description: "Please enter your BuyMeACoffee email address",
+                                  description:
+                                    "Please enter your BuyMeACoffee email address",
                                   variant: "destructive",
                                 });
                                 return;
@@ -801,7 +813,7 @@ export default function SettingsPage() {
 
                               try {
                                 const res = await fetch(
-                                  `/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`
+                                  `/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`,
                                 );
                                 const data = await res.json();
 
@@ -809,11 +821,15 @@ export default function SettingsPage() {
                                   if (data.code === "EMAIL_ALREADY_USED") {
                                     toast({
                                       title: "Email Already Used",
-                                      description: "This BuyMeACoffee email is already linked to another account",
+                                      description:
+                                        "This BuyMeACoffee email is already linked to another account",
                                       variant: "destructive",
                                     });
                                   } else {
-                                    throw new Error(data.error || "Failed to verify subscription");
+                                    throw new Error(
+                                      data.error ||
+                                        "Failed to verify subscription",
+                                    );
                                   }
                                   return;
                                 }
@@ -821,20 +837,25 @@ export default function SettingsPage() {
                                 if (data.subscribed) {
                                   toast({
                                     title: "Premium Activated",
-                                    description: "Your membership has been verified and Premium access granted.",
+                                    description:
+                                      "Your membership has been verified and Premium access granted.",
                                   });
                                   setBmcEmail("");
                                 } else {
                                   toast({
                                     title: "No Active Membership",
-                                    description: "We couldn't find an active membership for this email address.",
+                                    description:
+                                      "We couldn't find an active membership for this email address.",
                                     variant: "destructive",
                                   });
                                 }
                               } catch (error) {
                                 toast({
                                   title: "Verification Failed",
-                                  description: error instanceof Error ? error.message : "An unknown error occurred",
+                                  description:
+                                    error instanceof Error
+                                      ? error.message
+                                      : "An unknown error occurred",
                                   variant: "destructive",
                                 });
                               }
@@ -882,7 +903,7 @@ export default function SettingsPage() {
                                   if (!res.ok) {
                                     throw new Error(
                                       data.error ||
-                                      "Failed to verify subscription",
+                                        "Failed to verify subscription",
                                     );
                                   }
 
@@ -1069,7 +1090,9 @@ export default function SettingsPage() {
                             <SelectItem value="gradient">Gradient</SelectItem>
                             {session?.user?.premium && (
                               <>
-                                <SelectItem value="glass">Glass Morphism</SelectItem>
+                                <SelectItem value="glass">
+                                  Glass Morphism
+                                </SelectItem>
                                 <SelectItem value="minimal">Minimal</SelectItem>
                                 <SelectItem value="neon">Neon</SelectItem>
                               </>
@@ -1086,9 +1109,14 @@ export default function SettingsPage() {
                               type="range"
                               min="0"
                               max="100"
-                              value={profileSettings.themeSettings?.cardOpacity ?? 60}
+                              value={
+                                profileSettings.themeSettings?.cardOpacity ?? 60
+                              }
                               onChange={(e) => {
-                                const value = Math.max(0, Math.min(100, parseInt(e.target.value)));
+                                const value = Math.max(
+                                  0,
+                                  Math.min(100, parseInt(e.target.value)),
+                                );
                                 setProfileSettings((prev) => ({
                                   ...prev,
                                   themeSettings: {
@@ -1099,9 +1127,28 @@ export default function SettingsPage() {
                               }}
                               className="w-full"
                             />
-                            <span className="text-sm text-muted-foreground w-12 text-right">
-                              {profileSettings.themeSettings?.cardOpacity ?? 60}%
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-muted-foreground w-12 text-right">
+                                {profileSettings.themeSettings?.cardOpacity ??
+                                  60}
+                                %
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  setProfileSettings((prev) => ({
+                                    ...prev,
+                                    themeSettings: {
+                                      ...prev.themeSettings,
+                                      cardOpacity: 60,
+                                    },
+                                  }))
+                                }
+                              >
+                                Reset
+                              </Button>
+                            </div>
                           </div>
                         </div>
 
@@ -1112,7 +1159,9 @@ export default function SettingsPage() {
                               type="range"
                               min="0"
                               max="20"
-                              value={profileSettings.themeSettings?.blurStrength ?? 5}
+                              value={
+                                profileSettings.themeSettings?.blurStrength ?? 5
+                              }
                               onChange={(e) =>
                                 setProfileSettings((prev) => ({
                                   ...prev,
@@ -1125,7 +1174,8 @@ export default function SettingsPage() {
                               className="w-full"
                             />
                             <span className="text-sm text-muted-foreground w-12 text-right">
-                              {profileSettings.themeSettings?.blurStrength ?? 5}px
+                              {profileSettings.themeSettings?.blurStrength ?? 5}
+                              px
                             </span>
                           </div>
                         </div>
@@ -1141,7 +1191,11 @@ export default function SettingsPage() {
                                     ...prev,
                                     themeSettings: {
                                       ...prev.themeSettings,
-                                      layout: value as "default" | "minimal" | "centered" | "grid",
+                                      layout: value as
+                                        | "default"
+                                        | "minimal"
+                                        | "centered"
+                                        | "grid",
                                     },
                                   }))
                                 }
@@ -1150,9 +1204,15 @@ export default function SettingsPage() {
                                   <SelectValue placeholder="Select layout" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="default">Default</SelectItem>
-                                  <SelectItem value="minimal">Minimal</SelectItem>
-                                  <SelectItem value="centered">Centered</SelectItem>
+                                  <SelectItem value="default">
+                                    Default
+                                  </SelectItem>
+                                  <SelectItem value="minimal">
+                                    Minimal
+                                  </SelectItem>
+                                  <SelectItem value="centered">
+                                    Centered
+                                  </SelectItem>
                                   <SelectItem value="grid">Grid</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -1169,7 +1229,10 @@ export default function SettingsPage() {
                                     </p>
                                   </div>
                                   <Switch
-                                    checked={profileSettings.themeSettings?.effects?.particles}
+                                    checked={
+                                      profileSettings.themeSettings?.effects
+                                        ?.particles
+                                    }
                                     onCheckedChange={(checked) =>
                                       setProfileSettings((prev) => ({
                                         ...prev,
@@ -1274,10 +1337,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex justify-end mt-6">
-                      <Button
-                        onClick={handleSaveProfile}
-                        disabled={isSaving}
-                      >
+                      <Button onClick={handleSaveProfile} disabled={isSaving}>
                         {isSaving ? "Saving..." : "Save Profile"}
                       </Button>
                     </div>

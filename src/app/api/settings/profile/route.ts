@@ -53,7 +53,7 @@ export async function PUT(req: Request) {
 
   try {
     const data = await req.json();
-    
+
     if (!data) {
       return NextResponse.json({ error: "No data provided" }, { status: 400 });
     }
@@ -78,7 +78,8 @@ export async function PUT(req: Request) {
       },
       effects: {
         particles: data.themeSettings?.effects?.particles ?? false,
-        gradientAnimation: data.themeSettings?.effects?.gradientAnimation ?? false,
+        gradientAnimation:
+          data.themeSettings?.effects?.gradientAnimation ?? false,
         imageParallax: data.themeSettings?.effects?.imageParallax ?? false,
       },
     };
@@ -94,10 +95,13 @@ export async function PUT(req: Request) {
         themeSettings: themeSettings,
         socialLinks: {
           deleteMany: {},
-          create: data.socialLinks?.map((link: { platform: string; url: string }) => ({
-            platform: link.platform,
-            url: link.url,
-          })) || [],
+          create:
+            data.socialLinks?.map(
+              (link: { platform: string; url: string }) => ({
+                platform: link.platform,
+                url: link.url,
+              }),
+            ) || [],
         },
       },
       create: {
@@ -109,10 +113,13 @@ export async function PUT(req: Request) {
         theme: data.theme || "default",
         themeSettings: themeSettings,
         socialLinks: {
-          create: data.socialLinks?.map((link: { platform: string; url: string }) => ({
-            platform: link.platform,
-            url: link.url,
-          })) || [],
+          create:
+            data.socialLinks?.map(
+              (link: { platform: string; url: string }) => ({
+                platform: link.platform,
+                url: link.url,
+              }),
+            ) || [],
         },
       },
       include: {

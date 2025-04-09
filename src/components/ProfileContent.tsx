@@ -79,6 +79,17 @@ const getBadgeIcon = (label: string) => {
 };
 
 export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
+  const themeSettings = user.profile.themeSettings || {
+    cardOpacity: 60,
+    blurStrength: 5,
+    layout: "default",
+    colorScheme: {
+      background: "",
+      text: "",
+      accent: "",
+    },
+  };
+
   const themeStyles = {
     default: "",
     dark: "bg-gray-950",
@@ -110,6 +121,12 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
 
   const currentLayout = user.profile.themeSettings?.layout || "default";
   const layout = layoutStyles[currentLayout as keyof typeof layoutStyles];
+  const backgroundStyle = themeSettings.colorScheme.background
+    ? { backgroundColor: themeSettings.colorScheme.background }
+    : {};
+  const textStyle = themeSettings.colorScheme.text
+    ? { color: themeSettings.colorScheme.text }
+    : {};
 
   return (
     <motion.div
@@ -117,6 +134,7 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
+      style={backgroundStyle}
     >
       {user.profile.bannerUrl && (
         <motion.div
@@ -141,7 +159,14 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
         animate="animate"
         exit="exit"
       >
-        <Card className={cn("backdrop-blur-sm shadow-xl")}>
+        <Card
+          className={cn(
+            "backdrop-blur-sm shadow-xl",
+            `bg-opacity-${themeSettings.cardOpacity}`,
+            `backdrop-blur-[${themeSettings.blurStrength}px]`,
+          )}
+          style={textStyle}
+        >
           <CardContent className={layout.content}>
             <motion.div
               className="flex flex-col items-center text-center gap-6"

@@ -292,7 +292,10 @@ export default function DashboardPage() {
                                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 p-4">
                                           <LuMusic className="h-16 w-16 text-muted-foreground mb-4" />
                                           <audio controls className="w-full">
-                                            <source src={item.url} type="audio/mpeg" />
+                                            <source
+                                              src={item.url}
+                                              type="audio/mpeg"
+                                            />
                                           </audio>
                                         </div>
                                       );
@@ -512,6 +515,6 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </Tabs>
-    </motion.div >
+    </motion.div>
   );
 }

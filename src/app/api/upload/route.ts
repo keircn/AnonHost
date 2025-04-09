@@ -7,7 +7,6 @@ import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
 import { FILE_SIZE_LIMITS } from "@/lib/upload";
 import { sendDiscordWebhook } from "@/lib/discord";
-import { formatFileSize } from "@/lib/upload";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -115,7 +114,7 @@ export async function POST(req: NextRequest) {
       prisma.settings.findUnique({
         where: { userId },
         select: { customDomain: true },
-      })
+      }),
     ]);
 
     const displayUrl = media.domain
@@ -125,7 +124,7 @@ export async function POST(req: NextRequest) {
         : `${baseUrl}/${media.id}`;
 
     await sendDiscordWebhook({
-      content: displayUrl
+      content: displayUrl,
     });
 
     return NextResponse.json({

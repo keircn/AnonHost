@@ -1,5 +1,5 @@
 export interface Stats {
-    users: number;
-    uploads: number;
-    storage: number;
+  users: number;
+  uploads: number;
+  storage: number;
 }

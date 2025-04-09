@@ -11,8 +11,8 @@ const cache = {
 export async function GET() {
   try {
     const now = Date.now();
-    
-    if (cache.data && (now - cache.timestamp) < cache.TTL) {
+
+    if (cache.data && now - cache.timestamp < cache.TTL) {
       return NextResponse.json(cache.data);
     }
 
@@ -39,7 +39,7 @@ export async function GET() {
     console.error("Failed to fetch stats:", error);
     return NextResponse.json(
       { error: "Failed to fetch stats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

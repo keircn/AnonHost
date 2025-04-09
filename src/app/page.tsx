@@ -256,7 +256,8 @@ export default function Home() {
                 Trusted by users worldwide
               </h2>
               <p className="text-muted-foreground max-w-lg mx-auto">
-                Join many of our users who trust AnonHost for their image hosting needs
+                Join many of our users who trust AnonHost for their image
+                hosting needs
               </p>
             </motion.div>
 

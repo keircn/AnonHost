@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
           type: true,
           public: true,
           createdAt: true,
-        }
+        },
       }),
       prisma.media.aggregate({
         where: { userId: userId.toString() },
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
         _sum: {
           size: true,
         },
-      })
+      }),
     ]),
 
     prisma.$transaction([
@@ -115,8 +115,8 @@ export async function GET(req: NextRequest) {
           admin: true,
           uid: true,
           settings: {
-            select: { customDomain: true }
-          }
+            select: { customDomain: true },
+          },
         },
       }),
       prisma.apiKey.count({
@@ -126,8 +126,8 @@ export async function GET(req: NextRequest) {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
         },
-      })
-    ])
+      }),
+    ]),
   ]);
 
   const [mediaItems, aggregations] = mediaWithCount;

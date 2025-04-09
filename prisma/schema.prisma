@@ -10,6 +10,9 @@ datasource db {
 enum MediaType {
   IMAGE
   VIDEO
+  AUDIO
+  TEXT
+  DOCUMENT
 }
 
 model User {

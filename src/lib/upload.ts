@@ -97,6 +97,8 @@ export async function uploadFile(
       fileType = "image";
     } else if (file.type.startsWith("video/")) {
       fileType = "video";
+    } else if (file.type.startsWith("audio/")) {
+      fileType = "audio"; // Add audio type
     } else if (
       file.type.startsWith("text/") ||
       file.type.includes("json") ||

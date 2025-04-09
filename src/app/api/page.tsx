@@ -14,7 +14,7 @@ import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { endpoints } from "@/lib/endpoints";
-import { EndpointCard } from "@/components/endpoint-card";
+import { EndpointCard } from "@/components/EndpointCard";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },

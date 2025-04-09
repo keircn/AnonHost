@@ -83,22 +83,11 @@ const features = [
 ];
 
 const TransFlag = () => (
-  <motion.a
+  <a
     href="https://eva.pink"
     target="_blank"
     rel="noopener noreferrer"
-    className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer"
-    initial={{ scale: 0.9 }}
-    animate={{
-      rotate: [0, 360],
-    }}
-    transition={{
-      rotate: {
-        duration: 20,
-        repeat: Infinity,
-        ease: "linear",
-      },
-    }}
+    className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer hover:scale-110 transition-transform duration-300"
   >
     <div className="w-full h-full flex items-center justify-center">
       <div className="w-10 h-6 relative">
@@ -109,7 +98,7 @@ const TransFlag = () => (
         <div className="absolute top-[80%] left-0 w-full h-[20%] bg-[#55CDFC]" />
       </div>
     </div>
-  </motion.a>
+  </a>
 );
 
 export default function Home() {

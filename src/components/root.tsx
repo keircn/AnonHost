@@ -3,10 +3,10 @@
 import type React from "react";
 import "@/app/globals.css";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/components/auth-provider";
+import { AuthProvider } from "@/components/AuthProvider";
 import { GridPattern } from "@/components/magicui/grid-pattern";
 import { NavbarProvider } from "@/components/NavbarContext";
 

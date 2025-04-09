@@ -3,13 +3,14 @@ export interface ApiKey {
   name: string;
   key: string;
   createdAt: string;
-  lastUsed: string | null;
+  lastUsed?: string;
 }
 
 export interface Settings {
   enableNotifications: boolean;
   enableDirectLinks: boolean;
   customDomain: string;
+  makeImagesPublic?: boolean;
 }
 
 export interface ShareXConfig {

@@ -1,4 +1,4 @@
-import { Root } from "@/components/root";
+import { Root } from "@/components/Root";
 
 export const metadata = {
   title: "AnonHost - Simple, Fast File Hosting",

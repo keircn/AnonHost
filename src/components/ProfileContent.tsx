@@ -121,10 +121,10 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
 
   const currentLayout = user.profile.themeSettings?.layout || "default";
   const layout = layoutStyles[currentLayout as keyof typeof layoutStyles];
-  const backgroundStyle = themeSettings.colorScheme.background
+  const backgroundStyle = themeSettings?.colorScheme?.background
     ? { backgroundColor: themeSettings.colorScheme.background }
     : {};
-  const textStyle = themeSettings.colorScheme.text
+  const textStyle = themeSettings?.colorScheme?.text
     ? { color: themeSettings.colorScheme.text }
     : {};
 

@@ -18,6 +18,33 @@ export interface ProfileThemeSettings {
   };
 }
 
+export interface ProfileUpdateData {
+  title?: string | null;
+  description?: string | null;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  theme?: string;
+  themeSettings?: {
+    cardOpacity?: number;
+    blurStrength?: number;
+    layout?: string;
+    colorScheme?: {
+      background?: string;
+      text?: string;
+      accent?: string;
+    };
+    effects?: {
+      particles?: boolean;
+      gradientAnimation?: boolean;
+      imageParallax?: boolean;
+    };
+  };
+  socialLinks?: Array<{
+    platform: string;
+    url: string;
+  }>;
+}
+
 export interface UserWithProfile extends User {
   id: string;
   uid: number;

@@ -17,6 +17,10 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost'
+      },
+      {
+        protocol: 'https',
+        hostname: 'pub-cff3d0b858c547bdac31dff45cc07939.r2.dev'
       }
     ]
   },

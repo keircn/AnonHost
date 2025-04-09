@@ -69,6 +69,14 @@ export async function POST(req: NextRequest) {
       "video/webm",
       "video/ogg",
 
+      "audio/mpeg",
+      "audio/wav",
+      "audio/ogg",
+      "audio/mp3",
+      "audio/aac",
+      "audio/flac",
+      "audio/m4a",
+
       "text/plain",
       "text/markdown",
       "text/html",

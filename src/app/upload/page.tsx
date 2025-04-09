@@ -16,6 +16,7 @@ import {
   FileText,
   FileType,
   Code,
+  Music,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/file-settings-modal";
@@ -113,6 +114,14 @@ export default function UploadPage() {
         "video/webm",
         "video/ogg",
 
+        "audio/mpeg",
+        "audio/wav",
+        "audio/ogg",
+        "audio/mp3",
+        "audio/aac",
+        "audio/flac",
+        "audio/m4a",
+
         "text/plain",
         "text/markdown",
         "text/html",
@@ -133,7 +142,7 @@ export default function UploadPage() {
         toast({
           title: "Invalid file type",
           description:
-            "Only images, videos, text files, and documents are allowed",
+            "Only images, videos, audio, text files, and documents are allowed",
           variant: "destructive",
         });
         return false;
@@ -266,6 +275,10 @@ export default function UploadPage() {
           controls={false}
         />
       );
+    }
+
+    if (file.type.startsWith("audio/")) {
+      return <Music className="h-12 w-12 text-muted-foreground" />;
     }
 
     const getFileIcon = () => {
@@ -468,7 +481,7 @@ export default function UploadPage() {
                   id="file-upload"
                   className="hidden"
                   multiple
-                  accept="image/*,video/*,text/*,.json,.xml,.pdf,.php,.sh,.yaml,.ts"
+                  accept="image/*,video/*,audio/*,text/*,.json,.xml,.pdf,.php,.sh,.yaml,.ts"
                   onChange={handleFileChange}
                 />
                 <motion.div whileHover={{ scale: 1.02 }}>

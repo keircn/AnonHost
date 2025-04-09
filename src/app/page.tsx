@@ -115,7 +115,7 @@ const TransFlag = () => (
 export default function Home() {
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
-  const installCommand = "curl https://keiran.cc/install | bash";
+  const installCommand = "curl https://anon.love/install | bash";
 
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
 

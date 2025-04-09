@@ -86,6 +86,21 @@ export default function SettingsPage() {
     avatarUrl: "",
     bannerUrl: "",
     theme: "default",
+    themeSettings: {
+      cardOpacity: 60,
+      blurStrength: 5,
+      layout: "default",
+      colorScheme: {
+        background: "",
+        text: "",
+        accent: "",
+      },
+      effects: {
+        particles: false,
+        gradientAnimation: false,
+        imageParallax: false,
+      },
+    },
     socialLinks: [] as Array<{ platform: string; url: string; id?: string }>,
   });
 
@@ -352,13 +367,52 @@ export default function SettingsPage() {
           avatarUrl: data.avatarUrl || "",
           bannerUrl: data.bannerUrl || "",
           theme: data.theme || "default",
+          themeSettings: data.themeSettings || {
+            cardOpacity: 60,
+            blurStrength: 5,
+            layout: "default",
+            colorScheme: {
+              background: "",
+              text: "",
+              accent: "",
+            },
+            effects: {
+              particles: false,
+              gradientAnimation: false,
+              imageParallax: false,
+            },
+          },
           socialLinks: data.socialLinks || [],
         });
-
-        console.log("Fetched profile data:", data);
       }
     } catch (error) {
       console.error("Failed to fetch profile settings:", error);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const response = await fetch("/api/settings/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profileSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save profile");
+      }
+
+      toast({
+        title: "Profile saved",
+        description: "Your profile has been updated successfully",
+      });
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save profile settings",
+        variant: "destructive",
+      });
     }
   };
 
@@ -698,40 +752,51 @@ export default function SettingsPage() {
                           <Button
                             variant="outline"
                             onClick={async () => {
+                              if (!bmcEmail) {
+                                toast({
+                                  title: "Email Required",
+                                  description: "Please enter your BuyMeACoffee email address",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+
                               try {
                                 const res = await fetch(
-                                  "/api/bmc/check-subscription",
+                                  `/api/bmc/check-subscription?email=${encodeURIComponent(bmcEmail)}`
                                 );
                                 const data = await res.json();
 
                                 if (!res.ok) {
-                                  throw new Error(
-                                    data.error ||
-                                      "Failed to verify subscription",
-                                  );
+                                  if (data.code === "EMAIL_ALREADY_USED") {
+                                    toast({
+                                      title: "Email Already Used",
+                                      description: "This BuyMeACoffee email is already linked to another account",
+                                      variant: "destructive",
+                                    });
+                                  } else {
+                                    throw new Error(data.error || "Failed to verify subscription");
+                                  }
+                                  return;
                                 }
 
                                 if (data.subscribed) {
                                   toast({
                                     title: "Premium Activated",
-                                    description:
-                                      "Your membership has been verified and Premium access granted.",
+                                    description: "Your membership has been verified and Premium access granted.",
                                   });
+                                  setBmcEmail("");
                                 } else {
                                   toast({
                                     title: "No Active Membership",
-                                    description:
-                                      "We couldn't find an active membership for your account. Visit BuyMeACoffee to become a member.",
+                                    description: "We couldn't find an active membership for this email address.",
                                     variant: "destructive",
                                   });
                                 }
                               } catch (error) {
                                 toast({
                                   title: "Verification Failed",
-                                  description:
-                                    error instanceof Error
-                                      ? error.message
-                                      : "An unknown error occurred",
+                                  description: error instanceof Error ? error.message : "An unknown error occurred",
                                   variant: "destructive",
                                 });
                               }
@@ -779,7 +844,7 @@ export default function SettingsPage() {
                                   if (!res.ok) {
                                     throw new Error(
                                       data.error ||
-                                        "Failed to verify subscription",
+                                      "Failed to verify subscription",
                                     );
                                   }
 
@@ -944,26 +1009,147 @@ export default function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Profile Theme</Label>
-                      <Select
-                        value={profileSettings.theme}
-                        onValueChange={(value) =>
-                          setProfileSettings((prev) => ({
-                            ...prev,
-                            theme: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a theme" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="default">Default</SelectItem>
-                          <SelectItem value="dark">Dark</SelectItem>
-                          <SelectItem value="gradient">Gradient</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label>Theme Customization</Label>
+                        <Select
+                          value={profileSettings.theme}
+                          onValueChange={(value) =>
+                            setProfileSettings((prev) => ({
+                              ...prev,
+                              theme: value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a theme" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Default</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                            <SelectItem value="light">Light</SelectItem>
+                            <SelectItem value="gradient">Gradient</SelectItem>
+                            {session?.user?.premium && (
+                              <>
+                                <SelectItem value="glass">Glass Morphism</SelectItem>
+                                <SelectItem value="minimal">Minimal</SelectItem>
+                                <SelectItem value="neon">Neon</SelectItem>
+                              </>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Card Opacity</Label>
+                          <div className="flex items-center gap-4">
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={profileSettings.themeSettings?.cardOpacity ?? 60}
+                              onChange={(e) =>
+                                setProfileSettings((prev) => ({
+                                  ...prev,
+                                  themeSettings: {
+                                    ...prev.themeSettings,
+                                    cardOpacity: parseInt(e.target.value),
+                                  },
+                                }))
+                              }
+                              className="w-full"
+                            />
+                            <span className="text-sm text-muted-foreground w-12 text-right">
+                              {profileSettings.themeSettings?.cardOpacity ?? 60}%
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Background Blur</Label>
+                          <div className="flex items-center gap-4">
+                            <input
+                              type="range"
+                              min="0"
+                              max="20"
+                              value={profileSettings.themeSettings?.blurStrength ?? 5}
+                              onChange={(e) =>
+                                setProfileSettings((prev) => ({
+                                  ...prev,
+                                  themeSettings: {
+                                    ...prev.themeSettings,
+                                    blurStrength: parseInt(e.target.value),
+                                  },
+                                }))
+                              }
+                              className="w-full"
+                            />
+                            <span className="text-sm text-muted-foreground w-12 text-right">
+                              {profileSettings.themeSettings?.blurStrength ?? 5}px
+                            </span>
+                          </div>
+                        </div>
+
+                        {session?.user?.premium && (
+                          <>
+                            <div className="space-y-2">
+                              <Label>Layout</Label>
+                              <Select
+                                value={profileSettings.themeSettings?.layout}
+                                onValueChange={(value) =>
+                                  setProfileSettings((prev) => ({
+                                    ...prev,
+                                    themeSettings: {
+                                      ...prev.themeSettings,
+                                      layout: value as "default" | "minimal" | "centered" | "grid",
+                                    },
+                                  }))
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select layout" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="default">Default</SelectItem>
+                                  <SelectItem value="minimal">Minimal</SelectItem>
+                                  <SelectItem value="centered">Centered</SelectItem>
+                                  <SelectItem value="grid">Grid</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Premium Effects</Label>
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="space-y-0.5">
+                                    <Label>Particle Effects</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                      Add animated particles to the background
+                                    </p>
+                                  </div>
+                                  <Switch
+                                    checked={profileSettings.themeSettings?.effects?.particles}
+                                    onCheckedChange={(checked) =>
+                                      setProfileSettings((prev) => ({
+                                        ...prev,
+                                        themeSettings: {
+                                          ...prev.themeSettings,
+                                          effects: {
+                                            ...prev.themeSettings?.effects,
+                                            particles: checked,
+                                          },
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-4">
@@ -1050,40 +1236,7 @@ export default function SettingsPage() {
 
                     <div className="flex justify-end mt-6">
                       <Button
-                        onClick={async () => {
-                          try {
-                            const response = await fetch(
-                              "/api/settings/profile",
-                              {
-                                method: "PUT",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(profileSettings),
-                              },
-                            );
-
-                            if (!response.ok)
-                              throw new Error(
-                                "Failed to save profile settings",
-                              );
-
-                            toast({
-                              title: "Profile updated",
-                              description:
-                                "Your profile settings have been saved successfully",
-                            });
-                          } catch (error) {
-                            console.error(
-                              "Failed to save profile settings:",
-                              error,
-                            );
-                            toast({
-                              title: "Save failed",
-                              description:
-                                "There was an error saving your profile settings",
-                              variant: "destructive",
-                            });
-                          }
-                        }}
+                        onClick={handleSaveProfile}
                       >
                         Save Profile
                       </Button>

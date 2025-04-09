@@ -33,6 +33,7 @@ model User {
   Media         Media[]
   Shortlink     Shortlink[]
   profile       Profile?
+  bmcEmails     BMCEmail[]
 }
 
 model Account {
@@ -99,17 +100,18 @@ model Settings {
 }
 
 model Profile {
-  id          String       @id @default(uuid())
-  userId      String       @unique
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String?
-  description String?      @db.Text
-  avatarUrl   String?
-  bannerUrl   String?
-  theme       String?      @default("default")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  socialLinks SocialLink[]
+  id            String       @id @default(uuid())
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String?
+  description   String?      @db.Text
+  avatarUrl     String?
+  bannerUrl     String?
+  theme         String?      @default("default")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  socialLinks   SocialLink[]
+  themeSettings Json?
 }
 
 model SocialLink {
@@ -163,6 +165,16 @@ model Transaction {
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model BMCEmail {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }

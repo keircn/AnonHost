@@ -70,6 +70,7 @@ export async function PUT(req: Request) {
         avatarUrl: data.avatarUrl,
         bannerUrl: data.bannerUrl,
         theme: data.theme,
+        themeSettings: data.themeSettings,
         socialLinks: {
           deleteMany: {},
           create: data.socialLinks.map(
@@ -87,6 +88,7 @@ export async function PUT(req: Request) {
         avatarUrl: data.avatarUrl,
         bannerUrl: data.bannerUrl,
         theme: data.theme,
+        themeSettings: data.themeSettings,
         socialLinks: {
           create: data.socialLinks.map(
             (link: { platform: string; url: string }) => ({

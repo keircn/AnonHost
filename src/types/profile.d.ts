@@ -1,6 +1,23 @@
 import { Media, Profile, SocialLink } from "@prisma/client";
 import { User } from "next-auth";
 
+export interface ProfileThemeSettings {
+  name: string;
+  cardOpacity: number;
+  blurStrength: number;
+  layout: 'default' | 'minimal' | 'centered' | 'grid';
+  colorScheme: {
+    background: string;
+    text: string;
+    accent: string;
+  };
+  effects?: {
+    particles?: boolean;
+    gradientAnimation?: boolean;
+    imageParallax?: boolean;
+  };
+}
+
 export interface UserWithProfile extends User {
   id: string;
   uid: number;
@@ -16,6 +33,7 @@ export interface UserWithProfile extends User {
     avatarUrl: string | null;
     bannerUrl: string | null;
     socialLinks: SocialLink[];
+    themeSettings: ProfileThemeSettings;
   };
   Media?: Media[];
 }

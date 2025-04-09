@@ -19,7 +19,8 @@ import {
   FaInstagram,
   FaGlobe,
 } from "react-icons/fa6";
-import { SocialLink, UserWithProfile } from "@/types/profile";
+import { ProfileThemeSettings, SocialLink, UserWithProfile } from "@/types/profile";
+import { cn } from "@/lib/utils";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -77,6 +78,56 @@ const getBadgeIcon = (label: string) => {
   }
 };
 
+const getThemeStyles = (theme: string, settings?: ProfileThemeSettings) => {
+  const baseStyles = {
+    background: settings?.colorScheme?.background || "",
+    backdropFilter: `blur(${settings?.blurStrength || 5}px)`,
+    backgroundColor: `rgba(var(--card-rgb), ${(settings?.cardOpacity || 60) / 100})`,
+  };
+
+  switch (theme) {
+    case "dark":
+      return {
+        ...baseStyles,
+        background: "rgb(17, 17, 17)",
+        color: "rgb(229, 229, 229)",
+      };
+    case "light":
+      return {
+        ...baseStyles,
+        background: "rgb(249, 249, 249)",
+        color: "rgb(17, 17, 17)",
+      };
+    case "gradient":
+      return {
+        ...baseStyles,
+        background: "linear-gradient(to right, #00223E, #FFA17F)",
+      };
+    case "glass":
+      return {
+        ...baseStyles,
+        backgroundColor: `rgba(255, 255, 255, ${(settings?.cardOpacity || 60) / 100})`,
+        backdropFilter: `blur(${settings?.blurStrength || 5}px)`,
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+      };
+    case "minimal":
+      return {
+        ...baseStyles,
+        background: "none",
+        backdropFilter: "none",
+      };
+    case "neon":
+      return {
+        ...baseStyles,
+        background: "rgba(0, 0, 0, 0.8)",
+        boxShadow: "0 0 20px rgba(88, 101, 242, 0.5)",
+        border: "1px solid rgb(88, 101, 242)",
+      };
+    default:
+      return baseStyles;
+  }
+};
+
 export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
   const themeStyles = {
     default: "",
@@ -108,13 +159,22 @@ export function ProfileContent({ user, badges, theme }: ProfileContentProps) {
       )}
 
       <motion.div
-        className="w-full max-w-2xl z-10"
+        className={cn(
+          "w-full max-w-2xl z-10",
+          {
+            "max-w-4xl": user.profile.themeSettings?.layout === "grid",
+            "max-w-xl": user.profile.themeSettings?.layout === "minimal",
+          }
+        )}
         variants={fadeIn}
         initial="initial"
         animate="animate"
         exit="exit"
       >
-        <Card className="backdrop-blur-sm bg-background/60 shadow-xl">
+        <Card
+          className="backdrop-blur-sm shadow-xl"
+          style={getThemeStyles(theme, user.profile.themeSettings)}
+        >
           <CardContent className="p-8">
             <motion.div
               className="flex flex-col items-center text-center gap-6"

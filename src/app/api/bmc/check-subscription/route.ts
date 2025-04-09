@@ -55,12 +55,37 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
+    const existingBMCEmail = await prisma.bMCEmail.findUnique({
+      where: { email: emailToCheck.toLowerCase() },
+    });
+
+    if (existingBMCEmail && existingBMCEmail.userId !== session.user.id) {
+      return NextResponse.json(
+        { 
+          error: "This BuyMeACoffee email is already linked to another account",
+          code: "EMAIL_ALREADY_USED"
+        }, 
+        { status: 400 }
+      );
+    }
+
     const subscription = await checkBmcSubscription(emailToCheck);
 
     if (subscription) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { premium: true },
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: session.user.id },
+          data: { premium: true },
+        });
+
+        if (!existingBMCEmail) {
+          await tx.bMCEmail.create({
+            data: {
+              email: emailToCheck.toLowerCase(),
+              userId: session.user.id,
+            },
+          });
+        }
       });
 
       return NextResponse.json({ subscribed: true, subscription });

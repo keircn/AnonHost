@@ -27,6 +27,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStorageStats } from "@/lib/upload";
 import { toast } from "@/hooks/use-toast";
+import { LuMusic } from "react-icons/lu";
 
 interface MediaItem {
   id: string;
@@ -35,7 +36,7 @@ interface MediaItem {
   filename: string;
   createdAt: string;
   size: number;
-  type: "IMAGE" | "VIDEO";
+  type: "IMAGE" | "VIDEO" | "AUDIO";
   duration?: number;
 }
 
@@ -276,21 +277,37 @@ export default function DashboardPage() {
                           >
                             <Card className="h-full">
                               <div className="aspect-square relative overflow-hidden">
-                                {item.type === "VIDEO" ? (
-                                  <video
-                                    src={item.url}
-                                    controls
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <Image
-                                    src={item.url || "/placeholder.svg"}
-                                    alt={item.filename}
-                                    fill
-                                    className="object-cover"
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                  />
-                                )}
+                                {(() => {
+                                  switch (item.type) {
+                                    case "VIDEO":
+                                      return (
+                                        <video
+                                          src={item.url}
+                                          controls
+                                          className="absolute inset-0 w-full h-full object-cover"
+                                        />
+                                      );
+                                    case "AUDIO":
+                                      return (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 p-4">
+                                          <LuMusic className="h-16 w-16 text-muted-foreground mb-4" />
+                                          <audio controls className="w-full">
+                                            <source src={item.url} type="audio/mpeg" />
+                                          </audio>
+                                        </div>
+                                      );
+                                    default:
+                                      return (
+                                        <Image
+                                          src={item.url || "/placeholder.svg"}
+                                          alt={item.filename}
+                                          fill
+                                          className="object-cover"
+                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        />
+                                      );
+                                  }
+                                })()}
                               </div>
                               <CardContent className="p-4 lg:p-6">
                                 <div className="flex justify-between items-center">
@@ -495,6 +512,6 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </Tabs>
-    </motion.div>
+    </motion.div >
   );
 }

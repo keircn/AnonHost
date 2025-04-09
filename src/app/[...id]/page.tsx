@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { betaMembers } from "@/lib/beta";
 import { Viewport } from "next";
+import { LuMusic } from "react-icons/lu";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -93,19 +94,18 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const premiumTheme = media.user?.premium
     ? {
-        themeColor: badges[0]?.color || "#a855f7",
-        creator: media.user.name,
-        applicationName: "AnonHost Premium",
-        other: {
-          badges: badges.map((b) => `${b.emoji} ${b.label}`),
-          ...(badges[0]?.color && { badgeColor: badges[0].color }),
-        },
-      }
+      themeColor: badges[0]?.color || "#a855f7",
+      creator: media.user.name,
+      applicationName: "AnonHost Premium",
+      other: {
+        badges: badges.map((b) => `${b.emoji} ${b.label}`),
+        ...(badges[0]?.color && { badgeColor: badges[0].color }),
+      },
+    }
     : {};
 
-  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
-    media.user?.name || "Anonymous"
-  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
+  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${media.user?.name || "Anonymous"
+    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
 
   const dimensions = {
     width: typeof media.width === "number" ? media.width : 1280,
@@ -227,23 +227,40 @@ export default async function MediaPage(props: Props) {
     <div className="container py-8">
       <Card className="max-w-4xl mx-auto">
         <div className="relative aspect-video">
-          {media.type === "VIDEO" ? (
-            <video
-              src={media.url}
-              controls
-              className="w-full h-full"
-              autoPlay
-              playsInline
-            />
-          ) : (
-            <Image
-              src={media.url}
-              alt={media.filename}
-              fill
-              className="object-contain py-8"
-              priority
-            />
-          )}
+          {(() => {
+            switch (media.type) {
+              case "VIDEO":
+                return (
+                  <video
+                    src={media.url}
+                    controls
+                    className="w-full h-full"
+                    autoPlay
+                    playsInline
+                  />
+                );
+              case "AUDIO":
+                return (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-muted/20">
+                    <LuMusic className="h-24 w-24 text-muted-foreground" />
+                    <audio controls className="w-3/4 max-w-xl">
+                      <source src={media.url} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                );
+              default:
+                return (
+                  <Image
+                    src={media.url}
+                    alt={media.filename}
+                    fill
+                    className="object-contain py-8"
+                    priority
+                  />
+                );
+            }
+          })()}
         </div>
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-6">

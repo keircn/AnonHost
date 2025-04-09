@@ -35,6 +35,10 @@ interface ApiResponse {
   baseUrl: string;
 }
 
+interface MediaItemResponse extends MediaItem {
+  displayUrl: string;
+}
+
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
@@ -72,8 +76,12 @@ export async function GET(req: NextRequest) {
 
   const skip = (page - 1) * limit;
 
-  const [mediaWithCount, storageAndUser] = await Promise.all([
-    prisma.$transaction([
+  const [total, mediaItems, storageStats, apiRequests, user, settings] =
+    await Promise.all([
+      prisma.media.count({
+        where: { userId: userId.toString() },
+      }),
+
       prisma.media.findMany({
         where: { userId: userId.toString() },
         orderBy: {
@@ -85,40 +93,15 @@ export async function GET(req: NextRequest) {
         },
         skip,
         take: limit,
-        select: {
-          id: true,
-          domain: true,
-          filename: true,
-          size: true,
-          width: true,
-          height: true,
-          duration: true,
-          type: true,
-          public: true,
-          createdAt: true,
-        },
       }),
+
       prisma.media.aggregate({
         where: { userId: userId.toString() },
-        _count: true,
         _sum: {
           size: true,
         },
       }),
-    ]),
 
-    prisma.$transaction([
-      prisma.user.findUnique({
-        where: { id: userId.toString() },
-        select: {
-          premium: true,
-          admin: true,
-          uid: true,
-          settings: {
-            select: { customDomain: true },
-          },
-        },
-      }),
       prisma.apiKey.count({
         where: {
           userId: userId.toString(),
@@ -127,15 +110,23 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-    ]),
-  ]);
 
-  const [mediaItems, aggregations] = mediaWithCount;
-  const [user, apiRequests] = storageAndUser;
+      prisma.user.findUnique({
+        where: { id: userId.toString() },
+        select: {
+          premium: true,
+          admin: true,
+          uid: true,
+        },
+      }),
 
-  const storageUsed = aggregations._sum?.size ?? 0;
-  const total = aggregations._count;
+      prisma.settings.findUnique({
+        where: { userId: userId.toString() },
+        select: { customDomain: true },
+      }),
+    ]);
 
+  const storageUsed = storageStats._sum?.size ?? 0;
   const storageLimit = user?.admin
     ? Number.MAX_SAFE_INTEGER
     : user?.premium
@@ -143,14 +134,16 @@ export async function GET(req: NextRequest) {
       : STORAGE_LIMITS.FREE;
 
   return NextResponse.json<ApiResponse>({
-    media: mediaItems.map((item) => ({
-      ...item,
-      displayUrl: item.domain
-        ? `https://${item.domain}/${item.id}`
-        : user?.settings?.customDomain
-          ? `https://${user.settings.customDomain}/${item.id}`
-          : `${baseUrl}/${item.id}`,
-    })),
+    media: mediaItems.map(
+      (item: { id: string; domain: string | null }): MediaItemResponse => ({
+        ...item,
+        displayUrl: item.domain
+          ? `https://${item.domain}/${item.id}`
+          : settings?.customDomain
+            ? `https://${settings.customDomain}/${item.id}`
+            : `${baseUrl}/${item.id}`,
+      }),
+    ),
     pagination: {
       total,
       page,
@@ -159,7 +152,7 @@ export async function GET(req: NextRequest) {
     },
     stats: {
       totalUploads: total,
-      storageUsed,
+      storageUsed: storageUsed,
       storageLimit,
       apiRequests,
       isAdmin: user?.admin || false,

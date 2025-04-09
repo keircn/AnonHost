@@ -33,7 +33,11 @@ interface ShareXConfigDialogProps {
 export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
   const { toast } = useToast();
 
-  const handleCopyConfig = (config: any, type: string) => {
+  interface ShareXConfig {
+    [key: string]: unknown;
+  }
+
+  const handleCopyConfig = (config: ShareXConfig, type: string): void => {
     navigator.clipboard.writeText(JSON.stringify(config, null, 2));
     toast({
       title: "Copied to clipboard",

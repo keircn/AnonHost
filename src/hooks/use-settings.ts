@@ -32,7 +32,11 @@ export function useSettings() {
     loadSettings();
   }, []);
 
-  const updateSettingsField = (field: keyof Settings, value: any) => {
+  interface UpdateSettingsField {
+    (field: keyof Settings, value: Settings[keyof Settings]): void;
+  }
+
+  const updateSettingsField: UpdateSettingsField = (field, value) => {
     setSettings((prev) => ({
       ...prev,
       [field]: value,

@@ -58,19 +58,34 @@ export function useProfileSettings() {
     loadProfileSettings();
   }, []);
 
-  const updateProfileField = (field: keyof ProfileSettings, value: any) => {
-    setProfileSettings((prev) => ({
+  const updateProfileField = (
+    field: keyof ProfileSettings,
+    value: string | number | boolean | object,
+  ) => {
+    setProfileSettings((prev: ProfileSettings) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const updateThemeSettings = (field: string, value: any) => {
+  type UpdateThemeSettingsField =
+    | "theme"
+    | "layout"
+    | "cardOpacity"
+    | "blurStrength"
+    | "particles"
+    | "gradientAnimation"
+    | "imageParallax";
+
+  const updateThemeSettings = (
+    field: UpdateThemeSettingsField,
+    value: string | number | boolean,
+  ) => {
     setProfileSettings((prev) => {
       if (field === "theme") {
         return {
           ...prev,
-          theme: value,
+          theme: value as string,
         };
       }
 
@@ -79,7 +94,7 @@ export function useProfileSettings() {
           ...prev,
           themeSettings: {
             ...prev.themeSettings,
-            layout: value,
+            layout: value as "default" | "minimal" | "centered" | "grid",
           },
         };
       }
@@ -89,7 +104,7 @@ export function useProfileSettings() {
           ...prev,
           themeSettings: {
             ...prev.themeSettings,
-            [field]: value,
+            [field]: value as number,
           },
         };
       }
@@ -105,7 +120,7 @@ export function useProfileSettings() {
             ...prev.themeSettings,
             effects: {
               ...prev.themeSettings.effects,
-              [field]: value,
+              [field]: value as boolean,
             },
           },
         };

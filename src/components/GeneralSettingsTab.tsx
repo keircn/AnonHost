@@ -32,7 +32,7 @@ const staggerContainer = {
 
 export function GeneralSettingsTab() {
   const { toast } = useToast();
-  const { settings, updateSettings, isLoading } = useSettings();
+  const { updateSettings, isLoading } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveSettings = async () => {

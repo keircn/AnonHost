@@ -2,7 +2,7 @@
 
 set -e
 
-API_URL="${API_URL:-https://keiran.cc}"
+API_URL="${API_URL:-https://anon.love}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/anonhost"
 CONFIG_FILE="$CONFIG_DIR/config"
 CACHE_DIR="$CONFIG_DIR/cache"
@@ -398,7 +398,7 @@ usage() {
   printf "  help                     Show this help message\n"
   printf "\n"
   printf "%sEnvironment variables:%s\n" "${BOLD}" "${NC}"
-  printf "  API_URL                Override the default API URL (%s)\n" "${API_URL:-https://keiran.cc}"
+  printf "  API_URL                Override the default API URL (%s)\n" "${API_URL:-https://anon.love}"
   printf "  ANONHOST_API_KEY       Set API key without using 'configure'\n"
   printf "                         (Note: 'configure' command takes precedence)\n"
   printf "\n"

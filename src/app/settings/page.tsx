@@ -74,6 +74,7 @@ export default function SettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [bmcEmail, setBmcEmail] = useState("");
   const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
     enableNotifications: true,
     enableDirectLinks: true,
@@ -391,16 +392,51 @@ export default function SettingsPage() {
   };
 
   const handleSaveProfile = async () => {
+    setIsSaving(true);
     try {
+      const sanitizedSettings = {
+        ...profileSettings,
+        themeSettings: {
+          cardOpacity: Number(profileSettings.themeSettings?.cardOpacity) || 60,
+          blurStrength: Number(profileSettings.themeSettings?.blurStrength) || 5,
+          layout: profileSettings.themeSettings?.layout || "default",
+          colorScheme: {
+            background: profileSettings.themeSettings?.colorScheme?.background || "",
+            text: profileSettings.themeSettings?.colorScheme?.text || "",
+            accent: profileSettings.themeSettings?.colorScheme?.accent || "",
+          },
+          effects: {
+            particles: Boolean(profileSettings.themeSettings?.effects?.particles),
+            gradientAnimation: Boolean(profileSettings.themeSettings?.effects?.gradientAnimation),
+            imageParallax: Boolean(profileSettings.themeSettings?.effects?.imageParallax),
+          },
+        },
+        socialLinks: profileSettings.socialLinks.map(link => ({
+          platform: link.platform,
+          url: link.url,
+        })),
+      };
+
       const response = await fetch("/api/settings/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileSettings),
+        body: JSON.stringify(sanitizedSettings),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save profile");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save profile");
       }
+
+      const updatedProfile = await response.json();
+
+      setProfileSettings(prev => ({
+        ...prev,
+        ...updatedProfile,
+        themeSettings: updatedProfile.themeSettings || prev.themeSettings,
+      }));
+
+      await fetchProfileData();
 
       toast({
         title: "Profile saved",
@@ -410,9 +446,11 @@ export default function SettingsPage() {
       console.error("Failed to save profile:", error);
       toast({
         title: "Error",
-        description: "Failed to save profile settings",
+        description: error instanceof Error ? error.message : "Failed to save profile settings",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1049,15 +1087,16 @@ export default function SettingsPage() {
                               min="0"
                               max="100"
                               value={profileSettings.themeSettings?.cardOpacity ?? 60}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const value = Math.max(0, Math.min(100, parseInt(e.target.value)));
                                 setProfileSettings((prev) => ({
                                   ...prev,
                                   themeSettings: {
                                     ...prev.themeSettings,
-                                    cardOpacity: parseInt(e.target.value),
+                                    cardOpacity: value,
                                   },
-                                }))
-                              }
+                                }));
+                              }}
                               className="w-full"
                             />
                             <span className="text-sm text-muted-foreground w-12 text-right">
@@ -1237,8 +1276,9 @@ export default function SettingsPage() {
                     <div className="flex justify-end mt-6">
                       <Button
                         onClick={handleSaveProfile}
+                        disabled={isSaving}
                       >
-                        Save Profile
+                        {isSaving ? "Saving..." : "Save Profile"}
                       </Button>
                     </div>
                   </div>

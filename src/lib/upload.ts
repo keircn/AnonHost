@@ -29,7 +29,7 @@ interface UploadResult {
   type: "image" | "video" | "text" | "document";
 }
 
-function formatFileSize(bytes: number): string {
+export function formatFileSize(bytes: number): string {
   const KB = 1024;
   const MB = KB * 1024;
   const GB = MB * 1024;

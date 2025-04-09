@@ -6,6 +6,8 @@ import { uploadFile } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
 import { FILE_SIZE_LIMITS } from "@/lib/upload";
+import { sendDiscordWebhook } from "@/lib/discord";
+import { formatFileSize } from "@/lib/upload";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -45,6 +47,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    const sizeLimit = isPremium
+      ? FILE_SIZE_LIMITS.PREMIUM
+      : FILE_SIZE_LIMITS.FREE;
+    if (file.size > sizeLimit) {
+      const limitInMb = sizeLimit / (1024 * 1024);
+      return NextResponse.json(
+        {
+          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users`,
+        },
+        { status: 400 },
+      );
+    }
+
     const allowedTypes = [
       "image/jpeg",
       "image/png",
@@ -80,46 +95,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const sizeLimit = isPremium
-      ? FILE_SIZE_LIMITS.PREMIUM
-      : FILE_SIZE_LIMITS.FREE;
-    if (file.size > sizeLimit) {
-      const limitInMb = sizeLimit / (1024 * 1024);
-      return NextResponse.json(
-        {
-          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users`,
-        },
-        { status: 400 },
-      );
-    }
-
     const uploadResult = await uploadFile(file, userId.toString());
 
-    const media = await prisma.media.create({
-      data: {
-        url: uploadResult.url,
-        filename: uploadResult.filename,
-        size: uploadResult.size,
-        width: uploadResult.width,
-        height: uploadResult.height,
-        duration: uploadResult.duration,
-        type: uploadResult.type.toUpperCase() as MediaType,
-        userId,
-        public: formData.get("public") === "true",
-        domain: customDomain || null,
-      },
-    });
-
-    const settings = await prisma.settings.findUnique({
-      where: { userId },
-      select: { customDomain: true },
-    });
+    const [media, settings] = await Promise.all([
+      prisma.media.create({
+        data: {
+          url: uploadResult.url,
+          filename: uploadResult.filename,
+          size: uploadResult.size,
+          width: uploadResult.width,
+          height: uploadResult.height,
+          duration: uploadResult.duration,
+          type: uploadResult.type.toUpperCase() as MediaType,
+          userId,
+          public: true,
+          domain: customDomain || null,
+        },
+      }),
+      prisma.settings.findUnique({
+        where: { userId },
+        select: { customDomain: true },
+      })
+    ]);
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`
       : settings?.customDomain
         ? `https://${settings.customDomain}/${media.id}`
         : `${baseUrl}/${media.id}`;
+
+    await sendDiscordWebhook({
+      content: displayUrl
+    });
 
     return NextResponse.json({
       id: media.id,

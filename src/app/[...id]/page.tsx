@@ -89,7 +89,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const badges = getUserBadges(media.user);
   const badgeString = badges.length
-    ? `\n${badges.map((b) => `${b.emoji} ${b.label} ${" "}`)}`
+    ? `\n${badges.map((b) => `${b.emoji} ${b.label} ${" "}`).join(" • ")}`
     : "";
 
   const premiumTheme = media.user?.premium

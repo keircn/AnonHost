@@ -453,7 +453,7 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <div className="grid gap-6 lg:gap-12 lg:grid-cols-2 items-center max-w-8xl mx-auto">
+              <div className="grid gap-6 lg:gap-12 lg:grid-cols-2 items-center max-w-8xl mx-auto relative z-10">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 sm:mb-4">
                     Ready to get started?
@@ -509,8 +509,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="absolute -top-24 -right-24 w-48 sm:w-64 md:w-72 lg:w-96 h-48 sm:h-64 md:h-72 lg:h-96 bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
-              <div className="absolute -bottom-32 -left-32 w-64 sm:w-80 md:w-96 lg:w-[32rem] h-64 sm:h-80 md:h-96 lg:h-[32rem] bg-primary/5 rounded-full blur-2xl sm:blur-3xl" />
+              <div className="absolute -top-24 -right-24 w-48 sm:w-64 md:w-72 lg:w-96 h-48 sm:h-64 md:h-72 lg:h-96 bg-primary/5 rounded-full blur-2xl sm:blur-3xl z-0" />
+              <div className="absolute -bottom-32 -left-32 w-64 sm:w-80 md:w-96 lg:w-[32rem] h-64 sm:h-80 md:h-96 lg:h-[32rem] bg-primary/5 rounded-full blur-2xl sm:blur-3xl z-0" />
             </motion.div>
           </motion.div>
         </section>

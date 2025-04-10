@@ -92,7 +92,7 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card className="h-full relative overflow-hidden border-primary">
-            <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-sm">
+            <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-sm rounded">
               Popular
             </div>
             <CardHeader className="space-y-1">

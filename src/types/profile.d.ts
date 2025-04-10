@@ -2,6 +2,7 @@ import { Media, Profile, SocialLink } from "@prisma/client";
 import { User } from "next-auth";
 
 export interface ProfileThemeSettings {
+  [key: string]: unknown;
   name: string;
   cardOpacity: number;
   blurStrength: number;
@@ -53,7 +54,7 @@ export interface UserWithProfile extends User {
   emailVerified: Date | null;
   premium: boolean;
   admin: boolean;
-  createdAt: string;
+  createdAt: Date;
   profile: Profile & {
     title: string | null;
     description: string | null;

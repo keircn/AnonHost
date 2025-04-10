@@ -463,24 +463,24 @@ export default function Home() {
                     hosting needs.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Link href="/dashboard">
-                      <Button
-                        size="lg"
-                        className="gap-2 w-full sm:w-auto cursor-pointer"
-                      >
+                    <Button
+                      size="lg"
+                      className="gap-2 w-full sm:w-auto cursor-pointer"
+                      asChild
+                    >
+                      <Link href="/register">
                         Create Free Account
                         <LuArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/pricing">
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        className="gap-2 w-full sm:w-auto cursor-pointer"
-                      >
-                        View Pricing
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="gap-2 w-full sm:w-auto cursor-pointer"
+                      asChild
+                    >
+                      <Link href="/pricing">View Pricing</Link>
+                    </Button>
                   </div>
                 </div>
                 <div className="hidden lg:flex justify-end">

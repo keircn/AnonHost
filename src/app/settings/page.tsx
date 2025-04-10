@@ -85,37 +85,38 @@ export default function SettingsPage() {
           </TabsList>
         </motion.div>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
+            variants={slideAnimation}
             initial="initial"
             animate="animate"
-            variants={slideAnimation}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            exit="exit"
+            transition={{ duration: 0.2 }}
           >
-            <TabsContent
-              value="general"
-              forceMount={activeTab === "general" ? true : undefined}
-            >
-              <GeneralSettingsTab />
+            <TabsContent value="general" forceMount>
+              {activeTab === "general" && <GeneralSettingsTab />}
             </TabsContent>
 
-            <TabsContent value="profile">
-              <motion.div className="space-y-2" variants={fadeIn}>
-                <Card className="p-6">
-                  <div className="flex items-center justify-center p-8">
-                    <p className="text-lg text-muted-foreground text-center">
-                      Profile settings are temporarily disabled for maintenance.
-                      <br />
-                      Please check back later.
-                    </p>
-                  </div>
-                </Card>
-              </motion.div>
+            <TabsContent value="profile" forceMount>
+              {activeTab === "profile" && (
+                <motion.div className="space-y-2" variants={fadeIn}>
+                  <Card className="p-6">
+                    <div className="flex items-center justify-center p-8">
+                      <p className="text-lg text-muted-foreground text-center">
+                        Profile settings are temporarily disabled for
+                        maintenance.
+                        <br />
+                        Please check back later.
+                      </p>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
             </TabsContent>
 
-            <TabsContent value="api-keys">
-              <ApiKeysTab />
+            <TabsContent value="api-keys" forceMount>
+              {activeTab === "api-keys" && <ApiKeysTab />}
             </TabsContent>
           </motion.div>
         </AnimatePresence>

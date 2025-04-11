@@ -123,7 +123,7 @@ export default function PricingPage() {
             <CardFooter className="flex flex-col gap-4">
               <Button className="w-full" asChild>
                 <a
-                  href="https://www.buymeacoffee.com/anonhost/membership"
+                  href="https://www.buymeacoffee.com/keiran/membership"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2"

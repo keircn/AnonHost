@@ -30,22 +30,20 @@ export async function updateProfileSettings(
     const sanitizedSettings = {
       ...settings,
       themeSettings: {
-        cardOpacity: Number(settings.themeSettings?.cardOpacity) || 60,
-        blurStrength: Number(settings.themeSettings?.blurStrength) || 5,
-        layout: settings.themeSettings?.layout || "default",
+        cardOpacity: Number(settings.themeSettings?.cardOpacity) ?? 60,
+        blurStrength: Number(settings.themeSettings?.blurStrength) ?? 5,
+        layout: settings.themeSettings?.layout ?? "default",
         colorScheme: {
-          background: settings.themeSettings?.colorScheme?.background || "",
-          text: settings.themeSettings?.colorScheme?.text || "",
-          accent: settings.themeSettings?.colorScheme?.accent || "",
+          background: settings.themeSettings?.colorScheme?.background ?? "",
+          text: settings.themeSettings?.colorScheme?.text ?? "",
+          accent: settings.themeSettings?.colorScheme?.accent ?? "",
         },
         effects: {
-          particles: Boolean(settings.themeSettings?.effects?.particles),
-          gradientAnimation: Boolean(
-            settings.themeSettings?.effects?.gradientAnimation,
-          ),
-          imageParallax: Boolean(
-            settings.themeSettings?.effects?.imageParallax,
-          ),
+          particles: settings.themeSettings?.effects?.particles ?? false,
+          gradientAnimation:
+            settings.themeSettings?.effects?.gradientAnimation ?? false,
+          imageParallax:
+            settings.themeSettings?.effects?.imageParallax ?? false,
         },
       },
       socialLinks: settings.socialLinks.map((link) => ({

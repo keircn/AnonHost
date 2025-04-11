@@ -4,6 +4,7 @@ import { getUserBadges } from "@/lib/utils";
 import { ProfileContainer } from "@/components/ProfileContainer";
 import type { Metadata } from "next";
 import { UserWithProfile, ProfileThemeSettings } from "@/types/profile";
+import { Prisma } from "@prisma/client";
 
 interface Props {
   id: string;
@@ -26,53 +27,40 @@ export async function getProfileData(id: string) {
     },
   });
 
-  if (user?.profile?.themeSettings) {
-    user.profile.themeSettings = user.profile.themeSettings
-      ? JSON.stringify(user.profile.themeSettings)
-      : null;
-  }
-
   if (!user?.profile) {
     notFound();
   }
 
-  let parsedThemeSettings: ProfileThemeSettings | undefined;
+  let parsedThemeSettings: ProfileThemeSettings;
   if (user.profile.themeSettings) {
-    try {
-      parsedThemeSettings = {
-        name: "default",
-        cardOpacity: 0.8,
-        blurStrength: 5,
-        layout: "default",
-        colorScheme: {
-          background: "#000000",
-          text: "#ffffff",
-          accent: "#000000",
-        },
-        ...JSON.parse(JSON.stringify(user.profile.themeSettings)),
-      };
-    } catch (e) {
-      console.error("Failed to parse theme settings:", e);
-    }
+    parsedThemeSettings =
+      typeof user.profile.themeSettings === "string"
+        ? JSON.parse(user.profile.themeSettings)
+        : user.profile.themeSettings;
+  } else {
+    parsedThemeSettings = {
+      name: "default",
+      cardOpacity: 60,
+      blurStrength: 5,
+      layout: "default",
+      colorScheme: {
+        background: "",
+        text: "",
+        accent: "",
+      },
+      effects: {
+        particles: false,
+        gradientAnimation: false,
+        imageParallax: false,
+      },
+    };
   }
 
   const typedUser: UserWithProfile = {
     ...user,
     profile: {
       ...user.profile,
-      themeSettings: parsedThemeSettings
-        ? JSON.parse(JSON.stringify(parsedThemeSettings))
-        : {
-            name: "default",
-            cardOpacity: 0.8,
-            blurStrength: 5,
-            layout: "default",
-            colorScheme: {
-              background: "#000000",
-              text: "#ffffff",
-              accent: "#000000",
-            },
-          },
+      themeSettings: parsedThemeSettings as Prisma.JsonValue & ProfileThemeSettings,
     },
   };
 

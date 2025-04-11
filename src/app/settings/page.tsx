@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
 import { GeneralSettingsTab } from "@/components/GeneralSettingsTab";
-// import { ProfileSettingsTab } from "@/components/ProfileSettingsTab"
+import { ProfileSettingsTab } from "@/components/ProfileSettingsTab"
 import { ApiKeysTab } from "@/components/ApiKeysTab";
 import { useSettings } from "@/hooks/use-settings";
 import { useProfileSettings } from "@/hooks/use-profile-settings";
@@ -102,14 +102,7 @@ export default function SettingsPage() {
               {activeTab === "profile" && (
                 <motion.div className="space-y-2" variants={fadeIn}>
                   <Card className="p-6">
-                    <div className="flex items-center justify-center p-8">
-                      <p className="text-lg text-muted-foreground text-center">
-                        Profile settings are temporarily disabled for
-                        maintenance.
-                        <br />
-                        Please check back later.
-                      </p>
-                    </div>
+                    <ProfileSettingsTab />
                   </Card>
                 </motion.div>
               )}

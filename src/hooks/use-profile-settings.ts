@@ -32,6 +32,7 @@ export function useProfileSettings() {
     },
     socialLinks: [],
   });
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -47,7 +48,7 @@ export function useProfileSettings() {
         setError(
           err instanceof Error
             ? err
-            : new Error("Failed to load profile settings"),
+            : new Error("Failed to load profile settings")
         );
         console.error("Failed to load profile settings:", err);
       } finally {
@@ -60,27 +61,21 @@ export function useProfileSettings() {
 
   const updateProfileField = (
     field: keyof ProfileSettings,
-    value: string | number | boolean | object,
+    value: string | number | boolean | object
   ) => {
-    setProfileSettings((prev: ProfileSettings) => ({
-      ...prev,
-      [field]: value,
-    }));
+    console.log(`Updating ${field}:`, value);
+    setProfileSettings((prev) => {
+      const newState = { ...prev, [field]: value };
+      console.log('New state after update:', newState);
+      return newState;
+    });
   };
 
-  type UpdateThemeSettingsField =
-    | "theme"
-    | "layout"
-    | "cardOpacity"
-    | "blurStrength"
-    | "particles"
-    | "gradientAnimation"
-    | "imageParallax";
-
   const updateThemeSettings = (
-    field: UpdateThemeSettingsField,
-    value: string | number | boolean,
+    field: string,
+    value: string | number | boolean
   ) => {
+    console.log(`Updating theme setting ${field}:`, value);
     setProfileSettings((prev) => {
       if (field === "theme") {
         return {
@@ -89,48 +84,28 @@ export function useProfileSettings() {
         };
       }
 
+      const newThemeSettings = { ...prev.themeSettings };
+
       if (field === "layout") {
-        return {
-          ...prev,
-          themeSettings: {
-            ...prev.themeSettings,
-            layout: value as "default" | "minimal" | "centered" | "grid",
-          },
+        newThemeSettings.layout = value as "default" | "minimal" | "centered" | "grid";
+      } else if (field === "cardOpacity" || field === "blurStrength") {
+        newThemeSettings[field] = Number(value);
+      } else if (["particles", "gradientAnimation", "imageParallax"].includes(field)) {
+        newThemeSettings.effects = {
+          ...newThemeSettings.effects,
+          [field]: Boolean(value),
         };
       }
 
-      if (field === "cardOpacity" || field === "blurStrength") {
-        return {
-          ...prev,
-          themeSettings: {
-            ...prev.themeSettings,
-            [field]: value as number,
-          },
-        };
-      }
-
-      if (
-        field === "particles" ||
-        field === "gradientAnimation" ||
-        field === "imageParallax"
-      ) {
-        return {
-          ...prev,
-          themeSettings: {
-            ...prev.themeSettings,
-            effects: {
-              ...prev.themeSettings.effects,
-              [field]: value as boolean,
-            },
-          },
-        };
-      }
-
-      return prev;
+      return {
+        ...prev,
+        themeSettings: newThemeSettings,
+      };
     });
   };
 
   const updateSocialLinks = (index: number, field: string, value: string) => {
+    console.log(`Updating social link ${index} ${field}:`, value); // Debug log
     setProfileSettings((prev) => {
       const newLinks = [...prev.socialLinks];
       newLinks[index] = {
@@ -142,6 +117,23 @@ export function useProfileSettings() {
         socialLinks: newLinks,
       };
     });
+  };
+
+  const saveProfile = async () => {
+    setIsSaving(true);
+    try {
+      console.log('Saving profile settings:', profileSettings);
+      const updatedProfile = await updateProfileSettings(profileSettings);
+      setProfileSettings(updatedProfile);
+      setError(null);
+      return updatedProfile;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to save profile settings"));
+      console.error("Failed to save profile settings:", err);
+      throw err;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const addSocialLink = () => {
@@ -156,26 +148,6 @@ export function useProfileSettings() {
       ...prev,
       socialLinks: prev.socialLinks.filter((_, i) => i !== index),
     }));
-  };
-
-  const saveProfile = async () => {
-    setIsSaving(true);
-    try {
-      const updatedProfile = await updateProfileSettings(profileSettings);
-      setProfileSettings(updatedProfile);
-      setError(null);
-      return updatedProfile;
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err
-          : new Error("Failed to save profile settings"),
-      );
-      console.error("Failed to save profile settings:", err);
-      throw err;
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   return {

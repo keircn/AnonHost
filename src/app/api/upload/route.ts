@@ -9,6 +9,7 @@ import { FILE_SIZE_LIMITS } from "@/lib/upload";
 import { sendDiscordWebhook } from "@/lib/discord";
 import { processFile } from "@/lib/process-file";
 import { FileSettings } from "@/types/file-settings";
+import { nanoid } from "nanoid";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | Blob;
     const settings = JSON.parse(formData.get("settings") as string) as FileSettings;
     const customDomain = formData.get("domain") as string | null;
+    const fileId = nanoid();
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -112,11 +114,17 @@ export async function POST(req: NextRequest) {
     }
 
     const processedFile = await processFile(file, settings);
-    const uploadResult = await uploadFile(processedFile, userId.toString(), newFilename);
+    const uploadResult = await uploadFile(
+      processedFile,
+      userId.toString(),
+      newFilename,
+      fileId
+    );
 
     const [media, userSettings] = await Promise.all([
       prisma.media.create({
         data: {
+          id: fileId,
           url: uploadResult.url,
           filename: uploadResult.filename,
           size: uploadResult.size,

@@ -81,15 +81,16 @@ export async function uploadFile(
   file: Blob,
   userId: string,
   filename: string,
+  fileId: string,
   type: "avatar" | "banner" | undefined = undefined,
 ): Promise<UploadResult> {
   try {
     const fileName =
       type === "avatar"
-        ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension(filename)}`
+        ? `avatars/${userId}/${fileId}${getFileExtension(filename)}`
         : type === "banner"
-          ? `banners/${userId}/${nanoid()}-banner${getFileExtension(filename)}`
-          : `${userId}/${nanoid()}-${filename}`;
+          ? `banners/${userId}/${fileId}${getFileExtension(filename)}`
+          : `${userId}/${fileId}${getFileExtension(filename)}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -114,7 +115,7 @@ export async function uploadFile(
       client: s3Client,
       params: {
         Bucket: process.env.R2_BUCKET_NAME!,
-        Key: filename,
+        Key: fileName,
         Body: buffer,
         ContentType: file.type,
         ACL: "public-read",
@@ -126,7 +127,7 @@ export async function uploadFile(
 
     await upload.done();
 
-    const url = `${process.env.R2_PUBLIC_URL}/${filename}`;
+    const url = `${process.env.R2_PUBLIC_URL}/${fileName}`;
 
     return {
       url,

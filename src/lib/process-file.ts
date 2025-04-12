@@ -37,13 +37,6 @@ export async function processFile(
     if (fileType.startsWith('image/')) {
         let image = sharp(buffer);
 
-        if (settings.compression.enabled) {
-            image = image.jpeg({
-                quality: settings.compression.quality,
-                progressive: true,
-            });
-        }
-
         if (settings.resize.enabled) {
             image = image.resize({
                 width: settings.resize.width,
@@ -52,15 +45,24 @@ export async function processFile(
             });
         }
 
+        let format: keyof sharp.FormatEnum | undefined;
+        let formatOptions: any = {};
+
         if (settings.conversion.enabled && settings.conversion.format) {
-            switch (settings.conversion.format) {
-                case 'webp':
-                    image = image.webp({ quality: settings.compression.quality });
-                    break;
-                case 'gif':
-                    image = image.gif();
-                    break;
+            format = settings.conversion.format as keyof sharp.FormatEnum;
+            if (format === 'webp') {
+                formatOptions = { quality: settings.compression.enabled ? settings.compression.quality : 80 };
             }
+        } else if (settings.compression.enabled) {
+            format = 'jpeg';
+            formatOptions = {
+                quality: settings.compression.quality,
+                progressive: true
+            };
+        }
+
+        if (format) {
+            image = image.toFormat(format, formatOptions);
         }
 
         const processedBuffer = await image.toBuffer();

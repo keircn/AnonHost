@@ -49,6 +49,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    const originalName = (file as any).name || 'untitled';
+    const newFormat = settings.conversion.enabled && settings.conversion.format
+      ? settings.conversion.format
+      : originalName.split('.').pop();
+    const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
+
     const sizeLimit = isPremium
       ? FILE_SIZE_LIMITS.PREMIUM
       : FILE_SIZE_LIMITS.FREE;
@@ -106,13 +112,6 @@ export async function POST(req: NextRequest) {
     }
 
     const processedFile = await processFile(file, settings);
-
-    const originalName = (file as any).name || 'file';
-    const newFormat = settings.conversion.enabled && settings.conversion.format
-      ? settings.conversion.format
-      : originalName.split('.').pop();
-    const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
-
     const uploadResult = await uploadFile(processedFile, userId.toString(), newFilename);
 
     const [media, userSettings] = await Promise.all([
@@ -123,7 +122,7 @@ export async function POST(req: NextRequest) {
           size: uploadResult.size,
           width: uploadResult.width,
           height: uploadResult.height,
-          duration: uploadResult.duration,
+          duration: uploadResult.duration || null,
           type: uploadResult.type.toUpperCase() as MediaType,
           userId,
           public: true,

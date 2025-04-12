@@ -1,4 +1,14 @@
+import { useEffect } from 'react';
+import { useNavbar } from '@/components/NavbarContext';
+
 export function BoobsPageClient() {
+  const { setShowNavbar } = useNavbar();
+
+  useEffect(() => {
+    setShowNavbar(false);
+    return () => setShowNavbar(true);
+  }, [setShowNavbar]);
+
   const ascii_boobs = `
   ⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⠟⢉⣕⡞⣼⣿⣿⣿⣿⣿⡟⠛⠛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣳⡀⢻⣤⣴⣴⣶⣶⣶⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿
   ⠀⠀⠀⠀⠀⠀⠀⣼⢧⣿⣦⠬⡜⣼⡝⣿⢹⣿⣿⡟⣁⡀⣴⣿⡟⣹⠈⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣗⠾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿

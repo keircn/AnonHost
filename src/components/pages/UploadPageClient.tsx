@@ -529,6 +529,14 @@ export function UploadPageClient() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
+                              <div className="absolute inset-0 flex items-start justify-between p-2">
+                                <span className="text-xs text-muted-foreground bg-muted/80 rounded px-1">
+                                  Settings
+                                </span>
+                                <span className="text-xs text-muted-foreground bg-muted/80 rounded px-1">
+                                  Remove
+                                </span>
+                              </div>
                             </div>
                             <motion.div
                               className="p-2 text-sm truncate"

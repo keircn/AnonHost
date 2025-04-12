@@ -56,14 +56,16 @@ export function FileSettingsModal({
 
   const defaultDomain = "keiran.cc";
   const fileType = useMemo(() => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const extension = fileName.split(".").pop()?.toLowerCase();
     return {
-      isImage: /^(jpg|jpeg|png|gif|webp)$/i.test(extension || ''),
-      isVideo: /^(mp4|webm|mov)$/i.test(extension || ''),
+      isImage: /^(jpg|jpeg|png|gif|webp)$/i.test(extension || ""),
+      isVideo: /^(mp4|webm|mov)$/i.test(extension || ""),
     };
   }, [fileName]);
 
-  const updateCompression = (update: Partial<typeof localSettings.compression>) => {
+  const updateCompression = (
+    update: Partial<typeof localSettings.compression>,
+  ) => {
     setLocalSettings((prev) => ({
       ...prev,
       compression: {
@@ -73,7 +75,9 @@ export function FileSettingsModal({
     }));
   };
 
-  const updateConversion = (update: Partial<typeof localSettings.conversion>) => {
+  const updateConversion = (
+    update: Partial<typeof localSettings.conversion>,
+  ) => {
     setLocalSettings((prev) => ({
       ...prev,
       conversion: {
@@ -156,7 +160,9 @@ export function FileSettingsModal({
                 </div>
                 {localSettings.compression.enabled && (
                   <div className="space-y-2">
-                    <Label htmlFor="quality">Quality ({localSettings.compression.quality}%)</Label>
+                    <Label htmlFor="quality">
+                      Quality ({localSettings.compression.quality}%)
+                    </Label>
                     <Input
                       id="quality"
                       type="range"
@@ -246,7 +252,7 @@ export function FileSettingsModal({
                           id="width"
                           type="number"
                           placeholder="Width"
-                          value={localSettings.resize.width || ''}
+                          value={localSettings.resize.width || ""}
                           onChange={(e) =>
                             updateResize({
                               width: parseInt(e.target.value) || undefined,
@@ -260,7 +266,7 @@ export function FileSettingsModal({
                           id="height"
                           type="number"
                           placeholder="Height"
-                          value={localSettings.resize.height || ''}
+                          value={localSettings.resize.height || ""}
                           onChange={(e) =>
                             updateResize({
                               height: parseInt(e.target.value) || undefined,
@@ -270,7 +276,9 @@ export function FileSettingsModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="aspect-ratio">Maintain aspect ratio</Label>
+                      <Label htmlFor="aspect-ratio">
+                        Maintain aspect ratio
+                      </Label>
                       <Switch
                         id="aspect-ratio"
                         checked={localSettings.resize.maintainAspectRatio}

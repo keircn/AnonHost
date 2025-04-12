@@ -7,7 +7,7 @@ export interface FileSettings {
   };
   conversion: {
     enabled: boolean;
-    format?: 'gif' | 'mp4' | 'webp' | 'webm';
+    format?: "gif" | "mp4" | "webp" | "webm";
   };
   resize: {
     enabled: boolean;

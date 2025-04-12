@@ -1,6 +1,5 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-import { nanoid } from "nanoid";
 
 export const STORAGE_LIMITS = {
   PREMIUM: 1024 * 1024 * 1024,

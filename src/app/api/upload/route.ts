@@ -11,6 +11,10 @@ import { processFile } from "@/lib/process-file";
 import { FileSettings } from "@/types/file-settings";
 import { nanoid } from "nanoid";
 
+function isErrorWithCause(error: unknown): error is { cause: unknown } {
+  return typeof error === "object" && error !== null && "cause" in error;
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
@@ -47,19 +51,19 @@ export async function POST(req: NextRequest) {
     let settings: FileSettings = {
       conversion: {
         enabled: false,
-        format: undefined
+        format: undefined,
       },
       public: true,
       compression: {
         enabled: false,
-        quality: 80
+        quality: 80,
       },
       resize: {
         enabled: false,
         width: undefined,
         height: undefined,
-        maintainAspectRatio: true
-      }
+        maintainAspectRatio: true,
+      },
     };
     if (settingsStr) {
       try {
@@ -67,19 +71,20 @@ export async function POST(req: NextRequest) {
         settings = {
           conversion: {
             enabled: parsedSettings?.conversion?.enabled ?? false,
-            format: parsedSettings?.conversion?.format ?? null
+            format: parsedSettings?.conversion?.format ?? null,
           },
           public: parsedSettings?.public ?? true,
           compression: {
             enabled: parsedSettings?.compression?.enabled ?? false,
-            quality: parsedSettings?.compression?.quality ?? 80
+            quality: parsedSettings?.compression?.quality ?? 80,
           },
           resize: {
             enabled: parsedSettings?.resize?.enabled ?? false,
             width: parsedSettings?.resize?.width ?? undefined,
             height: parsedSettings?.resize?.height ?? undefined,
-            maintainAspectRatio: parsedSettings?.resize?.maintainAspectRatio ?? true
-          }
+            maintainAspectRatio:
+              parsedSettings?.resize?.maintainAspectRatio ?? true,
+          },
         };
       } catch (e) {
         console.warn("Failed to parse settings:", e);
@@ -92,18 +97,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const originalName = (file as any).name || 'untitled';
-    const newFormat = settings.conversion.enabled && settings.conversion.format
-      ? settings.conversion.format
-      : originalName.split('.').pop();
-    const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
+    const originalName = (file as File).name || "untitled";
+    const newFormat =
+      settings.conversion.enabled && settings.conversion.format
+        ? settings.conversion.format
+        : originalName.split(".").pop();
+    const newFilename = `${originalName.split(".")[0]}.${newFormat}`;
 
-    const sizeLimit = isPremium ? FILE_SIZE_LIMITS.PREMIUM : FILE_SIZE_LIMITS.FREE;
+    const sizeLimit = isPremium
+      ? FILE_SIZE_LIMITS.PREMIUM
+      : FILE_SIZE_LIMITS.FREE;
     if (file.size > sizeLimit) {
       const limitInMb = sizeLimit / (1024 * 1024);
       return NextResponse.json(
-        { error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users` },
-        { status: 400 }
+        {
+          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users`,
+        },
+        { status: 400 },
       );
     }
 
@@ -151,7 +161,12 @@ export async function POST(req: NextRequest) {
     }
 
     const processedFile = await processFile(file, settings);
-    const uploadResult = await uploadFile(processedFile, userId.toString(), newFilename, fileId);
+    const uploadResult = await uploadFile(
+      processedFile,
+      userId.toString(),
+      newFilename,
+      fileId,
+    );
 
     const dbData = {
       id: fileId,
@@ -200,11 +215,11 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Upload error details:", {
+      console.error("Error details:", {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        cause: (error as any).cause,
+        cause: isErrorWithCause(error) ? error.cause : undefined,
       });
     } else {
       console.error("Unknown error:", error);

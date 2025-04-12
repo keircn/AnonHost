@@ -14,9 +14,9 @@ export function generateShareXConfig(apiKey: string, baseUrl: string) {
       settings: JSON.stringify({
         conversion: {
           enabled: false,
-          format: null
-        }
-      })
+          format: null,
+        },
+      }),
     },
     URL: "{json:url}",
     ThumbnailURL: "{json:url}",

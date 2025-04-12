@@ -96,7 +96,9 @@ export function UploadPageClient() {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileSettings, setFileSettings] = useState<Record<number, FileSettings>>({});
+  const [fileSettings, setFileSettings] = useState<
+    Record<number, FileSettings>
+  >({});
   const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(
     null,
   );
@@ -543,33 +545,43 @@ export function UploadPageClient() {
                               </div>
                               {fileSettings[index]?.compression.enabled && (
                                 <div className="absolute bottom-2 left-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs">
-                                  {fileSettings[index].compression.quality}% Quality
+                                  {fileSettings[index].compression.quality}%
+                                  Quality
                                 </div>
                               )}
-                              {fileSettings[index]?.conversion.enabled && fileSettings[index].conversion.format && (
-                                <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs uppercase">
-                                  {fileSettings[index].conversion.format}
-                                </div>
-                              )}
+                              {fileSettings[index]?.conversion.enabled &&
+                                fileSettings[index].conversion.format && (
+                                  <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs uppercase">
+                                    {fileSettings[index].conversion.format}
+                                  </div>
+                                )}
                             </div>
                             <div className="p-2 space-y-1">
-                              <motion.div className="text-sm truncate" variants={fadeIn}>
+                              <motion.div
+                                className="text-sm truncate"
+                                variants={fadeIn}
+                              >
                                 {file.name}
                               </motion.div>
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
-                                  <motion.div
-                                    className="text-xs text-muted-foreground truncate"
-                                    variants={fadeIn}
-                                  >
-                                    {[
-                                      fileSettings[index]?.compression.enabled && 'Compressed',
-                                      fileSettings[index]?.conversion.enabled && `Convert to ${fileSettings[index]?.conversion.format}`,
-                                      fileSettings[index]?.resize.enabled && 'Resized',
-                                    ].filter(Boolean).join(' • ')}
-                                  </motion.div>
-                                )}
+                                <motion.div
+                                  className="text-xs text-muted-foreground truncate"
+                                  variants={fadeIn}
+                                >
+                                  {[
+                                    fileSettings[index]?.compression.enabled &&
+                                      "Compressed",
+                                    fileSettings[index]?.conversion.enabled &&
+                                      `Convert to ${fileSettings[index]?.conversion.format}`,
+                                    fileSettings[index]?.resize.enabled &&
+                                      "Resized",
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" • ")}
+                                </motion.div>
+                              )}
                             </div>
                           </div>
 
@@ -607,9 +619,15 @@ export function UploadPageClient() {
                                 isOpen={true}
                                 onClose={() => setActiveSettingsFile(null)}
                                 fileName={files[activeSettingsFile].name}
-                                settings={fileSettings[activeSettingsFile] || defaultFileSettings}
+                                settings={
+                                  fileSettings[activeSettingsFile] ||
+                                  defaultFileSettings
+                                }
                                 onSettingsChange={(newSettings) => {
-                                  updateFileSettings(activeSettingsFile, newSettings);
+                                  updateFileSettings(
+                                    activeSettingsFile,
+                                    newSettings,
+                                  );
                                 }}
                               />
                             )}

@@ -1,6 +1,6 @@
 import { Root } from "@/components/Root";
 
-export const metadata = {
+/* export const metadata = {
   title: "AnonHost - Simple, Fast File Hosting",
   description: "Upload, share, and manage your files with ease.",
   icons: {
@@ -11,13 +11,13 @@ export const metadata = {
     images: "https://r2.keiran.cc/1/aev8sKbvuc7uQ--Zml2kP-archium-dark.png",
     title: "AnonHost - Simple, Fast File Hosting",
     description: "Upload, share, and manage your files with ease.",
-    url: "https://keiran.cc",
+    url: "https://anon.love",
     siteName: "AnonHost",
     type: "website",
     locale: "en_US",
   },
-  metadataBase: new URL("https://keiran.cc"),
-};
+  metadataBase: new URL("https://anon.love"),
+}; */
 
 export default function RootLayout({
   children,

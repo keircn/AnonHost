@@ -61,6 +61,21 @@ const dropZoneVariants = {
   },
 };
 
+const defaultFileSettings: FileSettings = {
+  public: false,
+  compression: {
+    enabled: false,
+    quality: 80,
+  },
+  conversion: {
+    enabled: false,
+  },
+  resize: {
+    enabled: false,
+    maintainAspectRatio: true,
+  },
+};
+
 const formatFileSize = (bytes: number): string => {
   const units = ["B", "KB", "MB", "GB"];
   let size = bytes;
@@ -81,9 +96,7 @@ export function UploadPageClient() {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileSettings, setFileSettings] = useState<
-    Record<string, FileSettings>
-  >({});
+  const [fileSettings, setFileSettings] = useState<Record<number, FileSettings>>({});
   const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(
     null,
   );
@@ -329,10 +342,10 @@ export function UploadPageClient() {
           );
           const uploadStartTime = Date.now();
 
-          const settings = fileSettings[index] || { public: false };
+          const settings = fileSettings[index] || defaultFileSettings;
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("public", String(settings.public));
+          formData.append("settings", JSON.stringify(settings));
 
           if (settings.domain && settings.domain !== "keiran.cc") {
             formData.append("domain", settings.domain);
@@ -419,9 +432,8 @@ export function UploadPageClient() {
     setFileSettings((prev) => ({
       ...prev,
       [fileIndex]: {
-        ...(prev[fileIndex] || { public: false }),
+        ...(prev[fileIndex] || defaultFileSettings),
         ...settings,
-        domain: settings.domain === "keiran.cc" ? null : settings.domain,
       },
     }));
   };
@@ -529,13 +541,36 @@ export function UploadPageClient() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
+                              {fileSettings[index]?.compression.enabled && (
+                                <div className="absolute bottom-2 left-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs">
+                                  {fileSettings[index].compression.quality}% Quality
+                                </div>
+                              )}
+                              {fileSettings[index]?.conversion.enabled && fileSettings[index].conversion.format && (
+                                <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs uppercase">
+                                  {fileSettings[index].conversion.format}
+                                </div>
+                              )}
                             </div>
-                            <motion.div
-                              className="p-2 text-sm truncate"
-                              variants={fadeIn}
-                            >
-                              {file.name}
-                            </motion.div>
+                            <div className="p-2 space-y-1">
+                              <motion.div className="text-sm truncate" variants={fadeIn}>
+                                {file.name}
+                              </motion.div>
+                              {(fileSettings[index]?.compression.enabled ||
+                                fileSettings[index]?.conversion.enabled ||
+                                fileSettings[index]?.resize.enabled) && (
+                                  <motion.div
+                                    className="text-xs text-muted-foreground truncate"
+                                    variants={fadeIn}
+                                  >
+                                    {[
+                                      fileSettings[index]?.compression.enabled && 'Compressed',
+                                      fileSettings[index]?.conversion.enabled && `Convert to ${fileSettings[index]?.conversion.format}`,
+                                      fileSettings[index]?.resize.enabled && 'Resized',
+                                    ].filter(Boolean).join(' • ')}
+                                  </motion.div>
+                                )}
+                            </div>
                           </div>
 
                           <motion.div
@@ -567,21 +602,14 @@ export function UploadPageClient() {
                               <Settings2 className="h-4 w-4" />
                             </Button>
 
-                            {activeSettingsFile !== null && (
+                            {activeSettingsFile === index && (
                               <FileSettingsModal
                                 isOpen={true}
                                 onClose={() => setActiveSettingsFile(null)}
                                 fileName={files[activeSettingsFile].name}
-                                settings={
-                                  fileSettings[activeSettingsFile] || {
-                                    public: false,
-                                  }
-                                }
+                                settings={fileSettings[activeSettingsFile] || defaultFileSettings}
                                 onSettingsChange={(newSettings) => {
-                                  updateFileSettings(
-                                    activeSettingsFile,
-                                    newSettings,
-                                  );
+                                  updateFileSettings(activeSettingsFile, newSettings);
                                 }}
                               />
                             )}

@@ -7,6 +7,8 @@ import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
 import { FILE_SIZE_LIMITS } from "@/lib/upload";
 import { sendDiscordWebhook } from "@/lib/discord";
+import { processFile } from "@/lib/process-file";
+import { FileSettings } from "@/types/file-settings";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
+    const settings = JSON.parse(formData.get("settings") as string) as FileSettings;
     const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
@@ -102,9 +105,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const uploadResult = await uploadFile(file, userId.toString());
+    const processedFile = await processFile(file, settings);
+    const uploadResult = await uploadFile(processedFile, userId.toString());
 
-    const [media, settings] = await Promise.all([
+    const [media, userSettings] = await Promise.all([
       prisma.media.create({
         data: {
           url: uploadResult.url,
@@ -127,8 +131,8 @@ export async function POST(req: NextRequest) {
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`
-      : settings?.customDomain
-        ? `https://${settings.customDomain}/${media.id}`
+      : userSettings?.customDomain
+        ? `https://${userSettings.customDomain}/${media.id}`
         : `${baseUrl}/${media.id}`;
 
     await sendDiscordWebhook({

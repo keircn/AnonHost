@@ -45,44 +45,47 @@ export async function processFile(
             });
         }
 
-        let format: keyof sharp.FormatEnum | undefined;
+        const currentFormat = fileType.split('/')[1] as keyof sharp.FormatEnum;
+
+        let format = currentFormat;
         let formatOptions: any = {};
 
         if (settings.conversion.enabled && settings.conversion.format) {
             format = settings.conversion.format as keyof sharp.FormatEnum;
-            if (settings.compression.enabled) {
-                switch (format) {
-                    case 'jpeg':
-                    case 'jpg':
-                        formatOptions = {
-                            quality: settings.compression.quality,
-                            mozjpeg: true
-                        };
-                        break;
-                    case 'webp':
-                        formatOptions = {
-                            quality: settings.compression.quality,
-                            lossless: false
-                        };
-                        break;
-                    case 'gif':
-                        formatOptions = {
-                            colours: Math.max(2, Math.min(256, Math.round(256 * (settings.compression.quality / 100))))
-                        };
-                        break;
-                }
-            }
-        } else if (settings.compression.enabled) {
-            format = (fileType.split('/')[1] as keyof sharp.FormatEnum) || 'jpeg';
-            formatOptions = {
-                quality: settings.compression.quality,
-                mozjpeg: format === 'jpeg' || format === 'jpg'
-            };
         }
 
-        if (format) {
-            image = image.toFormat(format, formatOptions);
+        if (settings.compression.enabled) {
+            switch (format) {
+                case 'jpeg':
+                case 'jpg':
+                    formatOptions = {
+                        quality: settings.compression.quality,
+                        mozjpeg: true,
+                        chromaSubsampling: '4:4:4'
+                    };
+                    break;
+                case 'webp':
+                    formatOptions = {
+                        quality: settings.compression.quality,
+                        lossless: false,
+                        effort: 6
+                    };
+                    break;
+                case 'png':
+                    formatOptions = {
+                        compressionLevel: Math.round((100 - settings.compression.quality) / 10),
+                        palette: true
+                    };
+                    break;
+                case 'gif':
+                    formatOptions = {
+                        colours: Math.max(2, Math.min(256, Math.round(256 * (settings.compression.quality / 100))))
+                    };
+                    break;
+            }
         }
+
+        image = image.toFormat(format, formatOptions);
 
         const processedBuffer = await image.toBuffer();
         return new Blob([processedBuffer], {

@@ -87,10 +87,10 @@ export async function uploadFile(
   try {
     const fileName =
       type === "avatar"
-        ? `avatars/${userId}/${fileId}${getFileExtension(filename)}`
+        ? `a/${userId}/${fileId}${getFileExtension(filename)}`
         : type === "banner"
-          ? `banners/${userId}/${fileId}${getFileExtension(filename)}`
-          : `${userId}/${fileId}${getFileExtension(filename)}`;
+          ? `b/${userId}/${fileId}${getFileExtension(filename)}`
+          : `f/${userId}/${fileId}${getFileExtension(filename)}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -127,7 +127,7 @@ export async function uploadFile(
 
     await upload.done();
 
-    const url = `${process.env.R2_PUBLIC_URL}/${fileName}`;
+    const url = fileName;
 
     return {
       url,

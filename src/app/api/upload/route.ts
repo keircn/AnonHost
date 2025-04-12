@@ -44,14 +44,47 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File | Blob;
     const settingsStr = formData.get("settings") as string | null;
-    const settings: FileSettings = settingsStr
-      ? JSON.parse(settingsStr)
-      : {
-        conversion: {
-          enabled: false,
-          format: null
-        }
-      };
+    let settings: FileSettings = {
+      conversion: {
+        enabled: false,
+        format: undefined
+      },
+      public: true,
+      compression: {
+        enabled: false,
+        quality: 80
+      },
+      resize: {
+        enabled: false,
+        width: undefined,
+        height: undefined,
+        maintainAspectRatio: true
+      }
+    };
+    if (settingsStr) {
+      try {
+        const parsedSettings = JSON.parse(settingsStr);
+        settings = {
+          conversion: {
+            enabled: parsedSettings?.conversion?.enabled ?? false,
+            format: parsedSettings?.conversion?.format ?? null
+          },
+          public: parsedSettings?.public ?? true,
+          compression: {
+            enabled: parsedSettings?.compression?.enabled ?? false,
+            quality: parsedSettings?.compression?.quality ?? 80
+          },
+          resize: {
+            enabled: parsedSettings?.resize?.enabled ?? false,
+            width: parsedSettings?.resize?.width ?? undefined,
+            height: parsedSettings?.resize?.height ?? undefined,
+            maintainAspectRatio: parsedSettings?.resize?.maintainAspectRatio ?? true
+          }
+        };
+      } catch (e) {
+        console.warn("Failed to parse settings:", e);
+      }
+    }
     const customDomain = formData.get("domain") as string | null;
     const fileId = nanoid(6);
 

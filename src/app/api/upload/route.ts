@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { uploadFile } from "@/lib/upload";
+import { ALLOWED_TYPES, uploadFile } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
 import { FILE_SIZE_LIMITS } from "@/lib/upload";
@@ -117,41 +117,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-
-      "video/mp4",
-      "video/webm",
-      "video/ogg",
-
-      "audio/mpeg",
-      "audio/wav",
-      "audio/ogg",
-      "audio/mp3",
-      "audio/aac",
-      "audio/flac",
-      "audio/m4a",
-
-      "text/plain",
-      "text/markdown",
-      "text/html",
-      "text/css",
-      "text/javascript",
-      "application/json",
-      "application/xml",
-
-      "application/pdf",
-      "application/x-httpd-php",
-      "application/x-sh",
-      "application/x-yaml",
-      "application/x-typescript",
-      "application/x-markdown",
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
         {
           error: "Invalid file type.",

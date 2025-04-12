@@ -11,6 +11,49 @@ export const FILE_SIZE_LIMITS = {
   FREE: 100 * 1024 * 1024,
 };
 
+export const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/bmp",
+  "image/tiff",
+  "image/svg+xml",
+
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/x-matroska",
+
+  "audio/mpeg",
+  "audio/wav",
+  "audio/ogg",
+  "audio/mp3",
+  "audio/aac",
+  "audio/flac",
+  "audio/m4a",
+  "audio/x-wav",
+  "audio/x-aiff",
+
+  "text/plain",
+  "text/markdown",
+  "text/html",
+  "text/css",
+  "text/javascript",
+  "application/json",
+  "application/xml",
+  "application/rtf",
+
+  "application/pdf",
+  "application/x-httpd-php",
+  "application/x-sh",
+  "application/x-yaml",
+  "application/x-typescript",
+  "application/x-markdown",
+];
+
 interface StorageStats {
   used: string;
   total: string;

@@ -21,7 +21,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
-import { FILE_SIZE_LIMITS } from "@/lib/upload";
+import { ALLOWED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import pLimit from "p-limit";
 
 const fadeIn = {
@@ -119,41 +119,7 @@ export function UploadPageClient() {
 
   const validateFile = useCallback(
     (file: File): boolean => {
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-
-        "video/mp4",
-        "video/webm",
-        "video/ogg",
-
-        "audio/mpeg",
-        "audio/wav",
-        "audio/ogg",
-        "audio/mp3",
-        "audio/aac",
-        "audio/flac",
-        "audio/m4a",
-
-        "text/plain",
-        "text/markdown",
-        "text/html",
-        "text/css",
-        "text/javascript",
-
-        "application/json",
-        "application/xml",
-        "application/pdf",
-        "application/x-httpd-php",
-        "application/x-sh",
-        "application/x-yaml",
-        "application/x-typescript",
-        "application/x-markdown",
-      ];
-
-      if (!allowedTypes.includes(file.type)) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
         toast({
           title: "Invalid file type",
           description:
@@ -454,11 +420,7 @@ export function UploadPageClient() {
         Upload Media
       </motion.h1>
 
-      <motion.div
-        variants={fadeIn}
-        initial="initial"
-        animate="animate"
-      >
+      <motion.div variants={fadeIn} initial="initial" animate="animate">
         <Card>
           <CardContent className="p-6 lg:p-8 xl:p-10">
             <motion.div
@@ -570,22 +532,22 @@ export function UploadPageClient() {
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
-                                  <motion.div
-                                    className="text-xs text-muted-foreground truncate"
-                                    variants={fadeIn}
-                                  >
-                                    {[
-                                      fileSettings[index]?.compression.enabled &&
+                                <motion.div
+                                  className="text-xs text-muted-foreground truncate"
+                                  variants={fadeIn}
+                                >
+                                  {[
+                                    fileSettings[index]?.compression.enabled &&
                                       "Compressed",
-                                      fileSettings[index]?.conversion.enabled &&
+                                    fileSettings[index]?.conversion.enabled &&
                                       `Convert to ${fileSettings[index]?.conversion.format}`,
-                                      fileSettings[index]?.resize.enabled &&
+                                    fileSettings[index]?.resize.enabled &&
                                       "Resized",
-                                    ]
-                                      .filter(Boolean)
-                                      .join(" • ")}
-                                  </motion.div>
-                                )}
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" • ")}
+                                </motion.div>
+                              )}
                             </div>
                           </div>
 

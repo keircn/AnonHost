@@ -26,7 +26,7 @@ interface UploadResult {
   width: number | null;
   height: number | null;
   duration?: number | null;
-  type: "image" | "video" | "text" | "document";
+  type: "image" | "video" | "text" | "document" | "audio" | "other";
 }
 
 export function formatFileSize(bytes: number): string {
@@ -78,17 +78,18 @@ const s3Client = new S3Client({
 });
 
 export async function uploadFile(
-  file: File,
+  file: Blob,
   userId: string,
+  filename: string,
   type: "avatar" | "banner" | undefined = undefined,
 ): Promise<UploadResult> {
   try {
-    const filename =
+    const fileName =
       type === "avatar"
-        ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension(file.name)}`
+        ? `avatars/${userId}/${nanoid()}-avatar${getFileExtension((file as File).name)}`
         : type === "banner"
-          ? `banners/${userId}/${nanoid()}-banner${getFileExtension(file.name)}`
-          : `${userId}/${nanoid()}-${file.name}`;
+          ? `banners/${userId}/${nanoid()}-banner${getFileExtension((file as File).name)}`
+          : `${userId}/${nanoid()}-${(file as File).name}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -98,7 +99,7 @@ export async function uploadFile(
     } else if (file.type.startsWith("video/")) {
       fileType = "video";
     } else if (file.type.startsWith("audio/")) {
-      fileType = "audio"; // Add audio type
+      fileType = "audio";
     } else if (
       file.type.startsWith("text/") ||
       file.type.includes("json") ||
@@ -129,7 +130,7 @@ export async function uploadFile(
 
     return {
       url,
-      filename: file.name,
+      filename: (file as File).name,
       size: file.size,
       width: fileType === "image" ? 0 : null,
       height: fileType === "image" ? 0 : null,

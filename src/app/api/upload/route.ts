@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | Blob;
     const settings = JSON.parse(formData.get("settings") as string) as FileSettings;
     const customDomain = formData.get("domain") as string | null;
 
@@ -106,7 +106,14 @@ export async function POST(req: NextRequest) {
     }
 
     const processedFile = await processFile(file, settings);
-    const uploadResult = await uploadFile(processedFile, userId.toString());
+
+    const originalName = (file as any).name || 'file';
+    const newFormat = settings.conversion.enabled && settings.conversion.format
+      ? settings.conversion.format
+      : originalName.split('.').pop();
+    const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
+
+    const uploadResult = await uploadFile(processedFile, userId.toString(), newFilename);
 
     const [media, userSettings] = await Promise.all([
       prisma.media.create({

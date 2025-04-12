@@ -19,10 +19,12 @@ async function initFFmpeg() {
 }
 
 export async function processFile(
-    file: File,
+    file: Blob,
     settings: FileSettings
-): Promise<File> {
+): Promise<Blob> {
     const buffer = Buffer.from(await file.arrayBuffer());
+    const fileType = file.type;
+    const fileName = (file as any).name || 'file';
 
     if (
         !settings.compression.enabled &&
@@ -32,7 +34,7 @@ export async function processFile(
         return file;
     }
 
-    if (file.type.startsWith('image/')) {
+    if (fileType.startsWith('image/')) {
         let image = sharp(buffer);
 
         if (settings.compression.enabled) {
@@ -62,19 +64,20 @@ export async function processFile(
         }
 
         const processedBuffer = await image.toBuffer();
-        return new File(
-            [processedBuffer],
-            `${file.name.split('.')[0]}.${settings.conversion.format || file.name.split('.').pop()}`,
-            { type: `image/${settings.conversion.format || file.type.split('/')[1]}` }
-        );
+        return new Blob([processedBuffer], {
+            type: settings.conversion.enabled && settings.conversion.format
+                ? `image/${settings.conversion.format}`
+                : fileType
+        });
     }
 
-    if (file.type.startsWith('video/')) {
+    if (fileType.startsWith('video/')) {
         const ffmpeg = await initFFmpeg();
-        const inputFileName = 'input' + getFileExtension(file.name);
+        const extension = fileName.split('.').pop() || 'mp4';
+        const inputFileName = `input.${extension}`;
         const outputFormat = settings.conversion.enabled && settings.conversion.format
             ? settings.conversion.format
-            : file.name.split('.').pop();
+            : extension;
         const outputFileName = `output.${outputFormat}`;
 
         ffmpeg.writeFile(inputFileName, await fetchFile(file));
@@ -108,18 +111,10 @@ export async function processFile(
         await ffmpeg.exec(args);
 
         const data = await ffmpeg.readFile(outputFileName);
-        const processedBlob = new Blob([data], { type: `video/${outputFormat}` });
-
-        return new File(
-            [processedBlob],
-            `${file.name.split('.')[0]}.${outputFormat}`,
-            { type: `video/${outputFormat}` }
-        );
+        return new Blob([data], {
+            type: `video/${outputFormat}`
+        });
     }
 
     return file;
-}
-
-function getFileExtension(filename: string): string {
-    return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2);
 }

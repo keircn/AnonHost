@@ -50,14 +50,33 @@ export async function processFile(
 
         if (settings.conversion.enabled && settings.conversion.format) {
             format = settings.conversion.format as keyof sharp.FormatEnum;
-            if (format === 'webp') {
-                formatOptions = { quality: settings.compression.enabled ? settings.compression.quality : 80 };
+            if (settings.compression.enabled) {
+                switch (format) {
+                    case 'jpeg':
+                    case 'jpg':
+                        formatOptions = {
+                            quality: settings.compression.quality,
+                            mozjpeg: true
+                        };
+                        break;
+                    case 'webp':
+                        formatOptions = {
+                            quality: settings.compression.quality,
+                            lossless: false
+                        };
+                        break;
+                    case 'gif':
+                        formatOptions = {
+                            colours: Math.max(2, Math.min(256, Math.round(256 * (settings.compression.quality / 100))))
+                        };
+                        break;
+                }
             }
         } else if (settings.compression.enabled) {
-            format = 'jpeg';
+            format = (fileType.split('/')[1] as keyof sharp.FormatEnum) || 'jpeg';
             formatOptions = {
                 quality: settings.compression.quality,
-                progressive: true
+                mozjpeg: format === 'jpeg' || format === 'jpg'
             };
         }
 

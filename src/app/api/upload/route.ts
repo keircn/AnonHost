@@ -41,12 +41,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    console.log("Starting upload process...");
     const formData = await req.formData();
     const file = formData.get("file") as File | Blob;
     const settings = JSON.parse(formData.get("settings") as string) as FileSettings;
     const customDomain = formData.get("domain") as string | null;
-    const fileId = nanoid();
+    const fileId = nanoid(6);
 
     console.log("File details:", {
       name: (file as any).name,

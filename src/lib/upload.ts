@@ -90,7 +90,7 @@ export async function uploadFile(
         ? `a/${userId}/${fileId}${getFileExtension(filename)}`
         : type === "banner"
           ? `b/${userId}/${fileId}${getFileExtension(filename)}`
-          : `f/${userId}/${fileId}${getFileExtension(filename)}`;
+          : `${userId}/${fileId}${getFileExtension(filename)}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 

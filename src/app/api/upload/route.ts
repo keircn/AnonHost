@@ -88,15 +88,6 @@ export async function POST(req: NextRequest) {
     const customDomain = formData.get("domain") as string | null;
     const fileId = nanoid(6);
 
-    console.log("File details:", {
-      name: (file as any).name,
-      type: file.type,
-      size: file.size,
-      fileId,
-      settings,
-      customDomain
-    });
-
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
@@ -107,16 +98,12 @@ export async function POST(req: NextRequest) {
       : originalName.split('.').pop();
     const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
 
-    const sizeLimit = isPremium
-      ? FILE_SIZE_LIMITS.PREMIUM
-      : FILE_SIZE_LIMITS.FREE;
+    const sizeLimit = isPremium ? FILE_SIZE_LIMITS.PREMIUM : FILE_SIZE_LIMITS.FREE;
     if (file.size > sizeLimit) {
       const limitInMb = sizeLimit / (1024 * 1024);
       return NextResponse.json(
-        {
-          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users`,
-        },
-        { status: 400 },
+        { error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users` },
+        { status: 400 }
       );
     }
 
@@ -163,20 +150,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("Processing file...");
     const processedFile = await processFile(file, settings);
-    console.log("File processed. New size:", processedFile.size);
+    const uploadResult = await uploadFile(processedFile, userId.toString(), newFilename, fileId);
 
-    console.log("Uploading to R2...");
-    const uploadResult = await uploadFile(
-      processedFile,
-      userId.toString(),
-      newFilename,
-      fileId
-    );
-    console.log("Upload result:", uploadResult);
-
-    console.log("Creating database entry...");
     const dbData = {
       id: fileId,
       url: uploadResult.url,
@@ -190,34 +166,27 @@ export async function POST(req: NextRequest) {
       public: true,
       domain: customDomain || null,
     };
-    console.log("Database entry data:", dbData);
 
     const [media, userSettings] = await Promise.all([
-      prisma.media.create({
-        data: dbData,
-      }),
+      prisma.media.create({ data: dbData }),
       prisma.settings.findUnique({
         where: { userId },
         select: { customDomain: true },
       }),
     ]);
-    console.log("Database entry created:", media);
-    console.log("User settings:", userSettings);
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`
       : userSettings?.customDomain
         ? `https://${userSettings.customDomain}/${media.id}`
-        : media.url;
-    console.log("Final display URL:", displayUrl);
+        : `${baseUrl}/${media.id}`;
 
-    await sendDiscordWebhook({
-      content: displayUrl,
-    });
+    await sendDiscordWebhook({ content: displayUrl });
 
     return NextResponse.json({
       id: media.id,
       url: displayUrl,
+      rawUrl: media.url,
       filename: media.filename,
       size: media.size,
       width: media.width,

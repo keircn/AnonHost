@@ -41,11 +41,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    console.log("Starting upload process...");
     const formData = await req.formData();
     const file = formData.get("file") as File | Blob;
     const settings = JSON.parse(formData.get("settings") as string) as FileSettings;
     const customDomain = formData.get("domain") as string | null;
     const fileId = nanoid();
+
+    console.log("File details:", {
+      name: (file as any).name,
+      type: file.type,
+      size: file.size,
+      fileId,
+      settings,
+      customDomain
+    });
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -113,41 +123,53 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("Processing file...");
     const processedFile = await processFile(file, settings);
+    console.log("File processed. New size:", processedFile.size);
+
+    console.log("Uploading to R2...");
     const uploadResult = await uploadFile(
       processedFile,
       userId.toString(),
       newFilename,
       fileId
     );
+    console.log("Upload result:", uploadResult);
+
+    console.log("Creating database entry...");
+    const dbData = {
+      id: fileId,
+      url: uploadResult.url,
+      filename: uploadResult.filename,
+      size: uploadResult.size,
+      width: uploadResult.width,
+      height: uploadResult.height,
+      duration: uploadResult.duration || null,
+      type: uploadResult.type.toUpperCase() as MediaType,
+      userId,
+      public: true,
+      domain: customDomain || null,
+    };
+    console.log("Database entry data:", dbData);
 
     const [media, userSettings] = await Promise.all([
       prisma.media.create({
-        data: {
-          id: fileId,
-          url: uploadResult.url,
-          filename: uploadResult.filename,
-          size: uploadResult.size,
-          width: uploadResult.width,
-          height: uploadResult.height,
-          duration: uploadResult.duration || null,
-          type: uploadResult.type.toUpperCase() as MediaType,
-          userId,
-          public: true,
-          domain: customDomain || null,
-        },
+        data: dbData,
       }),
       prisma.settings.findUnique({
         where: { userId },
         select: { customDomain: true },
       }),
     ]);
+    console.log("Database entry created:", media);
+    console.log("User settings:", userSettings);
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`
       : userSettings?.customDomain
         ? `https://${userSettings.customDomain}/${media.id}`
         : `${process.env.R2_PUBLIC_URL}/${media.url}`;
+    console.log("Final display URL:", displayUrl);
 
     await sendDiscordWebhook({
       content: displayUrl,
@@ -168,7 +190,16 @@ export async function POST(req: NextRequest) {
       baseUrl: baseUrl,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    if (error instanceof Error) {
+      console.error("Upload error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: (error as any).cause,
+      });
+    } else {
+      console.error("Unknown error:", error);
+    }
     return NextResponse.json(
       { error: "Failed to upload media" },
       { status: 500 },

@@ -127,7 +127,7 @@ export async function uploadFile(
 
     await upload.done();
 
-    const url = fileName;
+    const url = `${process.env.R2_PUBLIC_URL}/${fileName}`;
 
     return {
       url,

@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
       ? `https://${media.domain}/${media.id}`
       : userSettings?.customDomain
         ? `https://${userSettings.customDomain}/${media.id}`
-        : `${process.env.R2_PUBLIC_URL}/${media.url}`;
+        : media.url;
     console.log("Final display URL:", displayUrl);
 
     await sendDiscordWebhook({

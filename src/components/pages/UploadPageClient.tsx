@@ -461,7 +461,6 @@ export function UploadPageClient() {
                   id="file-upload"
                   className="hidden"
                   multiple
-                  accept="image/*,video/*,audio/*,text/*,.json,.xml,.pdf,.php,.sh,.yaml,.ts"
                   onChange={handleFileChange}
                 />
                 <motion.div whileHover={{ scale: 1.02 }}>
@@ -532,22 +531,22 @@ export function UploadPageClient() {
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
-                                <motion.div
-                                  className="text-xs text-muted-foreground truncate"
-                                  variants={fadeIn}
-                                >
-                                  {[
-                                    fileSettings[index]?.compression.enabled &&
+                                  <motion.div
+                                    className="text-xs text-muted-foreground truncate"
+                                    variants={fadeIn}
+                                  >
+                                    {[
+                                      fileSettings[index]?.compression.enabled &&
                                       "Compressed",
-                                    fileSettings[index]?.conversion.enabled &&
+                                      fileSettings[index]?.conversion.enabled &&
                                       `Convert to ${fileSettings[index]?.conversion.format}`,
-                                    fileSettings[index]?.resize.enabled &&
+                                      fileSettings[index]?.resize.enabled &&
                                       "Resized",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" • ")}
-                                </motion.div>
-                              )}
+                                    ]
+                                      .filter(Boolean)
+                                      .join(" • ")}
+                                  </motion.div>
+                                )}
                             </div>
                           </div>
 

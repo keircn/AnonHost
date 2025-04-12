@@ -33,7 +33,8 @@ export const ALLOWED_TYPES = [
   "audio/mp3",
   "audio/aac",
   "audio/flac",
-  "audio/m4a",
+  "audio/mp4",
+  "audio/x-m4a",
   "audio/x-wav",
   "audio/x-aiff",
 

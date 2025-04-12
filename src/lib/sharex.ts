@@ -10,6 +10,14 @@ export function generateShareXConfig(apiKey: string, baseUrl: string) {
     },
     Body: "MultipartFormData",
     FileFormName: "file",
+    Arguments: {
+      settings: JSON.stringify({
+        conversion: {
+          enabled: false,
+          format: null
+        }
+      })
+    },
     URL: "{json:url}",
     ThumbnailURL: "{json:url}",
     DeletionURL: `${baseUrl}/api/media/{json:id}`,

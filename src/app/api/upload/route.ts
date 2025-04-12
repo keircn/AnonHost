@@ -43,7 +43,15 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | Blob;
-    const settings = JSON.parse(formData.get("settings") as string) as FileSettings;
+    const settingsStr = formData.get("settings") as string | null;
+    const settings: FileSettings = settingsStr
+      ? JSON.parse(settingsStr)
+      : {
+        conversion: {
+          enabled: false,
+          format: null
+        }
+      };
     const customDomain = formData.get("domain") as string | null;
     const fileId = nanoid(6);
 

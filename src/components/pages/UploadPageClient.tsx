@@ -529,14 +529,6 @@ export function UploadPageClient() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
-                              <div className="absolute inset-0 flex items-start justify-between p-2">
-                                <span className="text-xs text-muted-foreground bg-muted/80 rounded px-1">
-                                  Settings
-                                </span>
-                                <span className="text-xs text-muted-foreground bg-muted/80 rounded px-1">
-                                  Remove
-                                </span>
-                              </div>
                             </div>
                             <motion.div
                               className="p-2 text-sm truncate"
@@ -547,13 +539,14 @@ export function UploadPageClient() {
                           </div>
 
                           <motion.div
-                            initial={{ opacity: 0 }}
+                            initial={{ opacity: 0.5 }}
                             whileHover={{ opacity: 1 }}
+                            className="absolute top-2 right-2"
                           >
                             <Button
                               variant="destructive"
                               size="icon"
-                              className="absolute top-2 right-2"
+                              className="bg-background/50 backdrop-blur-sm hover:bg-destructive"
                               onClick={() => removeFile(index)}
                             >
                               <X className="h-4 w-4" />
@@ -561,13 +554,14 @@ export function UploadPageClient() {
                           </motion.div>
 
                           <motion.div
-                            initial={{ opacity: 0 }}
+                            initial={{ opacity: 0.5 }}
                             whileHover={{ opacity: 1 }}
                             className="absolute top-2 left-2 z-10"
                           >
                             <Button
                               variant="secondary"
                               size="icon"
+                              className="bg-background/50 backdrop-blur-sm hover:bg-secondary"
                               onClick={() => setActiveSettingsFile(index)}
                             >
                               <Settings2 className="h-4 w-4" />

@@ -73,7 +73,7 @@ export async function processFile(
                     break;
                 case 'png':
                     formatOptions = {
-                        compressionLevel: Math.round((100 - settings.compression.quality) / 10),
+                        compressionLevel: Math.min(9, Math.max(0, Math.round((100 - settings.compression.quality) / 11))),
                         palette: true
                     };
                     break;

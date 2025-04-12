@@ -454,7 +454,11 @@ export function UploadPageClient() {
         Upload Media
       </motion.h1>
 
-      <motion.div variants={cardHover} whileHover="hover">
+      <motion.div
+        variants={fadeIn}
+        initial="initial"
+        animate="animate"
+      >
         <Card>
           <CardContent className="p-6 lg:p-8 xl:p-10">
             <motion.div
@@ -566,22 +570,22 @@ export function UploadPageClient() {
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
-                                <motion.div
-                                  className="text-xs text-muted-foreground truncate"
-                                  variants={fadeIn}
-                                >
-                                  {[
-                                    fileSettings[index]?.compression.enabled &&
+                                  <motion.div
+                                    className="text-xs text-muted-foreground truncate"
+                                    variants={fadeIn}
+                                  >
+                                    {[
+                                      fileSettings[index]?.compression.enabled &&
                                       "Compressed",
-                                    fileSettings[index]?.conversion.enabled &&
+                                      fileSettings[index]?.conversion.enabled &&
                                       `Convert to ${fileSettings[index]?.conversion.format}`,
-                                    fileSettings[index]?.resize.enabled &&
+                                      fileSettings[index]?.resize.enabled &&
                                       "Resized",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" • ")}
-                                </motion.div>
-                              )}
+                                    ]
+                                      .filter(Boolean)
+                                      .join(" • ")}
+                                  </motion.div>
+                                )}
                             </div>
                           </div>
 

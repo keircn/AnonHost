@@ -79,7 +79,7 @@ export async function processFile(
 
         ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
-        let args = ['-i', inputFileName];
+        const args = ['-i', inputFileName];
 
         if (settings.compression.enabled) {
             args.push('-crf', `${Math.round((100 - settings.compression.quality) / 2)}`);

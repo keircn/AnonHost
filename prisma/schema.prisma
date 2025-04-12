@@ -67,8 +67,8 @@ model Session {
 
 model Media {
   id        String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
-  url       String
-  filename  String
+  url       String    @db.Text
+  filename  String    @db.VarChar(255)
   size      Int
   width     Int?
   height    Int?
@@ -76,7 +76,7 @@ model Media {
   type      MediaType @default(IMAGE)
   userId    String
   public    Boolean   @default(false)
-  domain    String?
+  domain    String?   @db.VarChar(253)
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

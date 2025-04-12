@@ -60,7 +60,8 @@ export async function getProfileData(id: string) {
     ...user,
     profile: {
       ...user.profile,
-      themeSettings: parsedThemeSettings as Prisma.JsonValue & ProfileThemeSettings,
+      themeSettings: parsedThemeSettings as Prisma.JsonValue &
+        ProfileThemeSettings,
     },
   };
 

@@ -48,7 +48,7 @@ export function useProfileSettings() {
         setError(
           err instanceof Error
             ? err
-            : new Error("Failed to load profile settings")
+            : new Error("Failed to load profile settings"),
         );
         console.error("Failed to load profile settings:", err);
       } finally {
@@ -61,19 +61,19 @@ export function useProfileSettings() {
 
   const updateProfileField = (
     field: keyof ProfileSettings,
-    value: string | number | boolean | object
+    value: string | number | boolean | object,
   ) => {
     console.log(`Updating ${field}:`, value);
     setProfileSettings((prev) => {
       const newState = { ...prev, [field]: value };
-      console.log('New state after update:', newState);
+      console.log("New state after update:", newState);
       return newState;
     });
   };
 
   const updateThemeSettings = (
     field: string,
-    value: string | number | boolean
+    value: string | number | boolean,
   ) => {
     console.log(`Updating theme setting ${field}:`, value);
     setProfileSettings((prev) => {
@@ -87,10 +87,16 @@ export function useProfileSettings() {
       const newThemeSettings = { ...prev.themeSettings };
 
       if (field === "layout") {
-        newThemeSettings.layout = value as "default" | "minimal" | "centered" | "grid";
+        newThemeSettings.layout = value as
+          | "default"
+          | "minimal"
+          | "centered"
+          | "grid";
       } else if (field === "cardOpacity" || field === "blurStrength") {
         newThemeSettings[field] = Number(value);
-      } else if (["particles", "gradientAnimation", "imageParallax"].includes(field)) {
+      } else if (
+        ["particles", "gradientAnimation", "imageParallax"].includes(field)
+      ) {
         newThemeSettings.effects = {
           ...newThemeSettings.effects,
           [field]: Boolean(value),
@@ -122,13 +128,17 @@ export function useProfileSettings() {
   const saveProfile = async () => {
     setIsSaving(true);
     try {
-      console.log('Saving profile settings:', profileSettings);
+      console.log("Saving profile settings:", profileSettings);
       const updatedProfile = await updateProfileSettings(profileSettings);
       setProfileSettings(updatedProfile);
       setError(null);
       return updatedProfile;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to save profile settings"));
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Failed to save profile settings"),
+      );
       console.error("Failed to save profile settings:", err);
       throw err;
     } finally {

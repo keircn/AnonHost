@@ -1,6 +1,6 @@
 export const STORAGE_LIMITS = {
-  PREMIUM: 1024 * 1024 * 1024,
-  FREE: 500 * 1024 * 1024,
+  PREMIUM: Number.MAX_SAFE_INTEGER, // Unlimited storage for premium users
+  FREE: 1024 * 1024 * 1024, // 1GB for free users
 };
 
 export const FILE_SIZE_LIMITS = {

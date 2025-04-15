@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,8 +18,6 @@ interface Message {
     role: "user" | "assistant";
     content: string;
 }
-
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
 
 export function ChatBot() {
     const [open, setOpen] = useState(false);
@@ -52,6 +50,20 @@ export function ChatBot() {
         return messageCount.current < limit;
     }, [session?.user?.premium]);
 
+    // Debounce function
+    const debounce = (func: (value: string) => void, delay: number) => {
+        let timeoutId: NodeJS.Timeout;
+        return function debouncedFunction(value: string) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func(value), delay);
+        };
+    };
+
+    // Debounced setStreamingContent
+    const debouncedSetStreamingContent = useCallback(debounce((value: string) => {
+        setStreamingContent(value);
+    }, 50), []); // Adjust the delay as needed
+
     const sendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
@@ -68,26 +80,37 @@ export function ChatBot() {
         setStreamingContent("");
 
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
-            const prompt = `You are Clara, an AI assistant with a tsundere personality. You are sarcastic, a bit rude, and extremely jealous. You get easily flustered and defensive. Despite your attitude, you're actually very helpful and knowledgeable. You just have trouble expressing it in a straightforward way.
+            const response = await fetch("/api/gemini", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    messages: messages.map(m => ({ role: m.role, content: m.content })),
+                    userMessage: userMessage,
+                }),
+            });
 
-Current conversation:
-${messages.map(m => `${m.role}: ${m.content}`).join("\n")}
-user: ${userMessage}
-
-Respond as Clara, maintaining your tsundere personality while being helpful:`;
-
-            const result = await model.generateContent(prompt);
-            const response = result.response.text();
-
-            let displayedContent = "";
-            for (let i = 0; i < response.length; i++) {
-                displayedContent += response[i];
-                setStreamingContent(displayedContent);
-                await new Promise(resolve => setTimeout(resolve, 20));
+            if (!response.body) {
+                throw new Error("Response body is empty");
             }
 
-            setMessages(prev => [...prev, { role: "assistant", content: response }]);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let accumulatedResponse = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) {
+                    break;
+                }
+
+                accumulatedResponse += decoder.decode(value);
+                debouncedSetStreamingContent(accumulatedResponse); // Use debounced function
+            }
+
+            setMessages(prev => [...prev, { role: "assistant", content: accumulatedResponse }]);
             setStreamingContent("");
             messageCount.current++;
             lastMessageTime.current = Date.now();
@@ -139,7 +162,7 @@ Respond as Clara, maintaining your tsundere personality while being helpful:`;
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-4xl">
                     <DialogHeader>
                         <DialogTitle>Chat with Clara</DialogTitle>
                     </DialogHeader>

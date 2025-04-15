@@ -31,6 +31,8 @@ function formatDate(date: Date): string {
 }
 
 function getUserBadges(user: { id?: string; premium?: boolean } | null) {
+  if (user?.id === "1") return [];
+
   const badges: Array<{
     emoji: string;
     label: string;

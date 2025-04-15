@@ -123,9 +123,11 @@ export function PricingPageClient() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full">
-                <Link href="https://buymeacoffee.com/keiran/membership">Subscribe</Link>
-              </Button>
+                <Link href="https://buymeacoffee.com/keiran/membership" target="_blank" rel="noopener noreferrer" className="w-full">
+                <Button className="w-full" asChild>
+                  <span>Subscribe</span>
+                </Button>
+                </Link>
                 <p className="text-sm text-muted-foreground text-center">
                 Join our{" "}
                 <a

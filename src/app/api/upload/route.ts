@@ -2,10 +2,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { ALLOWED_TYPES, uploadFile } from "@/lib/upload";
+import { BLOCKED_TYPES, uploadFile, FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
-import { FILE_SIZE_LIMITS } from "@/lib/upload";
 import { sendDiscordWebhook } from "@/lib/discord";
 import { processFile } from "@/lib/process-file";
 import { FileSettings } from "@/types/file-settings";
@@ -107,6 +106,7 @@ export async function POST(req: NextRequest) {
     const sizeLimit = isPremium
       ? FILE_SIZE_LIMITS.PREMIUM
       : FILE_SIZE_LIMITS.FREE;
+
     if (file.size > sizeLimit) {
       const limitInMb = sizeLimit / (1024 * 1024);
       return NextResponse.json(
@@ -134,10 +134,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (BLOCKED_TYPES.includes(file.type)) {
       return NextResponse.json(
         {
-          error: "Invalid file type.",
+          error: "This file type is not allowed for security reasons.",
         },
         { status: 400 },
       );

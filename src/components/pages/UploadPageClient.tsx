@@ -21,7 +21,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
-import { ALLOWED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import { formatFileSize } from "@/lib/utils";
 import pLimit from "p-limit";
 import { nanoid } from "nanoid";
@@ -109,11 +109,10 @@ export function UploadPageClient() {
 
   const validateFile = useCallback(
     (file: File): boolean => {
-      if (!ALLOWED_TYPES.includes(file.type)) {
+      if (BLOCKED_TYPES.includes(file.type)) {
         toast({
-          title: "Invalid file type",
-          description:
-            "Only images, videos, audio, text files, and documents are allowed",
+          title: "File type not allowed",
+          description: "This file type has been blocked for security reasons",
           variant: "destructive",
         });
         return false;

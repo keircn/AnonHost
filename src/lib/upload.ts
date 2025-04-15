@@ -1,6 +1,6 @@
 export const STORAGE_LIMITS = {
-  PREMIUM: Number.MAX_SAFE_INTEGER, // Unlimited storage for premium users
-  FREE: 1024 * 1024 * 1024, // 1GB for free users
+  PREMIUM: Number.MAX_SAFE_INTEGER,
+  FREE: 1024 * 1024 * 1024,
 };
 
 export const FILE_SIZE_LIMITS = {
@@ -8,48 +8,18 @@ export const FILE_SIZE_LIMITS = {
   FREE: 100 * 1024 * 1024,
 };
 
-export const ALLOWED_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "image/webp",
-  "image/bmp",
-  "image/tiff",
-  "image/svg+xml",
-
-  "video/mp4",
-  "video/webm",
-  "video/ogg",
-  "video/quicktime",
-  "video/x-msvideo",
-  "video/x-matroska",
-
-  "audio/mpeg",
-  "audio/wav",
-  "audio/ogg",
-  "audio/mp3",
-  "audio/aac",
-  "audio/flac",
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/x-wav",
-  "audio/x-aiff",
-
-  "text/plain",
-  "text/markdown",
-  "text/html",
-  "text/css",
-  "text/javascript",
-  "application/json",
-  "application/xml",
-  "application/rtf",
-
-  "application/pdf",
-  "application/x-httpd-php",
-  "application/x-sh",
-  "application/x-yaml",
-  "application/x-typescript",
-  "application/x-markdown",
+export const BLOCKED_TYPES = [
+  "application/x-msdownload",
+  "application/x-executable",
+  "application/x-msdos-program",
+  "application/x-msi",
+  "application/x-ms-installer",
+  "application/x-msbatch",
+  
+  "application/x-dex",
+  "application/x-elf",
+  "application/x-sharedlib",
+  "application/x-object",
 ];
 
 interface StorageStats {
@@ -144,7 +114,6 @@ export async function uploadFile(
 
     const result = await response.json();
 
-    // Determine file type
     let fileType: UploadResult["type"];
     if (file.type.startsWith("image/")) {
       fileType = "image";
@@ -160,6 +129,10 @@ export async function uploadFile(
       fileType = "text";
     } else {
       fileType = "document";
+    }
+
+    if (BLOCKED_TYPES.includes(file.type)) {
+      throw new Error("File type is not allowed");
     }
 
     return {

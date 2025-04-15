@@ -11,17 +11,13 @@ export function generateShareXConfig(apiKey: string, baseUrl: string) {
     Body: "MultipartFormData",
     FileFormName: "file",
     Arguments: {
-      settings: JSON.stringify({
-        conversion: {
-          enabled: false,
-          format: null,
-        },
-      }),
+      conversionEnabled: "false",
+      conversionFormat: "",
     },
     URL: "{json:displayUrl}",
     ThumbnailURL: "{json:displayUrl}",
     DeletionURL: `${baseUrl}/api/media/{json:id}`,
-    ErrorMessage: "$json:error$",
+    ErrorMessage: "{json:error}",
   };
 }
 

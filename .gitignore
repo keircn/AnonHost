@@ -32,3 +32,4 @@ prisma/migrations
 .pytest_cache
 .venv
 **/__pycache__
+uploads/

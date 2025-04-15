@@ -18,10 +18,6 @@ const nextConfig = {
         protocol: 'http',
         hostname: 'localhost'
       },
-      {
-        protocol: 'https',
-        hostname: 'pub-cff3d0b858c547bdac31dff45cc07939.r2.dev'
-      }
     ]
   },
 
@@ -34,6 +30,40 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/api/upload/storage/:path*',
+      }
+    ]
+  },
+
+  output: 'standalone',
+
+  async headers() {
+    return [
+      {
+        source: '/uploads/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000',
+          },
+        ],
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+          },
+        ],
+      },
+    ];
+  }
 }
 
-export default nextConfig
+export default nextConfig;

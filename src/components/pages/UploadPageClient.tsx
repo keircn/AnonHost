@@ -23,6 +23,7 @@ import { FileSettingsModal } from "@/components/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
 import { ALLOWED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import pLimit from "p-limit";
+import { nanoid } from "nanoid";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -129,7 +130,7 @@ export function UploadPageClient() {
         return false;
       }
 
-      const sizeLimit = status.data?.user.premium
+      const sizeLimit = status.data?.user?.premium
         ? FILE_SIZE_LIMITS.PREMIUM
         : FILE_SIZE_LIMITS.FREE;
 
@@ -137,7 +138,7 @@ export function UploadPageClient() {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
           title: "File too large",
-          description: `Maximum file size is ${limitInMb}MB for ${status.data?.user.premium ? "premium" : "free"} users`,
+          description: `Maximum file size is ${limitInMb}MB for ${status.data?.user?.premium ? "premium" : "free"} users`,
           variant: "destructive",
         });
         return false;
@@ -145,7 +146,7 @@ export function UploadPageClient() {
 
       return true;
     },
-    [toast, status.data?.user.premium],
+    [toast, status.data?.user?.premium],
   );
 
   const onDrop = useCallback(
@@ -313,6 +314,8 @@ export function UploadPageClient() {
           const settings = fileSettings[index] || defaultFileSettings;
           const formData = new FormData();
           formData.append("file", file);
+          formData.append("fileId", nanoid(6));
+          formData.append("filename", file.name);
           formData.append("settings", JSON.stringify(settings));
 
           if (settings.domain && settings.domain !== "keiran.cc") {
@@ -322,6 +325,7 @@ export function UploadPageClient() {
           const response = await fetch("/api/upload", {
             method: "POST",
             body: formData,
+            credentials: "include",
           });
 
           if (!response.ok) {
@@ -531,22 +535,22 @@ export function UploadPageClient() {
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
-                                  <motion.div
-                                    className="text-xs text-muted-foreground truncate"
-                                    variants={fadeIn}
-                                  >
-                                    {[
-                                      fileSettings[index]?.compression.enabled &&
+                                <motion.div
+                                  className="text-xs text-muted-foreground truncate"
+                                  variants={fadeIn}
+                                >
+                                  {[
+                                    fileSettings[index]?.compression.enabled &&
                                       "Compressed",
-                                      fileSettings[index]?.conversion.enabled &&
+                                    fileSettings[index]?.conversion.enabled &&
                                       `Convert to ${fileSettings[index]?.conversion.format}`,
-                                      fileSettings[index]?.resize.enabled &&
+                                    fileSettings[index]?.resize.enabled &&
                                       "Resized",
-                                    ]
-                                      .filter(Boolean)
-                                      .join(" • ")}
-                                  </motion.div>
-                                )}
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" • ")}
+                                </motion.div>
+                              )}
                             </div>
                           </div>
 

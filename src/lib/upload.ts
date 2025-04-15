@@ -1,6 +1,3 @@
-import { S3Client } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
-
 export const STORAGE_LIMITS = {
   PREMIUM: 1024 * 1024 * 1024,
   FREE: 500 * 1024 * 1024,
@@ -111,32 +108,43 @@ export function getStorageStats(
   };
 }
 
-const s3Client = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
-
 export async function uploadFile(
   file: Blob,
   userId: string,
   filename: string,
   fileId: string,
-  type: "avatar" | "banner" | undefined = undefined,
+  type?: "avatar" | "banner",
 ): Promise<UploadResult> {
   try {
-    const fileName =
-      type === "avatar"
-        ? `a/${userId}/${fileId}${getFileExtension(filename)}`
-        : type === "banner"
-          ? `b/${userId}/${fileId}${getFileExtension(filename)}`
-          : `${userId}/${fileId}${getFileExtension(filename)}`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileId", fileId);
+    formData.append("filename", filename);
+    formData.append("userId", userId);
+    if (type) {
+      formData.append("type", type);
+    }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const baseUrl =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXTAUTH_URL;
+    const url = `${baseUrl}/api/upload/storage`;
 
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      console.error("Upload failed:", await response.text());
+      throw new Error("Failed to upload file");
+    }
+
+    const result = await response.json();
+
+    // Determine file type
     let fileType: UploadResult["type"];
     if (file.type.startsWith("image/")) {
       fileType = "image";
@@ -154,28 +162,10 @@ export async function uploadFile(
       fileType = "document";
     }
 
-    const upload = new Upload({
-      client: s3Client,
-      params: {
-        Bucket: process.env.R2_BUCKET_NAME!,
-        Key: fileName,
-        Body: buffer,
-        ContentType: file.type,
-        ACL: "public-read",
-        ...(type && {
-          CacheControl: "public, max-age=31536000",
-        }),
-      },
-    });
-
-    await upload.done();
-
-    const url = `${process.env.R2_PUBLIC_URL}/${fileName}`;
-
     return {
-      url,
-      filename: filename,
-      size: file.size,
+      url: result.url,
+      filename: result.filename,
+      size: result.size,
       width: fileType === "image" ? 0 : null,
       height: fileType === "image" ? 0 : null,
       ...(fileType === "video" ? { duration: 0 } : {}),
@@ -186,6 +176,7 @@ export async function uploadFile(
     throw new Error("Failed to upload file");
   }
 }
+
 function getFileExtension(name: string): string {
   const lastDotIndex = name.lastIndexOf(".");
   if (lastDotIndex === -1 || lastDotIndex === name.length - 1) {

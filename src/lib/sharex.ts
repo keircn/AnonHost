@@ -4,7 +4,7 @@ export function generateShareXConfig(apiKey: string, baseUrl: string) {
     Name: "AnonHost",
     DestinationType: "ImageUploader",
     RequestMethod: "POST",
-    RequestURL: `${baseUrl}/api/upload`,
+    RequestURL: `${baseUrl}/api/media`,
     Headers: {
       Authorization: `Bearer ${apiKey}`,
     },
@@ -18,8 +18,8 @@ export function generateShareXConfig(apiKey: string, baseUrl: string) {
         },
       }),
     },
-    URL: "{json:url}",
-    ThumbnailURL: "{json:url}",
+    URL: "{json:displayUrl}",
+    ThumbnailURL: "{json:displayUrl}",
     DeletionURL: `${baseUrl}/api/media/{json:id}`,
     ErrorMessage: "$json:error$",
   };

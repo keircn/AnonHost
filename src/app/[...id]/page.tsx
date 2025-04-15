@@ -167,20 +167,22 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       type: "website",
       url: media.url,
       siteName: media.user?.premium ? "AnonHost Premium" : "AnonHost",
-      images: [
-        {
-          url: media.url,
-          width: dimensions.width,
-          height: dimensions.height,
-          alt: media.filename || "Image",
-        },
-      ],
+      ...(media.type === "IMAGE" && {
+        images: [
+          {
+            url: media.url,
+            width: dimensions.width,
+            height: dimensions.height,
+            alt: media.filename || "Image",
+          },
+        ],
+      }),
     },
     twitter: {
-      card: "summary_large_image",
+      card: media.type === "IMAGE" ? "summary_large_image" : "summary",
       title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
       description,
-      images: [media.url],
+      ...(media.type === "IMAGE" && { images: [media.url] }),
       creator: media.user?.premium ? (media.user.name ?? undefined) : undefined,
     },
   };

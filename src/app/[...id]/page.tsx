@@ -7,8 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { betaMembers } from "@/lib/beta";
 import { Viewport } from "next";
 import { LuMusic } from "react-icons/lu";
-import { formatFileSize } from "@/lib/utils";
-import { MediaType } from "@prisma/client";
+import { File, FileText } from "lucide-react";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -96,19 +95,17 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const premiumTheme = media.user?.premium
     ? {
-        themeColor: badges[0]?.color || "#a855f7",
-        creator: media.user.name,
-        applicationName: "AnonHost Premium",
-        other: {
-          badges: badges.map((b) => `${b.emoji} ${b.label}`),
-          ...(badges[0]?.color && { badgeColor: badges[0].color }),
-        },
-      }
+      creator: media.user.name,
+      applicationName: "AnonHost Premium",
+      other: {
+        badges: badges.map((b) => `${b.emoji} ${b.label}`),
+        ...(badges[0]?.color && { badgeColor: badges[0].color }),
+      },
+    }
     : {};
 
-  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
-    media.user?.name || "Anonymous"
-  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
+  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${media.user?.name || "Anonymous"
+    }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
 
   const dimensions = {
     width: typeof media.width === "number" ? media.width : 1280,
@@ -189,12 +186,48 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   };
 }
 
-export async function generateViewport(): Promise<Viewport> {
+export async function generateViewport(props: Props): Promise<Viewport> {
+  const params = await props.params;
+  const { id } = params;
+  const mediaId = id?.[0];
+
+  if (!mediaId) {
+    return {
+      width: "device-width",
+      initialScale: 1,
+      maximumScale: 1,
+      userScalable: false,
+    };
+  }
+
+  const media = await prisma.media.findUnique({
+    where: { id: mediaId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          premium: true,
+        },
+      },
+    },
+  });
+
+  if (!media?.user?.premium) {
+    return {
+      width: "device-width",
+      initialScale: 1,
+      maximumScale: 1,
+      userScalable: false,
+    };
+  }
+
+  const badges = getUserBadges(media.user);
   return {
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
+    themeColor: badges[0]?.color || "#a855f7",
   };
 }
 

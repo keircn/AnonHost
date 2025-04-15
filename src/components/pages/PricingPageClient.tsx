@@ -95,7 +95,7 @@ export function PricingPageClient() {
         >
           <Card className="h-full relative overflow-hidden border-primary">
             <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-sm rounded">
-              Popular
+              Coming Soon
             </div>
             <CardHeader className="space-y-1">
               <Badge variant="default" className="w-fit bg-primary">
@@ -123,12 +123,12 @@ export function PricingPageClient() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-                <Link href="https://buymeacoffee.com/keiran/membership" target="_blank" rel="noopener noreferrer" className="w-full">
+              <Link href="https://ko-fi.com/anonhost" target="_blank" rel="noopener noreferrer" className="w-full">
                 <Button className="w-full" asChild>
-                  <span>Subscribe</span>
+                  <span>Donate</span>
                 </Button>
-                </Link>
-                <p className="text-sm text-muted-foreground text-center">
+              </Link>
+              <p className="text-sm text-muted-foreground text-center">
                 Join our{" "}
                 <a
                   href="https://discord.gg/WZJksYs8"
@@ -139,7 +139,7 @@ export function PricingPageClient() {
                   Discord
                 </a>{" "}
                 for more info
-                </p>
+              </p>
             </CardFooter>
           </Card>
         </motion.div>

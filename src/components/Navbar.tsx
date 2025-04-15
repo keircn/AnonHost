@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
+import { ChatBot } from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { UserMenuProps } from "@/types/user-menu-props";
 import {
@@ -47,11 +48,10 @@ export function Navbar() {
           <Link
             key={link.href}
             href={link.href}
-            className={`px-3 py-2 transition-colors hover:text-foreground/80 rounded-md hover:bg-accent ${
-              pathname === link.href
+            className={`px-3 py-2 transition-colors hover:text-foreground/80 rounded-md hover:bg-accent ${pathname === link.href
                 ? "text-foreground bg-accent"
                 : "text-foreground/60"
-            }`}
+              }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {link.label}
@@ -79,6 +79,7 @@ export function Navbar() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-4 lg:gap-6">
+          <ChatBot />
           <ModeToggle />
 
           <div className="hidden md:block">

@@ -79,6 +79,12 @@ const defaultFileSettings: FileSettings = {
   },
 };
 
+interface UploadProgress {
+  progress: number;
+  status: 'pending' | 'uploading' | 'completed' | 'error';
+  message?: string;
+}
+
 export function UploadPageClient() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -86,12 +92,9 @@ export function UploadPageClient() {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileSettings, setFileSettings] = useState<
-    Record<number, FileSettings>
-  >({});
-  const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(
-    null,
-  );
+  const [fileSettings, setFileSettings] = useState<Record<number, FileSettings>>({});
+  const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<Record<number, UploadProgress>>({});
 
   if (status === "unauthenticated") {
     redirect("/");
@@ -294,10 +297,13 @@ export function UploadPageClient() {
 
       const uploadPromises = files.map((file, index) =>
         limit(async () => {
-          console.log(
-            `Starting upload for ${file.name} (${formatFileSize(file.size)})`,
-          );
+          console.log(`Starting upload for ${file.name} (${formatFileSize(file.size)})`);
           const uploadStartTime = Date.now();
+
+          setUploadProgress(prev => ({
+            ...prev,
+            [index]: { progress: 0, status: 'uploading' }
+          }));
 
           const settings = fileSettings[index] || defaultFileSettings;
           const formData = new FormData();
@@ -310,37 +316,57 @@ export function UploadPageClient() {
             formData.append("domain", settings.domain);
           }
 
-          const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-            credentials: "include",
+          const xhr = new XMLHttpRequest();
+          const uploadPromise = new Promise((resolve, reject) => {
+            xhr.upload.addEventListener("progress", (event) => {
+              if (event.lengthComputable) {
+                const progress = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress(prev => ({
+                  ...prev,
+                  [index]: { progress, status: 'uploading' }
+                }));
+              }
+            });
+
+            xhr.addEventListener("load", () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                const response = JSON.parse(xhr.responseText);
+                setUploadProgress(prev => ({
+                  ...prev,
+                  [index]: { progress: 100, status: 'completed' }
+                }));
+                resolve(response);
+              } else {
+                setUploadProgress(prev => ({
+                  ...prev,
+                  [index]: { progress: 0, status: 'error', message: 'Upload failed' }
+                }));
+                reject(new Error('Upload failed'));
+              }
+            });
+
+            xhr.addEventListener("error", () => {
+              setUploadProgress(prev => ({
+                ...prev,
+                [index]: { progress: 0, status: 'error', message: 'Network error' }
+              }));
+              reject(new Error('Network error'));
+            });
+
+            xhr.open("POST", "/api/upload");
+            xhr.send(formData);
           });
 
-          if (!response.ok) {
-            const error = await response.json();
-            console.error(`Failed to upload ${file.name}:`, error);
-            throw new Error(error.error || `Failed to upload ${file.name}`);
-          }
-
-          const result = await response.json();
+          const result = await uploadPromise;
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;
-          const uploadSpeed = (
-            file.size /
-            uploadDuration /
-            1024 /
-            1024
-          ).toFixed(2);
+          const uploadSpeed = (file.size / uploadDuration / 1024 / 1024).toFixed(2);
 
-          console.log(
-            `✅ Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`,
-          );
-          console.log(
-            `Progress: ${completedUploads}/${files.length} files completed`,
-          );
+          console.log(`✅ Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`);
+          console.log(`Progress: ${completedUploads}/${files.length} files completed`);
 
           return result;
-        }),
+        })
       );
 
       const results = await Promise.allSettled(uploadPromises);
@@ -520,25 +546,40 @@ export function UploadPageClient() {
                               >
                                 {file.name}
                               </motion.div>
+                              {uploadProgress[index] && (
+                                <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                                  <motion.div
+                                    className="h-full bg-primary"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${uploadProgress[index].progress}%` }}
+                                    transition={{ duration: 0.2 }}
+                                  />
+                                </div>
+                              )}
+                              {uploadProgress[index]?.status === 'error' && (
+                                <p className="text-xs text-destructive">
+                                  {uploadProgress[index].message || 'Upload failed'}
+                                </p>
+                              )}
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
-                                <motion.div
-                                  className="text-xs text-muted-foreground truncate"
-                                  variants={fadeIn}
-                                >
-                                  {[
-                                    fileSettings[index]?.compression.enabled &&
+                                  <motion.div
+                                    className="text-xs text-muted-foreground truncate"
+                                    variants={fadeIn}
+                                  >
+                                    {[
+                                      fileSettings[index]?.compression.enabled &&
                                       "Compressed",
-                                    fileSettings[index]?.conversion.enabled &&
+                                      fileSettings[index]?.conversion.enabled &&
                                       `Convert to ${fileSettings[index]?.conversion.format}`,
-                                    fileSettings[index]?.resize.enabled &&
+                                      fileSettings[index]?.resize.enabled &&
                                       "Resized",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" • ")}
-                                </motion.div>
-                              )}
+                                    ]
+                                      .filter(Boolean)
+                                      .join(" • ")}
+                                  </motion.div>
+                                )}
                             </div>
                           </div>
 

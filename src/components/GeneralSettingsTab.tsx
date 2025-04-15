@@ -16,7 +16,6 @@ import { NotificationSettings } from "@/components/NotificationSettings";
 import { DirectLinksSettings } from "@/components/DirectLinksSettings";
 import { EmailChangeSection } from "@/components/EmailChangeSection";
 import { CustomDomainSettings } from "@/components/CustomDomainSettings";
-import { BuyMeACoffeeSection } from "@/components/BuyMeACoffeeSection";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -76,7 +75,6 @@ export function GeneralSettingsTab() {
             <DirectLinksSettings />
             <EmailChangeSection />
             <CustomDomainSettings />
-            <BuyMeACoffeeSection />
           </motion.div>
 
           <motion.div className="flex justify-end" variants={fadeIn}>

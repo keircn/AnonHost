@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
         _sum: { size: true },
       });
       const currentUsage = Number(totalUsed._sum?.size || 0);
-      
+
       if (currentUsage + file.size > STORAGE_LIMITS.FREE) {
         return NextResponse.json(
           {
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: media.id,
       url: displayUrl,
-      rawUrl: media.url,
+      rawUrl: `${baseUrl}${media.url}`,
       filename: media.filename,
       size: media.size,
       width: media.width,

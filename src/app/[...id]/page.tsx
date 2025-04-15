@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { betaMembers } from "@/lib/beta";
 import { Viewport } from "next";
 import { LuMusic } from "react-icons/lu";
+import { formatFileSize } from "@/lib/utils";
+import { MediaType } from "@prisma/client";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -250,6 +252,19 @@ export default async function MediaPage(props: Props) {
                     </audio>
                   </div>
                 );
+              case "TEXT":
+                return (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <FileText className="h-24 w-24 text-muted-foreground" />
+                  </div>
+                );
+              case "DOCUMENT":
+                return (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <File className="h-24 w-24 text-muted-foreground" />
+                  </div>
+                );
+              case "IMAGE":
               default:
                 return (
                   <Image

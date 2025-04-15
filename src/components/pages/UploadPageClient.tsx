@@ -22,8 +22,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
 import { ALLOWED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
+import { formatFileSize } from "@/lib/utils";
 import pLimit from "p-limit";
 import { nanoid } from "nanoid";
+import type { Session } from "next-auth";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -77,21 +79,8 @@ const defaultFileSettings: FileSettings = {
   },
 };
 
-const formatFileSize = (bytes: number): string => {
-  const units = ["B", "KB", "MB", "GB"];
-  let size = bytes;
-  let unitIndex = 0;
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
-
-  return `${size.toFixed(1)} ${units[unitIndex]}`;
-};
-
 export function UploadPageClient() {
-  const status = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
@@ -104,7 +93,7 @@ export function UploadPageClient() {
     null,
   );
 
-  if (status.status === "unauthenticated") {
+  if (status === "unauthenticated") {
     redirect("/");
   }
 
@@ -130,7 +119,7 @@ export function UploadPageClient() {
         return false;
       }
 
-      const sizeLimit = status.data?.user?.premium
+      const sizeLimit = session?.user?.premium
         ? FILE_SIZE_LIMITS.PREMIUM
         : FILE_SIZE_LIMITS.FREE;
 
@@ -138,7 +127,7 @@ export function UploadPageClient() {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast({
           title: "File too large",
-          description: `Maximum file size is ${limitInMb}MB for ${status.data?.user?.premium ? "premium" : "free"} users`,
+          description: `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"} users`,
           variant: "destructive",
         });
         return false;
@@ -146,7 +135,7 @@ export function UploadPageClient() {
 
       return true;
     },
-    [toast, status.data?.user?.premium],
+    [toast, session?.user?.premium],
   );
 
   const onDrop = useCallback(

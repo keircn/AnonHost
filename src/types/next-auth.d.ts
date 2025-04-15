@@ -1,17 +1,14 @@
 import "next-auth";
 import { AdapterUser } from "@auth/core/adapters";
+import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
-    user: User & {
+    user: {
       id: string;
-      uid: number;
-      email: string;
-      name: string;
-      premium: boolean;
-      createdAt: string;
-      admin: boolean;
-    };
+      premium?: boolean;
+      admin?: boolean;
+    } & DefaultSession["user"];
   }
 
   interface User extends AdapterUser {

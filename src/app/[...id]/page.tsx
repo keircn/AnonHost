@@ -162,7 +162,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     description,
     ...premiumTheme,
     openGraph: {
-      title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
+      title: `${media.filename || "Untitled"}`,
       description,
       type: "website",
       url: media.url,

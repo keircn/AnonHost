@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getStorageStats } from "@/lib/upload";
 import { toast } from "@/hooks/use-toast";
 import { LuMusic } from "react-icons/lu";
+import { formatFileSize } from "@/lib/utils";
 
 interface MediaItem {
   id: string;

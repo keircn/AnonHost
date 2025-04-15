@@ -24,29 +24,27 @@ export async function fetchProfileSettings(): Promise<ProfileSettings> {
 }
 
 export async function updateProfileSettings(
-  settings: ProfileSettings,
+  settings: Partial<ProfileSettings>
 ): Promise<ProfileSettings> {
   try {
     const sanitizedSettings = {
       ...settings,
-      themeSettings: {
-        cardOpacity: Number(settings.themeSettings?.cardOpacity) ?? 60,
-        blurStrength: Number(settings.themeSettings?.blurStrength) ?? 5,
-        layout: settings.themeSettings?.layout ?? "default",
+      themeSettings: settings.themeSettings ? {
+        cardOpacity: Number(settings.themeSettings.cardOpacity) ?? 60,
+        blurStrength: Number(settings.themeSettings.blurStrength) ?? 5,
+        layout: settings.themeSettings.layout ?? "default",
         colorScheme: {
-          background: settings.themeSettings?.colorScheme?.background ?? "",
-          text: settings.themeSettings?.colorScheme?.text ?? "",
-          accent: settings.themeSettings?.colorScheme?.accent ?? "",
+          background: settings.themeSettings.colorScheme?.background ?? "",
+          text: settings.themeSettings.colorScheme?.text ?? "",
+          accent: settings.themeSettings.colorScheme?.accent ?? "",
         },
         effects: {
-          particles: settings.themeSettings?.effects?.particles ?? false,
-          gradientAnimation:
-            settings.themeSettings?.effects?.gradientAnimation ?? false,
-          imageParallax:
-            settings.themeSettings?.effects?.imageParallax ?? false,
+          particles: settings.themeSettings.effects?.particles ?? false,
+          gradientAnimation: settings.themeSettings.effects?.gradientAnimation ?? false,
+          imageParallax: settings.themeSettings.effects?.imageParallax ?? false,
         },
-      },
-      socialLinks: settings.socialLinks.map((link) => ({
+      } : undefined,
+      socialLinks: settings.socialLinks?.map((link) => ({
         platform: link.platform,
         url: link.url,
       })),
@@ -88,14 +86,5 @@ export async function uploadProfileMedia(
   }
 
   const data = await response.json();
-
-  await fetch("/api/settings/profile", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      [type === "avatar" ? "avatarUrl" : "bannerUrl"]: data.url,
-    }),
-  });
-
   return data.url;
 }

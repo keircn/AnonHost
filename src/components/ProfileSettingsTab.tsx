@@ -12,6 +12,8 @@ import { ProfileAvatarUpload } from "@/components/ProfileAvatarUpload";
 import { ProfileBannerUpload } from "@/components/ProfileBannerUpload";
 import { ProfileThemeSettings } from "@/components/ProfileThemeSettings";
 import { ProfileSocialLinks } from "@/components/ProfileSocialLinks";
+import { useToast } from "@/hooks/use-toast";
+import type { UserWithProfile } from "@/types/profile";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -21,7 +23,24 @@ const fadeIn = {
 
 export function ProfileSettingsTab() {
   const { data: session } = useSession();
-  const { saveProfile, isSaving } = useProfileSettings();
+  const { saveProfile, isSaving, hasChanges } = useProfileSettings();
+  const { toast } = useToast();
+
+  const handleSave = async () => {
+    try {
+      await saveProfile();
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile settings",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <motion.div className="space-y-2" variants={fadeIn}>
@@ -34,7 +53,7 @@ export function ProfileSettingsTab() {
         variant="outline"
         size="sm"
         className="gap-2"
-        onClick={() => window.open(`/p/${session?.user?.uid}`, "_blank")}
+        onClick={() => window.open(`/p/${(session?.user as UserWithProfile)?.uid}`, "_blank")}
       >
         <FaExternalLinkAlt className="h-4 w-4" />
         View Profile
@@ -49,7 +68,10 @@ export function ProfileSettingsTab() {
           <ProfileSocialLinks />
 
           <div className="flex justify-end mt-6">
-            <Button onClick={saveProfile} disabled={isSaving}>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+            >
               {isSaving ? "Saving..." : "Save Profile"}
             </Button>
           </div>

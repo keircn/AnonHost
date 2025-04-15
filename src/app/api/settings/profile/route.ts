@@ -70,81 +70,76 @@ export async function PUT(req: Request) {
   try {
     const data = (await req.json()) as ProfileUpdateData;
 
-    if (!data) {
+    if (!data || Object.keys(data).length === 0) {
       return NextResponse.json({ error: "No data provided" }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { profile: true },
+      include: { profile: { include: { socialLinks: true } } },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Convert empty strings to null for database storage
+    const sanitizedData = {
+      title: data.title === "" ? null : data.title,
+      description: data.description === "" ? null : data.description,
+      avatarUrl: data.avatarUrl === "" ? null : data.avatarUrl,
+      bannerUrl: data.bannerUrl === "" ? null : data.bannerUrl,
+      theme: data.theme || "default",
+      themeSettings: data.themeSettings,
+      socialLinks: data.socialLinks,
+    };
+
     const profile = await prisma.profile.upsert({
       where: { userId: user.id },
       update: {
-        title: data.title ?? null,
-        description: data.description ?? null,
-        avatarUrl: data.avatarUrl ?? null,
-        bannerUrl: data.bannerUrl ?? null,
-        theme: data.theme ?? "default",
-        themeSettings: {
-          cardOpacity: data.themeSettings?.cardOpacity ?? 60,
-          blurStrength: data.themeSettings?.blurStrength ?? 5,
-          layout: data.themeSettings?.layout ?? "default",
-          colorScheme: {
-            background: data.themeSettings?.colorScheme?.background ?? "",
-            text: data.themeSettings?.colorScheme?.text ?? "",
-            accent: data.themeSettings?.colorScheme?.accent ?? "",
-          },
-          effects: {
-            particles: data.themeSettings?.effects?.particles ?? false,
-            gradientAnimation:
-              data.themeSettings?.effects?.gradientAnimation ?? false,
-            imageParallax: data.themeSettings?.effects?.imageParallax ?? false,
-          },
-        },
-        socialLinks: {
-          deleteMany: {},
-          create:
-            data.socialLinks?.map((link) => ({
+        ...(sanitizedData.title !== undefined && { title: sanitizedData.title }),
+        ...(sanitizedData.description !== undefined && { description: sanitizedData.description }),
+        ...(sanitizedData.avatarUrl !== undefined && { avatarUrl: sanitizedData.avatarUrl }),
+        ...(sanitizedData.bannerUrl !== undefined && { bannerUrl: sanitizedData.bannerUrl }),
+        ...(sanitizedData.theme && { theme: sanitizedData.theme }),
+        ...(sanitizedData.themeSettings && { themeSettings: sanitizedData.themeSettings }),
+        ...(sanitizedData.socialLinks && {
+          socialLinks: {
+            deleteMany: {},
+            create: sanitizedData.socialLinks.map((link) => ({
               platform: link.platform,
               url: link.url,
-            })) ?? [],
-        },
+            })),
+          },
+        }),
       },
       create: {
         userId: user.id,
-        title: data.title ?? null,
-        description: data.description ?? null,
-        avatarUrl: data.avatarUrl ?? null,
-        bannerUrl: data.bannerUrl ?? null,
-        theme: data.theme ?? "default",
-        themeSettings: {
-          cardOpacity: data.themeSettings?.cardOpacity ?? 60,
-          blurStrength: data.themeSettings?.blurStrength ?? 5,
-          layout: data.themeSettings?.layout ?? "default",
+        title: sanitizedData.title,
+        description: sanitizedData.description,
+        avatarUrl: sanitizedData.avatarUrl,
+        bannerUrl: sanitizedData.bannerUrl,
+        theme: sanitizedData.theme,
+        themeSettings: sanitizedData.themeSettings ?? {
+          cardOpacity: 60,
+          blurStrength: 5,
+          layout: "default",
           colorScheme: {
-            background: data.themeSettings?.colorScheme?.background ?? "",
-            text: data.themeSettings?.colorScheme?.text ?? "",
-            accent: data.themeSettings?.colorScheme?.accent ?? "",
+            background: "",
+            text: "",
+            accent: "",
           },
           effects: {
-            particles: data.themeSettings?.effects?.particles ?? false,
-            gradientAnimation:
-              data.themeSettings?.effects?.gradientAnimation ?? false,
-            imageParallax: data.themeSettings?.effects?.imageParallax ?? false,
+            particles: false,
+            gradientAnimation: false,
+            imageParallax: false,
           },
         },
         socialLinks: {
-          create:
-            data.socialLinks?.map((link) => ({
-              platform: link.platform,
-              url: link.url,
-            })) ?? [],
+          create: sanitizedData.socialLinks?.map((link) => ({
+            platform: link.platform,
+            url: link.url,
+          })) ?? [],
         },
       },
       include: {

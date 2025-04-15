@@ -22,7 +22,7 @@ export function ProfileBasicInfo() {
         <Input
           id="profile-title"
           placeholder="Your display name"
-          value={profileSettings.title || ""}
+          value={profileSettings?.title ?? ""}
           onChange={(e) => updateProfileField("title", e.target.value)}
         />
       </div>
@@ -32,7 +32,7 @@ export function ProfileBasicInfo() {
         <Textarea
           id="profile-description"
           placeholder="Tell others about yourself"
-          value={profileSettings.description || ""}
+          value={profileSettings?.description ?? ""}
           onChange={(e) => updateProfileField("description", e.target.value)}
           rows={4}
         />

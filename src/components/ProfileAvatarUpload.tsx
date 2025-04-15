@@ -35,12 +35,13 @@ export function ProfileAvatarUpload() {
 
     try {
       const url = await uploadProfileMedia(file, "avatar");
-      updateProfileField("avatarUrl", url);
-
-      toast({
-        title: "Avatar updated",
-        description: "Your profile picture has been updated successfully",
-      });
+      if (url) {
+        updateProfileField("avatarUrl", url);
+        toast({
+          title: "Avatar updated",
+          description: "Your profile picture has been updated successfully",
+        });
+      }
     } catch (error) {
       console.error("Failed to upload avatar:", error);
       toast({

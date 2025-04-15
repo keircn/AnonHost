@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Settings, LogOut, Menu, X } from "lucide-react";
+import { Upload, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useNavbar } from "@/components/NavbarContext";
 
@@ -37,9 +37,9 @@ export function Navbar() {
   const NavigationLinks = () => (
     <>
       {[
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/upload", label: "Upload" },
-        { href: "/shortener", label: "Shortener" },
+        isAuthenticated && { href: "/dashboard", label: "Dashboard" },
+        isAuthenticated && { href: "/upload", label: "Upload" },
+        isAuthenticated && { href: "/shortener", label: "Shortener" },
         { href: "/api", label: "API" },
         session?.user?.admin && { href: "/admin", label: "Admin" },
       ]
@@ -49,8 +49,8 @@ export function Navbar() {
             key={link.href}
             href={link.href}
             className={`px-3 py-2 transition-colors hover:text-foreground/80 rounded-md hover:bg-accent ${pathname === link.href
-                ? "text-foreground bg-accent"
-                : "text-foreground/60"
+              ? "text-foreground bg-accent"
+              : "text-foreground/60"
               }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -79,6 +79,17 @@ export function Navbar() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-4 lg:gap-6">
+          <a
+            href="https://ko-fi.com/anonhost"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:block"
+          >
+            <Button variant="outline" size="sm" className="gap-2">
+              Support Us
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </a>
           <ChatBot />
           <ModeToggle />
 
@@ -122,13 +133,24 @@ export function Navbar() {
         <div className="md:hidden border-t bg-background">
           <nav className="container py-4">
             <NavigationLinks />
-            {!isAuthenticated && (
-              <div className="mt-4 pt-4 border-t">
+            {!isAuthenticated ? (
+              <div className="mt-4 pt-4 border-t space-y-4">
                 <Link href="/register" className="block">
                   <Button className="w-full">Sign In</Button>
                 </Link>
+                <a
+                  href="https://ko-fi.com/anonhost"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <Button variant="outline" className="w-full gap-2">
+                    Support Us
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </a>
               </div>
-            )}
+            ) : null}
           </nav>
         </div>
       )}

@@ -82,25 +82,6 @@ const features = [
   },
 ];
 
-const TransFlag = () => (
-  <a
-    href="https://eva.pink"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="fixed bottom-4 right-4 z-50 w-12 h-12 cursor-pointer hover:scale-110 transition-transform duration-300"
-  >
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="w-10 h-6 relative">
-        <div className="absolute top-0 left-0 w-full h-[20%] bg-[#55CDFC]" />
-        <div className="absolute top-[20%] left-0 w-full h-[20%] bg-[#F7A8B8]" />
-        <div className="absolute top-[40%] left-0 w-full h-[20%] bg-white" />
-        <div className="absolute top-[60%] left-0 w-full h-[20%] bg-[#F7A8B8]" />
-        <div className="absolute top-[80%] left-0 w-full h-[20%] bg-[#55CDFC]" />
-      </div>
-    </div>
-  </a>
-);
-
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
@@ -134,7 +115,6 @@ export function HomePageClient() {
   return (
     <div className="flex flex-col min-h-screen py-8">
       <main className="flex-1 pt-24">
-        <TransFlag />
         <section className="w-full overflow-hidden relative min-h-[80vh] md:min-h-screen lg:min-h-1/2 pb-24 pt-8">
           <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">
             <div className="grid gap-6 lg:gap-12 items-center max-w-8xl mx-auto">
@@ -182,6 +162,20 @@ export function HomePageClient() {
                     >
                       API Documentation
                       <LuExternalLink className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link
+                    href="https://ko-fi.com/anonhost"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="gap-2 w-full min-[400px]:w-auto cursor-pointer hover:bg-secondary/30"
+                    >
+                      Support Us
+                      <LuHeart className="h-4 w-4" />
                     </Button>
                   </Link>
                 </motion.div>

@@ -467,13 +467,13 @@ export function DashboardPageClient() {
                       {
                         title: "Member Since",
                         description: "Account creation date",
-                        value: new Date(
-                          session?.user?.createdAt || Date.now(),
-                        ).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }),
+                        value: session?.user?.createdAt
+                          ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "2-digit",
+                          })
+                          : "N/A",
                       },
                     ];
                     return (

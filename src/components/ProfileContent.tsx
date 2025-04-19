@@ -27,6 +27,7 @@ import {
   FaDatabase,
 } from "react-icons/fa6";
 import { SocialLink, UserProfile } from "@/types/profile";
+import { formatFileSize } from "@/lib/utils";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -39,16 +40,6 @@ const staggerContainer = {
     transition: { staggerChildren: 0.1 },
   },
 };
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
 
 interface ProfileContentProps {
   user: UserProfile;
@@ -276,7 +267,7 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">Storage Used</p>
-                        <p className="text-white text-xl font-bold">{formatBytes(user.stats.storageUsed)}</p>
+                        <p className="text-white text-xl font-bold">{formatFileSize(user.stats.storageUsed)}</p>
                       </div>
                     </CardContent>
                   </Card>

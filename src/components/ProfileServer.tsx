@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { getUserBadges } from "@/lib/utils";
+import { getUserBadges, formatFileSize } from "@/lib/utils";
 import { ProfileContainer } from "@/components/ProfileContainer";
 import type { Metadata } from "next";
 import { UserProfile, ProfileThemeSettings } from "@/types/profile";
@@ -87,7 +87,7 @@ export async function getProfileData(id: string) {
       },
     stats: {
       mediaCount: user.Media?.length || 0,
-      storageUsed: user.storageUsed,
+      storageUsed: user.storageUsed || 0,
       apiKeysCount: user.apiKeys?.length || 0,
       shortlinksCount: user.Shortlink?.length || 0,
       totalViews: shortlinkStats._sum.clicks || 0,

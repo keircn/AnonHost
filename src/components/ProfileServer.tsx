@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { getUserBadges } from "@/lib/utils";
 import { ProfileContainer } from "@/components/ProfileContainer";
 import type { Metadata } from "next";
-import { UserWithProfile, ProfileThemeSettings } from "@/types/profile";
-import { Prisma } from "@prisma/client";
+import { UserProfile, ProfileThemeSettings } from "@/types/profile";
 
 interface Props {
   id: string;
@@ -24,51 +23,81 @@ export async function getProfileData(id: string) {
           socialLinks: true,
         },
       },
+      Media: {
+        select: {
+          id: true,
+          createdAt: true,
+          userId: true,
+          type: true,
+          url: true,
+          filename: true,
+          size: true,
+          width: true,
+          height: true,
+          duration: true,
+          public: true,
+          domain: true,
+        },
+      },
+      apiKeys: {
+        select: {
+          id: true,
+        },
+      },
+      Shortlink: {
+        select: {
+          id: true,
+        },
+      },
     },
   });
 
-  if (!user?.profile) {
+  if (!user) {
     notFound();
   }
 
-  let parsedThemeSettings: ProfileThemeSettings;
-  if (user.profile.themeSettings) {
-    parsedThemeSettings =
-      typeof user.profile.themeSettings === "string"
-        ? JSON.parse(user.profile.themeSettings)
-        : user.profile.themeSettings;
-  } else {
-    parsedThemeSettings = {
-      name: "default",
-      cardOpacity: 60,
-      blurStrength: 5,
-      layout: "default",
-      colorScheme: {
-        background: "",
-        text: "",
-        accent: "",
-      },
-      effects: {
-        particles: false,
-        gradientAnimation: false,
-        imageParallax: false,
-      },
-    };
-  }
-
-  const typedUser: UserWithProfile = {
-    ...user,
-    profile: {
-      ...user.profile,
-      themeSettings: parsedThemeSettings as Prisma.JsonValue &
-        ProfileThemeSettings,
+  const shortlinkStats = await prisma.shortlink.aggregate({
+    where: { userId: user.id },
+    _sum: {
+      clicks: true,
     },
+  });
+
+  const userProfile: UserProfile = {
+    ...user,
+    profile: user.profile
+      ? {
+        ...user.profile,
+        themeSettings: user.profile.themeSettings
+          ? JSON.parse(JSON.stringify(user.profile.themeSettings))
+          : null,
+      }
+      : {
+        id: "",
+        userId: user.id,
+        title: null,
+        description: null,
+        avatarUrl: null,
+        bannerUrl: null,
+        theme: "default",
+        themeSettings: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        socialLinks: [],
+      },
+    stats: {
+      mediaCount: user.Media?.length || 0,
+      storageUsed: user.storageUsed,
+      apiKeysCount: user.apiKeys?.length || 0,
+      shortlinksCount: user.Shortlink?.length || 0,
+      totalViews: shortlinkStats._sum.clicks || 0,
+      memberSince: user.createdAt,
+    }
   };
 
-  const badges = getUserBadges(typedUser);
-  const theme = typedUser.profile.theme || "default";
+  const badges = getUserBadges(userProfile);
 
-  return { user: typedUser, badges, theme };
+  return { user: userProfile, badges };
 }
 
 export async function generateProfileMetadata(id: string): Promise<Metadata> {
@@ -83,13 +112,13 @@ export async function generateProfileMetadata(id: string): Promise<Metadata> {
       images: [
         ...(user.profile?.avatarUrl
           ? [
-              {
-                url: user.profile.avatarUrl,
-                width: 400,
-                height: 400,
-                alt: `${user.profile.title || user.name}'s avatar`,
-              },
-            ]
+            {
+              url: user.profile.avatarUrl,
+              width: 400,
+              height: 400,
+              alt: `${user.profile.title || user.name}'s avatar`,
+            },
+          ]
           : []),
       ],
     },
@@ -103,6 +132,6 @@ export async function generateProfileMetadata(id: string): Promise<Metadata> {
 }
 
 export default async function ProfileServer({ id }: Props) {
-  const { user, badges, theme } = await getProfileData(id);
-  return <ProfileContainer user={user} badges={badges} theme={theme} />;
+  const { user, badges } = await getProfileData(id);
+  return <ProfileContainer user={user} badges={badges} />;
 }

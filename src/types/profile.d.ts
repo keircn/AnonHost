@@ -1,6 +1,15 @@
 import { Media, Profile, SocialLink } from "@prisma/client";
 import { User } from "next-auth";
 
+export interface UserStats {
+  mediaCount: number;
+  storageUsed: number;
+  apiKeysCount: number;
+  shortlinksCount: number;
+  totalViews: number;
+  memberSince: Date;
+}
+
 export interface ProfileThemeSettings {
   [key: string]: unknown;
   name: string;
@@ -46,7 +55,7 @@ export interface ProfileUpdateData {
   }>;
 }
 
-export interface UserWithProfile extends User {
+export interface UserProfile extends User {
   id: string;
   uid: number;
   name: string | null;
@@ -61,9 +70,10 @@ export interface UserWithProfile extends User {
     avatarUrl: string | null;
     bannerUrl: string | null;
     socialLinks: SocialLink[];
-    themeSettings: ProfileThemeSettings;
+    themeSettings: ProfileThemeSettings | null;
   };
   Media?: Media[];
+  stats: UserStats;
 }
 
 export interface Badge {

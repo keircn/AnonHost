@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { getUserBadges, formatFileSize } from "@/lib/utils";
+import { getUserBadges } from "@/lib/utils";
 import { ProfileContainer } from "@/components/ProfileContainer";
 import type { Metadata } from "next";
-import { UserProfile, ProfileThemeSettings } from "@/types/profile";
+import { UserProfile } from "@/types/profile";
 
 interface Props {
   id: string;
@@ -67,24 +67,24 @@ export async function getProfileData(id: string) {
     ...user,
     profile: user.profile
       ? {
-        ...user.profile,
-        themeSettings: user.profile.themeSettings
-          ? JSON.parse(JSON.stringify(user.profile.themeSettings))
-          : null,
-      }
+          ...user.profile,
+          themeSettings: user.profile.themeSettings
+            ? JSON.parse(JSON.stringify(user.profile.themeSettings))
+            : null,
+        }
       : {
-        id: "",
-        userId: user.id,
-        title: null,
-        description: null,
-        avatarUrl: null,
-        bannerUrl: null,
-        theme: "default",
-        themeSettings: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        socialLinks: [],
-      },
+          id: "",
+          userId: user.id,
+          title: null,
+          description: null,
+          avatarUrl: null,
+          bannerUrl: null,
+          theme: "default",
+          themeSettings: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          socialLinks: [],
+        },
     stats: {
       mediaCount: user.Media?.length || 0,
       storageUsed: user.storageUsed || 0,
@@ -92,7 +92,7 @@ export async function getProfileData(id: string) {
       shortlinksCount: user.Shortlink?.length || 0,
       totalViews: shortlinkStats._sum.clicks || 0,
       memberSince: user.createdAt,
-    }
+    },
   };
 
   const badges = getUserBadges(userProfile);
@@ -112,13 +112,13 @@ export async function generateProfileMetadata(id: string): Promise<Metadata> {
       images: [
         ...(user.profile?.avatarUrl
           ? [
-            {
-              url: user.profile.avatarUrl,
-              width: 400,
-              height: 400,
-              alt: `${user.profile.title || user.name}'s avatar`,
-            },
-          ]
+              {
+                url: user.profile.avatarUrl,
+                width: 400,
+                height: 400,
+                alt: `${user.profile.title || user.name}'s avatar`,
+              },
+            ]
           : []),
       ],
     },

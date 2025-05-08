@@ -7,14 +7,15 @@ import {
   updateProfileSettings,
 } from "@/lib/profile";
 
-interface FormState extends Omit<ProfileSettings, 'id' | 'userId' | 'createdAt' | 'updatedAt'> {
+interface FormState
+  extends Omit<ProfileSettings, "id" | "userId" | "createdAt" | "updatedAt"> {
   title: string;
   description: string;
   avatarUrl: string;
   bannerUrl: string;
   theme: string;
-  themeSettings: ProfileSettings['themeSettings'];
-  socialLinks: ProfileSettings['socialLinks'];
+  themeSettings: ProfileSettings["themeSettings"];
+  socialLinks: ProfileSettings["socialLinks"];
 }
 
 export function useProfileSettings() {
@@ -43,7 +44,9 @@ export function useProfileSettings() {
     socialLinks: [],
   });
 
-  const [originalSettings, setOriginalSettings] = useState<FormState | null>(null);
+  const [originalSettings, setOriginalSettings] = useState<FormState | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -72,8 +75,10 @@ export function useProfileSettings() {
             },
             effects: {
               particles: data.themeSettings?.effects?.particles ?? false,
-              gradientAnimation: data.themeSettings?.effects?.gradientAnimation ?? false,
-              imageParallax: data.themeSettings?.effects?.imageParallax ?? false,
+              gradientAnimation:
+                data.themeSettings?.effects?.gradientAnimation ?? false,
+              imageParallax:
+                data.themeSettings?.effects?.imageParallax ?? false,
             },
           },
           socialLinks: data.socialLinks ?? [],
@@ -99,18 +104,22 @@ export function useProfileSettings() {
   useEffect(() => {
     if (!originalSettings) return;
 
-    const hasFieldChanges = (current: any, original: any): boolean => {
+    const hasFieldChanges = (current: unknown, original: unknown): boolean => {
       if (current === original) return false;
-      if ((current === "" || current === null) && (original === "" || original === null)) return false;
+      if (
+        (current === "" || current === null) &&
+        (original === "" || original === null)
+      )
+        return false;
       if (typeof current !== typeof original) return true;
-      if (typeof current !== 'object') return current !== original;
+      if (typeof current !== "object") return current !== original;
       if (Array.isArray(current)) {
         return JSON.stringify(current) !== JSON.stringify(original);
       }
       return JSON.stringify(current) !== JSON.stringify(original);
     };
 
-    const hasChanged = Object.keys(profileSettings).some(key => {
+    const hasChanged = Object.keys(profileSettings).some((key) => {
       const field = key as keyof FormState;
       return hasFieldChanges(profileSettings[field], originalSettings[field]);
     });
@@ -120,10 +129,10 @@ export function useProfileSettings() {
 
   const updateProfileField = (
     field: keyof FormState,
-    value: any,
+    value: string | number | boolean | null,
   ) => {
     console.log(`Updating ${field}:`, value);
-    setProfileSettings(prev => ({
+    setProfileSettings((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -134,7 +143,7 @@ export function useProfileSettings() {
     value: string | number | boolean,
   ) => {
     console.log(`Updating theme setting ${field}:`, value);
-    setProfileSettings(prev => {
+    setProfileSettings((prev) => {
       if (field === "theme") {
         return {
           ...prev,
@@ -145,10 +154,16 @@ export function useProfileSettings() {
       const newThemeSettings = { ...prev.themeSettings };
 
       if (field === "layout") {
-        newThemeSettings.layout = value as "default" | "minimal" | "centered" | "grid";
+        newThemeSettings.layout = value as
+          | "default"
+          | "minimal"
+          | "centered"
+          | "grid";
       } else if (field === "cardOpacity" || field === "blurStrength") {
         newThemeSettings[field] = Number(value);
-      } else if (["particles", "gradientAnimation", "imageParallax"].includes(field)) {
+      } else if (
+        ["particles", "gradientAnimation", "imageParallax"].includes(field)
+      ) {
         newThemeSettings.effects = {
           ...newThemeSettings.effects,
           [field]: Boolean(value),
@@ -163,7 +178,7 @@ export function useProfileSettings() {
   };
 
   const updateSocialLinks = (index: number, field: string, value: string) => {
-    setProfileSettings(prev => {
+    setProfileSettings((prev) => {
       const newLinks = [...prev.socialLinks];
       newLinks[index] = {
         ...newLinks[index],
@@ -179,48 +194,57 @@ export function useProfileSettings() {
   const getChangedFields = () => {
     if (!originalSettings) return {};
 
-    const changes: Partial<ProfileSettings> = {};
+    const changes: Partial<
+      Record<keyof FormState, FormState[keyof FormState]>
+    > = {};
 
-    // Helper function to check if a field has changed and should be included
     const shouldIncludeField = (field: keyof FormState) => {
       const currentValue = profileSettings[field];
       const originalValue = originalSettings[field];
 
-      // If both are empty (null, undefined, or empty string), don't include
       if (
-        (currentValue === "" || currentValue === null || currentValue === undefined) &&
-        (originalValue === "" || originalValue === null || originalValue === undefined)
+        (currentValue === "" ||
+          currentValue === null ||
+          currentValue === undefined) &&
+        (originalValue === "" ||
+          originalValue === null ||
+          originalValue === undefined)
       ) {
         return false;
       }
 
-      // If one is empty and the other is not, that's a change
       if (
-        (currentValue === "" || currentValue === null || currentValue === undefined) !==
-        (originalValue === "" || originalValue === null || originalValue === undefined)
+        (currentValue === "" ||
+          currentValue === null ||
+          currentValue === undefined) !==
+        (originalValue === "" ||
+          originalValue === null ||
+          originalValue === undefined)
       ) {
         return true;
       }
 
-      // Otherwise, compare values
       return JSON.stringify(currentValue) !== JSON.stringify(originalValue);
     };
 
-    // Handle string fields
-    ['title', 'description', 'avatarUrl', 'bannerUrl', 'theme'].forEach((key) => {
-      const field = key as keyof FormState;
-      if (shouldIncludeField(field)) {
-        (changes as any)[field] = profileSettings[field] || null;
-      }
-    });
+    ["title", "description", "avatarUrl", "bannerUrl", "theme"].forEach(
+      (key) => {
+        const field = key as keyof FormState;
+        if (shouldIncludeField(field)) {
+          changes[field] =
+            profileSettings[field] !== null &&
+            profileSettings[field] !== undefined
+              ? profileSettings[field]
+              : undefined;
+        }
+      },
+    );
 
-    // Handle themeSettings
-    if (shouldIncludeField('themeSettings')) {
+    if (shouldIncludeField("themeSettings")) {
       changes.themeSettings = profileSettings.themeSettings;
     }
 
-    // Handle socialLinks
-    if (shouldIncludeField('socialLinks')) {
+    if (shouldIncludeField("socialLinks")) {
       changes.socialLinks = profileSettings.socialLinks;
     }
 
@@ -238,9 +262,10 @@ export function useProfileSettings() {
         return null;
       }
 
-      const updatedProfile = await updateProfileSettings(changedFields);
+      const updatedProfile = await updateProfileSettings(
+        changedFields as Partial<ProfileSettings>,
+      );
 
-      // Update both current and original state with the response
       const formState: FormState = {
         title: updatedProfile.title ?? "",
         description: updatedProfile.description ?? "",
@@ -270,14 +295,14 @@ export function useProfileSettings() {
   };
 
   const addSocialLink = () => {
-    setProfileSettings(prev => ({
+    setProfileSettings((prev) => ({
       ...prev,
       socialLinks: [...prev.socialLinks, { platform: "website", url: "" }],
     }));
   };
 
   const removeSocialLink = (index: number) => {
-    setProfileSettings(prev => ({
+    setProfileSettings((prev) => ({
       ...prev,
       socialLinks: prev.socialLinks.filter((_, i) => i !== index),
     }));

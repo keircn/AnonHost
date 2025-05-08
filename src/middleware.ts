@@ -10,20 +10,16 @@ const MAX_REQUESTS_PER_WINDOW = {
   unauthenticated: 60,
 };
 
-// it kept rate limiting pages lmfao
 const RATE_LIMITED_METHODS = ["POST", "PUT", "DELETE", "GET"];
 
 export async function middleware(request: NextRequest) {
-  // Skip rate limiting for auth-related endpoints
   if (request.nextUrl.pathname.startsWith("/api/auth/")) {
     return NextResponse.next();
   }
 
-  // Handle uploads directory access
   if (request.nextUrl.pathname.startsWith("/uploads/")) {
     const response = NextResponse.next();
 
-    // Add security headers
     response.headers.set("Cache-Control", "public, max-age=31536000");
     response.headers.set("X-Content-Type-Options", "nosniff");
 

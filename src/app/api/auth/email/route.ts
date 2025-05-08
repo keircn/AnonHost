@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
     const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
     await prisma.OTP.deleteMany({
       where: {

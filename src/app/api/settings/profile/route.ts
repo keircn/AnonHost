@@ -83,7 +83,6 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Convert empty strings to null for database storage
     const sanitizedData = {
       title: data.title === "" ? null : data.title,
       description: data.description === "" ? null : data.description,
@@ -97,12 +96,22 @@ export async function PUT(req: Request) {
     const profile = await prisma.profile.upsert({
       where: { userId: user.id },
       update: {
-        ...(sanitizedData.title !== undefined && { title: sanitizedData.title }),
-        ...(sanitizedData.description !== undefined && { description: sanitizedData.description }),
-        ...(sanitizedData.avatarUrl !== undefined && { avatarUrl: sanitizedData.avatarUrl }),
-        ...(sanitizedData.bannerUrl !== undefined && { bannerUrl: sanitizedData.bannerUrl }),
+        ...(sanitizedData.title !== undefined && {
+          title: sanitizedData.title,
+        }),
+        ...(sanitizedData.description !== undefined && {
+          description: sanitizedData.description,
+        }),
+        ...(sanitizedData.avatarUrl !== undefined && {
+          avatarUrl: sanitizedData.avatarUrl,
+        }),
+        ...(sanitizedData.bannerUrl !== undefined && {
+          bannerUrl: sanitizedData.bannerUrl,
+        }),
         ...(sanitizedData.theme && { theme: sanitizedData.theme }),
-        ...(sanitizedData.themeSettings && { themeSettings: sanitizedData.themeSettings }),
+        ...(sanitizedData.themeSettings && {
+          themeSettings: sanitizedData.themeSettings,
+        }),
         ...(sanitizedData.socialLinks && {
           socialLinks: {
             deleteMany: {},
@@ -136,10 +145,11 @@ export async function PUT(req: Request) {
           },
         },
         socialLinks: {
-          create: sanitizedData.socialLinks?.map((link) => ({
-            platform: link.platform,
-            url: link.url,
-          })) ?? [],
+          create:
+            sanitizedData.socialLinks?.map((link) => ({
+              platform: link.platform,
+              url: link.url,
+            })) ?? [],
         },
       },
       include: {

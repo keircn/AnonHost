@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LuCheck, LuCoffee } from "react-icons/lu";
+import { LuCheck } from "react-icons/lu";
 import Link from "next/link";
 
 const features = {
@@ -123,7 +123,12 @@ export function PricingPageClient() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Link href="https://ko-fi.com/qkeiran" target="_blank" rel="noopener noreferrer" className="w-full">
+              <Link
+                href="https://ko-fi.com/qkeiran"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
                 <Button className="w-full" asChild>
                   <span>Donate</span>
                 </Button>
@@ -152,7 +157,8 @@ export function PricingPageClient() {
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         <p>
-          All plans include GDPR compliance, EU hosting, and 99.9% uptime guarantee.
+          All plans include GDPR compliance, EU hosting, and 99.9% uptime
+          guarantee.
           <br />
           Currently in open beta - some features may be limited or unavailable.
         </p>

@@ -10,7 +10,6 @@ export async function GET(
   try {
     const filePath = path.join(process.cwd(), "uploads", ...params.path);
 
-    // Prevent directory traversal
     const normalizedPath = path.normalize(filePath);
     if (!normalizedPath.startsWith(path.join(process.cwd(), "uploads"))) {
       return new NextResponse("Forbidden", { status: 403 });

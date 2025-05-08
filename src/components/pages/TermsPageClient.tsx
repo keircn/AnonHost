@@ -79,37 +79,33 @@ export function TermsPageClient() {
         </motion.div>
 
         <motion.div className="grid gap-6 md:grid-cols-2" variants={fadeIn}>
-          {sections.map(
-            (
-              section, // Remove index parameter
-            ) => (
-              <motion.div
-                key={section.title}
-                variants={fadeIn}
-                transition={{ duration: 0.2 }}
-              >
-                <Card className="h-full">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      {section.icon}
-                      <h2 className="text-xl font-semibold">{section.title}</h2>
-                    </div>
-                    <ul className="space-y-2">
-                      {section.content.map((item, i) => (
-                        <li
-                          key={i}
-                          className="text-muted-foreground flex items-start"
-                        >
-                          <span className="mr-2 text-primary">•</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ),
-          )}
+          {sections.map((section) => (
+            <motion.div
+              key={section.title}
+              variants={fadeIn}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="h-full">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    {section.icon}
+                    <h2 className="text-xl font-semibold">{section.title}</h2>
+                  </div>
+                  <ul className="space-y-2">
+                    {section.content.map((item, i) => (
+                      <li
+                        key={i}
+                        className="text-muted-foreground flex items-start"
+                      >
+                        <span className="mr-2 text-primary">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </motion.div>
 
         <motion.div

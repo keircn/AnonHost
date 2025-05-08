@@ -2,7 +2,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { BLOCKED_TYPES, uploadFile, FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
+import {
+  BLOCKED_TYPES,
+  uploadFile,
+  FILE_SIZE_LIMITS,
+  STORAGE_LIMITS,
+} from "@/lib/upload";
 import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@prisma/client";
 import { sendDiscordWebhook } from "@/lib/discord";
@@ -127,7 +132,8 @@ export async function POST(req: NextRequest) {
       if (currentUsage + file.size > STORAGE_LIMITS.FREE) {
         return NextResponse.json(
           {
-            error: "Storage limit reached. Upgrade to premium for unlimited storage.",
+            error:
+              "Storage limit reached. Upgrade to premium for unlimited storage.",
           },
           { status: 400 },
         );

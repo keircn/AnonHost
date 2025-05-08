@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
 import { GeneralSettingsTab } from "@/components/GeneralSettingsTab";
-import { ProfileSettingsTab } from "@/components/ProfileSettingsTab";
 import { ApiKeysTab } from "@/components/ApiKeysTab";
 import { useSettings } from "@/hooks/use-settings";
 import { useProfileSettings } from "@/hooks/use-profile-settings";

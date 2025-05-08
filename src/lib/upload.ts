@@ -15,7 +15,7 @@ export const BLOCKED_TYPES = [
   "application/x-msi",
   "application/x-ms-installer",
   "application/x-msbatch",
-  
+
   "application/x-dex",
   "application/x-elf",
   "application/x-sharedlib",
@@ -148,12 +148,4 @@ export async function uploadFile(
     console.error("Error uploading file:", error);
     throw new Error("Failed to upload file");
   }
-}
-
-function getFileExtension(name: string): string {
-  const lastDotIndex = name.lastIndexOf(".");
-  if (lastDotIndex === -1 || lastDotIndex === name.length - 1) {
-    return "";
-  }
-  return name.substring(lastDotIndex);
 }

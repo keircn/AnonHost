@@ -183,7 +183,7 @@ export function HomePageClient() {
             </div>
           </div>
 
-            <motion.div
+          <motion.div
             className="absolute hidden sm:block 
             top-[23%] left-[40%] 
             md:top-[38%] md:left-[45%] 
@@ -196,28 +196,28 @@ export function HomePageClient() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
             viewport={{ once: true }}
-            >
+          >
             <motion.div
               animate={{
-              y: [0, -10, 0],
-              rotate: [2, 4, 2],
+                y: [0, -10, 0],
+                rotate: [2, 4, 2],
               }}
               transition={{
-              duration: 6,
-              repeat: Infinity,
-              ease: "easeInOut",
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
               }}
               className="transform translate-y-[min(0px,var(--scroll-offset,0px))]"
             >
               <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm">
-              <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
-              <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4">
-              <LuUpload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
-              </div>
-              </CardContent>
+                <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
+                  <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4">
+                    <LuUpload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
+                  </div>
+                </CardContent>
               </Card>
             </motion.div>
-            </motion.div>
+          </motion.div>
         </section>
 
         <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">

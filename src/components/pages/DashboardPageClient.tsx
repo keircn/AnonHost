@@ -435,7 +435,7 @@ export function DashboardPageClient() {
                     const storageStats = getStorageStats(
                       stats.storageUsed,
                       session?.user?.premium ?? false,
-                      session?.user?.admin ?? false
+                      session?.user?.admin ?? false,
                     );
                     const statsData = [
                       {
@@ -445,8 +445,12 @@ export function DashboardPageClient() {
                       },
                       {
                         title: "Storage Used",
-                        description: session?.user?.premium ? "Unlimited storage available" : `${storageStats.used} of ${storageStats.total} used`,
-                        value: session?.user?.premium ? formatFileSize(stats.storageUsed) : storageStats.percentage,
+                        description: session?.user?.premium
+                          ? "Unlimited storage available"
+                          : `${storageStats.used} of ${storageStats.total} used`,
+                        value: session?.user?.premium
+                          ? formatFileSize(stats.storageUsed)
+                          : storageStats.percentage,
                       },
                       {
                         title: "API Requests",
@@ -468,11 +472,14 @@ export function DashboardPageClient() {
                         title: "Member Since",
                         description: "Account creation date",
                         value: session?.user?.createdAt
-                          ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "2-digit",
-                          })
+                          ? new Date(session.user.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "2-digit",
+                              },
+                            )
                           : "N/A",
                       },
                     ];

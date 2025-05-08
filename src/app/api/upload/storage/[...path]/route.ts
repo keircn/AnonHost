@@ -84,7 +84,7 @@ export async function GET(
       });
 
       return new NextResponse(file, { headers });
-    } catch (error) {
+    } catch {
       return new NextResponse("File not found", { status: 404 });
     }
   } catch (error) {
@@ -93,7 +93,8 @@ export async function GET(
   }
 }
 
-// this is intentionally unused
+// this function will be used in future updates
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function cleanupOldFiles() {
   const MAX_AGE = 30 * 24 * 60 * 60 * 1000;
   const uploadDir = path.join(process.cwd(), "uploads");

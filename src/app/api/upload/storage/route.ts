@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const userId = formData.get("userId") as string;
 
     if (!file || !fileId || !filename || !userId) {
-     return NextResponse.json(
+      return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
       );
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(finalDir, `${fileId}${fileExt}`);
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, buffer, { mode: 0o644 }); // Secure file permissions
+    await fs.writeFile(filePath, buffer, { mode: 0o644 });
 
     const url = `/uploads/${userId}${type ? `/${type}s` : ""}/${fileId}${fileExt}`;
 

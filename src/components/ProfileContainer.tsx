@@ -10,10 +10,7 @@ interface ProfileContainerProps {
   badges: Array<{ label: string; emoji: string }>;
 }
 
-export function ProfileContainer({
-  user,
-  badges,
-}: ProfileContainerProps) {
+export function ProfileContainer({ user, badges }: ProfileContainerProps) {
   const { setShowNavbar } = useNavbar();
 
   useEffect(() => {

@@ -143,7 +143,10 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                 </motion.div>
 
                 <motion.div className="space-y-3" variants={fadeIn}>
-                  <motion.h1 className="text-3xl font-bold text-white" variants={fadeIn}>
+                  <motion.h1
+                    className="text-3xl font-bold text-white"
+                    variants={fadeIn}
+                  >
                     {user.profile.title || user.name}
                   </motion.h1>
 
@@ -194,42 +197,43 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                   )}
 
                   {/* Social Links */}
-                  {user.profile.socialLinks && user.profile.socialLinks.length > 0 && (
-                    <motion.div
-                      className="flex justify-center gap-3 mt-6"
-                      variants={fadeIn}
-                    >
-                      {user.profile.socialLinks.map(
-                        (link: SocialLink, index: number) => (
-                          <TooltipProvider key={link.id}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <motion.a
-                                  href={link.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-2 rounded-full bg-gray-800/60 hover:bg-gray-700 transition-colors"
-                                  whileHover={{ scale: 1.2 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  initial={{ opacity: 0, scale: 0 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{
-                                    opacity: { delay: index * 0.1 },
-                                    scale: { delay: 0 },
-                                  }}
-                                >
-                                  {getPlatformIcon(link.platform)}
-                                </motion.a>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="capitalize">{link.platform}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )
-                      )}
-                    </motion.div>
-                  )}
+                  {user.profile.socialLinks &&
+                    user.profile.socialLinks.length > 0 && (
+                      <motion.div
+                        className="flex justify-center gap-3 mt-6"
+                        variants={fadeIn}
+                      >
+                        {user.profile.socialLinks.map(
+                          (link: SocialLink, index: number) => (
+                            <TooltipProvider key={link.id}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <motion.a
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 rounded-full bg-gray-800/60 hover:bg-gray-700 transition-colors"
+                                    whileHover={{ scale: 1.2 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{
+                                      opacity: { delay: index * 0.1 },
+                                      scale: { delay: 0 },
+                                    }}
+                                  >
+                                    {getPlatformIcon(link.platform)}
+                                  </motion.a>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="capitalize">{link.platform}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ),
+                        )}
+                      </motion.div>
+                    )}
                 </motion.div>
               </motion.div>
 
@@ -254,7 +258,9 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">Media Files</p>
-                        <p className="text-white text-xl font-bold">{user.stats.mediaCount}</p>
+                        <p className="text-white text-xl font-bold">
+                          {user.stats.mediaCount}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -267,7 +273,9 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">Storage Used</p>
-                        <p className="text-white text-xl font-bold">{formatFileSize(user.stats.storageUsed)}</p>
+                        <p className="text-white text-xl font-bold">
+                          {formatFileSize(user.stats.storageUsed)}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -280,7 +288,9 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">Shortlinks</p>
-                        <p className="text-white text-xl font-bold">{user.stats.shortlinksCount}</p>
+                        <p className="text-white text-xl font-bold">
+                          {user.stats.shortlinksCount}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -293,7 +303,9 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">Total Views</p>
-                        <p className="text-white text-xl font-bold">{user.stats.totalViews.toLocaleString()}</p>
+                        <p className="text-white text-xl font-bold">
+                          {user.stats.totalViews.toLocaleString()}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -306,7 +318,9 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       </div>
                       <div>
                         <p className="text-gray-400 text-sm">API Keys</p>
-                        <p className="text-white text-xl font-bold">{user.stats.apiKeysCount}</p>
+                        <p className="text-white text-xl font-bold">
+                          {user.stats.apiKeysCount}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -320,7 +334,11 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                       <div>
                         <p className="text-gray-400 text-sm">Member Since</p>
                         <p className="text-white text-xl font-bold">
-                          {formatDistance(new Date(user.stats.memberSince), new Date(), { addSuffix: true })}
+                          {formatDistance(
+                            new Date(user.stats.memberSince),
+                            new Date(),
+                            { addSuffix: true },
+                          )}
                         </p>
                       </div>
                     </CardContent>
@@ -329,15 +347,23 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
 
                 {/* Account Status */}
                 <div className="mt-6">
-                  <Card className={`${user.premium ? "bg-gradient-to-r from-amber-900/40 to-amber-600/20" : "bg-gray-800/40"} border-${user.premium ? "amber-700/50" : "gray-700"}`}>
+                  <Card
+                    className={`${user.premium ? "bg-gradient-to-r from-amber-900/40 to-amber-600/20" : "bg-gray-800/40"} border-${user.premium ? "amber-700/50" : "gray-700"}`}
+                  >
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className={`p-3 rounded-full ${user.premium ? "bg-amber-500/20 text-amber-400" : "bg-gray-700/50 text-gray-400"}`}>
+                        <div
+                          className={`p-3 rounded-full ${user.premium ? "bg-amber-500/20 text-amber-400" : "bg-gray-700/50 text-gray-400"}`}
+                        >
                           <FaCrown className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm">Account Status</p>
-                          <p className="text-white text-xl font-bold">{user.premium ? "Premium User" : "Free User"}</p>
+                          <p className="text-gray-400 text-sm">
+                            Account Status
+                          </p>
+                          <p className="text-white text-xl font-bold">
+                            {user.premium ? "Premium User" : "Free User"}
+                          </p>
                         </div>
                       </div>
                     </CardContent>

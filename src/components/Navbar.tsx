@@ -80,7 +80,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-4 lg:gap-6">
           <a
-            href="https://ko-fi.com/anonhost"
+            href="https://ko-fi.com/qkeiran"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:block"
@@ -139,7 +139,7 @@ export function Navbar() {
                   <Button className="w-full">Sign In</Button>
                 </Link>
                 <a
-                  href="https://ko-fi.com/anonhost"
+                  href="https://ko-fi.com/qkeiran"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block"

@@ -123,7 +123,7 @@ export function PricingPageClient() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Link href="https://ko-fi.com/anonhost" target="_blank" rel="noopener noreferrer" className="w-full">
+              <Link href="https://ko-fi.com/qkeiran" target="_blank" rel="noopener noreferrer" className="w-full">
                 <Button className="w-full" asChild>
                   <span>Donate</span>
                 </Button>

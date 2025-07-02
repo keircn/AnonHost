@@ -1,6 +1,10 @@
 # AnonHost
 
-`The free, open source, private image host `
+`"The free, open source, private image host"`
+
+## Live instance
+
+Coming soon to a browser near you (https://anon.love)
 
 ## Installation
 

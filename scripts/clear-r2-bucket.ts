@@ -29,7 +29,7 @@ async function listAllObjects(): Promise<string[]> {
   const objects: string[] = [];
   let continuationToken: string | undefined;
 
-  console.log("📋 Listing all objects in bucket...");
+  console.log("Listing all objects in bucket...");
 
   do {
     try {
@@ -51,7 +51,7 @@ async function listAllObjects(): Promise<string[]> {
 
       continuationToken = response.NextContinuationToken;
     } catch (error) {
-      console.error("❌ Error listing objects:", error);
+      console.error("Error listing objects:", error);
       throw error;
     }
   } while (continuationToken);
@@ -78,7 +78,7 @@ async function deleteObjectsBatch(keys: string[]): Promise<number> {
     const deleted = keys.length - errors;
 
     if (errors > 0) {
-      console.warn(`⚠️  ${errors} deletion errors in batch`);
+      console.warn(`${errors} deletion errors in batch`);
       response.Errors?.forEach((error) => {
         console.warn(`   Error deleting ${error.Key}: ${error.Message}`);
       });
@@ -86,7 +86,7 @@ async function deleteObjectsBatch(keys: string[]): Promise<number> {
 
     return deleted;
   } catch (error) {
-    console.error("❌ Error deleting batch:", error);
+    console.error("Error deleting batch:", error);
     return 0;
   }
 }
@@ -153,9 +153,9 @@ async function confirmDeletion(): Promise<boolean> {
   console.log(`You are about to delete ALL objects in bucket: ${BUCKET_NAME}`);
   console.log("This action cannot be undone!");
   console.log("\nTo proceed, run the script with --force flag:");
-  console.log("npm run clear-bucket -- --force");
+  console.log("bun run clear-bucket --force");
   console.log("or");
-  console.log("tsx scripts/clear-r2-bucket.ts --force");
+  console.log("bunx tsx scripts/clear-r2-bucket.ts --force");
 
   return false;
 }

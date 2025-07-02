@@ -24,15 +24,15 @@ export async function fetchProfileSettings(): Promise<ProfileSettings> {
 }
 
 export async function updateProfileSettings(
-  settings: Partial<ProfileSettings>,
+  settings: Partial<ProfileSettings>
 ): Promise<ProfileSettings> {
   try {
     const sanitizedSettings = {
       ...settings,
       themeSettings: settings.themeSettings
         ? {
-            cardOpacity: Number(settings.themeSettings.cardOpacity) ?? 60,
-            blurStrength: Number(settings.themeSettings.blurStrength) ?? 5,
+            cardOpacity: Number(settings.themeSettings.cardOpacity ?? 60),
+            blurStrength: Number(settings.themeSettings.blurStrength ?? 5),
             layout: settings.themeSettings.layout ?? "default",
             colorScheme: {
               background: settings.themeSettings.colorScheme?.background ?? "",
@@ -74,7 +74,7 @@ export async function updateProfileSettings(
 
 export async function uploadProfileMedia(
   file: File,
-  type: "avatar" | "banner",
+  type: "avatar" | "banner"
 ): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);

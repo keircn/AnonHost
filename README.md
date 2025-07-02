@@ -4,7 +4,7 @@
 
 ## Live instance
 
-Coming soon to a browser near you (https://anon.love)
+[Coming soon](https://anon.love) to a browser near you
 
 ## Installation
 

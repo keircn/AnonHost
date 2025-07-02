@@ -30,34 +30,6 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-function getUserBadges(user: { id?: string; premium?: boolean } | null) {
-  if (user?.id === "1") return [];
-
-  const badges: Array<{
-    emoji: string;
-    label: string;
-    color?: string;
-  }> = [];
-
-  if (user?.premium) {
-    badges.push({
-      emoji: "💎",
-      label: "Premium",
-      color: "#a855f7",
-    });
-  }
-
-  if (user?.id && betaMembers.includes(user.id)) {
-    badges.push({
-      emoji: "🧪",
-      label: "Beta",
-      color: "#3b82f6",
-    });
-  }
-
-  return badges;
-}
-
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const { id } = params;
@@ -90,25 +62,16 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     };
   }
 
-  const badges = getUserBadges(media.user);
-  const badgeString = badges.length
-    ? `\n${badges.map((b) => `${b.emoji} ${b.label}`).join(" • ")}`
-    : "";
-
   const premiumTheme = media.user?.premium
     ? {
         creator: media.user.name,
         applicationName: "AnonHost Premium",
-        other: {
-          badges: badges.map((b) => `${b.emoji} ${b.label}`),
-          ...(badges[0]?.color && { badgeColor: badges[0].color }),
-        },
       }
     : {};
 
   const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
     media.user?.name || "Anonymous"
-  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}${badges.length ? "\n" : ""}${badgeString}`;
+  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}`;
 
   const dimensions = {
     width: typeof media.width === "number" ? media.width : 1280,
@@ -117,11 +80,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (media.type === "VIDEO") {
     return {
-      title: `${badges.map((b) => b.emoji + " ").join("")}${media.filename || "Untitled"}`,
+      title: media.filename || "Untitled",
       description,
       ...premiumTheme,
       openGraph: {
-        title: `${badges.map((b) => b.emoji + " ").join("")}${media.filename || "Untitled"}`,
+        title: media.filename || "Untitled",
         description,
         type: "video.other",
         url: media.url,
@@ -226,13 +189,12 @@ export async function generateViewport(props: Props): Promise<Viewport> {
     };
   }
 
-  const badges = getUserBadges(media.user);
   return {
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: badges[0]?.color || "#a855f7",
+    themeColor: "#a855f7",
   };
 }
 

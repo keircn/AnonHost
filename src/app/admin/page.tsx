@@ -82,7 +82,7 @@ export default function AdminPage() {
 
   const updateUser = async (
     id: string,
-    data: { premium?: boolean; admin?: boolean },
+    data: { premium?: boolean; admin?: boolean }
   ) => {
     try {
       const response = await fetch("/api/admin/users", {
@@ -94,7 +94,7 @@ export default function AdminPage() {
       if (!response.ok) throw new Error("Failed to update user");
 
       setUsers(
-        users.map((user) => (user.id === id ? { ...user, ...data } : user)),
+        users.map((user) => (user.id === id ? { ...user, ...data } : user))
       );
 
       toast({
@@ -182,7 +182,6 @@ export default function AdminPage() {
                     <TableHead>User</TableHead>
                     <TableHead>Images</TableHead>
                     <TableHead>API Keys</TableHead>
-                    <TableHead>Custom Domain</TableHead>
                     <TableHead>Premium</TableHead>
                     <TableHead>Admin</TableHead>
                   </TableRow>

@@ -1,4 +1,6 @@
 import path from "path";
+import { promises as fs } from "fs";
+import mime from "mime-types";
 import { uploadToR2, generateR2Key } from "@/lib/r2";
 
 export async function saveFile(
@@ -6,7 +8,7 @@ export async function saveFile(
   userId: string,
   filename: string,
   fileId: string,
-  type?: "avatar" | "banner",
+  type?: "avatar" | "banner"
 ): Promise<string> {
   const fileExt = path.extname(filename);
   const r2Key = generateR2Key(userId, fileId, fileExt, type);
@@ -27,4 +29,13 @@ export async function saveFile(
   });
 
   return url;
+}
+
+export async function getFile(
+  filePath: string
+): Promise<{ buffer: Buffer; contentType: string }> {
+  const fullPath = path.join(process.cwd(), filePath);
+  const buffer = await fs.readFile(fullPath);
+  const contentType = mime.lookup(fullPath) || "application/octet-stream";
+  return { buffer, contentType };
 }

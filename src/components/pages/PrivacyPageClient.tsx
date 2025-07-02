@@ -116,7 +116,7 @@ export function PrivacyPageClient() {
           <p>
             To exercise your privacy rights or ask questions about our privacy
             practices, please contact us at{" "}
-            <span className="text-primary">support@keiran.cc</span>
+            <span className="text-primary">support@anon.love</span>
           </p>
           <p className="text-xs">
             Last updated: April 2, 2025. AnonHost is committed to protecting

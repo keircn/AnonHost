@@ -6,7 +6,7 @@ import { verifyApiKey } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const id = params.id;
   const session = await getServerSession(authOptions);
@@ -44,7 +44,7 @@ export async function GET(
     if (!shortlink) {
       return NextResponse.json(
         { error: "Shortlink not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -66,19 +66,19 @@ export async function GET(
     console.error("Error fetching shortlink:", error);
     return NextResponse.json(
       { error: "Failed to fetch shortlink" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const id = params.id;
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXTAUTH_URL || "https://keiran.cc";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://anon.love";
 
   if (!session && !apiKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -111,7 +111,7 @@ export async function PUT(
     if (!shortlink) {
       return NextResponse.json(
         { error: "Shortlink not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -134,7 +134,7 @@ export async function PUT(
       } catch {
         return NextResponse.json(
           { error: "Invalid URL format" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -165,14 +165,14 @@ export async function PUT(
     console.error("Error updating shortlink:", error);
     return NextResponse.json(
       { error: "Failed to update shortlink" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const id = params.id;
   const session = await getServerSession(authOptions);
@@ -209,7 +209,7 @@ export async function DELETE(
     if (!shortlink) {
       return NextResponse.json(
         { error: "Shortlink not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -228,7 +228,7 @@ export async function DELETE(
     console.error("Error deleting shortlink:", error);
     return NextResponse.json(
       { error: "Failed to delete shortlink" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

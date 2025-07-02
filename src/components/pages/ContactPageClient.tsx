@@ -17,7 +17,7 @@ const contactMethods = [
     title: "Email Support",
     description: "Get in touch with our support team",
     icon: <Mail className="h-6 w-6" />,
-    href: "mailto:support@mg.keiran.cc",
+    href: "mailto:support@mg.anon.love",
     external: true,
   },
   {

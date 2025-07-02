@@ -145,7 +145,7 @@ export function ApiDocumentationPageClient() {
                           className="absolute top-2 right-2"
                           onClick={() =>
                             copyToClipboard(
-                              "Authorization: Bearer YOUR_API_KEY",
+                              "Authorization: Bearer YOUR_API_KEY"
                             )
                           }
                         >
@@ -167,13 +167,13 @@ export function ApiDocumentationPageClient() {
                         animate="animate"
                         whileHover="hover"
                       >
-                        <pre>https://keiran.cc/api</pre>
+                        <pre>https://anon.love/api</pre>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="absolute top-2 right-2"
                           onClick={() =>
-                            copyToClipboard("https://keiran.cc/api")
+                            copyToClipboard("https://anon.love/api")
                           }
                         >
                           <Copy className="h-4 w-4" />
@@ -254,7 +254,7 @@ form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
 form.append('public', 'true');
 
-fetch('https://keiran.cc/api/images', {
+fetch('https://anon.love/api/images', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -268,7 +268,7 @@ fetch('https://keiran.cc/api/images', {
 .catch(error => {
   console.error('Error:', error);
 });`
-                                      : `fetch('https://keiran.cc/images?page=1&limit=50', {
+                                      : `fetch('https://anon.love/images?page=1&limit=50', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -295,7 +295,7 @@ form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
 form.append('public', 'true');
 
-fetch('https://keiran.cc/images', {
+fetch('https://anon.love/images', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -309,7 +309,7 @@ fetch('https://keiran.cc/images', {
 .catch(error => {
   console.error('Error:', error);
 });`
-                                          : `fetch('https://keiran.cc/images?page=1&limit=50', {
+                                          : `fetch('https://anon.love/images?page=1&limit=50', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -322,7 +322,7 @@ fetch('https://keiran.cc/images', {
 })
 .catch(error => {
   console.error('Error:', error);
-});`,
+});`
                                       )
                                     }
                                   >
@@ -343,7 +343,7 @@ fetch('https://keiran.cc/images', {
                                     {example === "Upload an Image"
                                       ? `import requests
 
-url = "https://keiran.cc/images"
+url = "https://anon.love/images"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -361,7 +361,7 @@ response = requests.post(url, headers=headers, files=files, data=data)
 print(response.json())`
                                       : `import requests
 
-url = "https://keiran.cc/images"
+url = "https://anon.love/images"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -385,7 +385,7 @@ print("Pagination:", data["pagination"])`}
                                         example === "Upload an Image"
                                           ? `import requests
 
-url = "https://keiran.cc/images"
+url = "https://anon.love/images"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -403,7 +403,7 @@ response = requests.post(url, headers=headers, files=files, data=data)
 print(response.json())`
                                           : `import requests
 
-url = "https://keiran.cc/images"
+url = "https://anon.love/images"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -416,7 +416,7 @@ response = requests.get(url, headers=headers, params=params)
 data = response.json()
 
 print("Images:", data["images"])
-print("Pagination:", data["pagination"])`,
+print("Pagination:", data["pagination"])`
                                       )
                                     }
                                   >
@@ -435,12 +435,12 @@ print("Pagination:", data["pagination"])`,
                                 >
                                   <pre>
                                     {example === "Upload an Image"
-                                      ? `curl -X POST https://keiran.cc/images \\
+                                      ? `curl -X POST https://anon.love/images \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -F "file=@image.jpg" \\
   -F "filename=custom-name.jpg" \\
   -F "public=true"`
-                                      : `curl -X GET "https://keiran.cc/images?page=1&limit=50" \\
+                                      : `curl -X GET "https://anon.love/images?page=1&limit=50" \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
                                   </pre>
                                   <Button
@@ -450,13 +450,13 @@ print("Pagination:", data["pagination"])`,
                                     onClick={() =>
                                       copyToClipboard(
                                         example === "Upload an Image"
-                                          ? `curl -X POST https://keiran.cc/images \\
+                                          ? `curl -X POST https://anon.love/images \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -F "file=@image.jpg" \\
   -F "filename=custom-name.jpg" \\
   -F "public=true"`
-                                          : `curl -X GET "https://keiran.cc/images?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`,
+                                          : `curl -X GET "https://anon.love/images?page=1&limit=50" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`
                                       )
                                     }
                                   >
@@ -467,7 +467,7 @@ print("Pagination:", data["pagination"])`,
                             </Tabs>
                           </div>
                         </motion.div>
-                      ),
+                      )
                     )}
                   </CardContent>
                 </Card>

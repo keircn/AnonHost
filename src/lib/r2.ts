@@ -65,7 +65,7 @@ export function generateR2Key(
   userId: string,
   fileId: string,
   fileExt: string,
-  type?: string
+  type?: string,
 ): string {
   if (type) {
     return `${userId}/${type}s/${fileId}${fileExt}`;

@@ -6,7 +6,7 @@ export async function saveFile(
   userId: string,
   filename: string,
   fileId: string,
-  type?: "avatar" | "banner"
+  type?: "avatar" | "banner",
 ): Promise<string> {
   const fileExt = path.extname(filename);
   const r2Key = generateR2Key(userId, fileId, fileExt, type);

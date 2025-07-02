@@ -109,16 +109,16 @@ export async function generateProfileMetadata(id: string): Promise<Metadata> {
     openGraph: {
       title: `${user.profile?.title || user.name} - AnonHost`,
       description: user.profile?.description || undefined,
-      images: (user.profile?.avatarUrl
-          ? [
-              {
-                url: user.profile.avatarUrl,
-                width: 400,
-                height: 400,
-                alt: `${user.profile.title || user.name}'s avatar`,
-              },
-            ]
-          : []),
+      images: user.profile?.avatarUrl
+        ? [
+            {
+              url: user.profile.avatarUrl,
+              width: 400,
+              height: 400,
+              alt: `${user.profile.title || user.name}'s avatar`,
+            },
+          ]
+        : [],
     },
     twitter: {
       card: user.profile?.bannerUrl ? "summary_large_image" : "summary",

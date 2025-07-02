@@ -24,7 +24,7 @@ export async function fetchProfileSettings(): Promise<ProfileSettings> {
 }
 
 export async function updateProfileSettings(
-  settings: Partial<ProfileSettings>
+  settings: Partial<ProfileSettings>,
 ): Promise<ProfileSettings> {
   try {
     const sanitizedSettings = {
@@ -74,7 +74,7 @@ export async function updateProfileSettings(
 
 export async function uploadProfileMedia(
   file: File,
-  type: "avatar" | "banner"
+  type: "avatar" | "banner",
 ): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);

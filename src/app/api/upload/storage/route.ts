@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
     if (!file || !fileId || !filename || !userId) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!(await checkR2Connection())) {
       return NextResponse.json(
         { error: "Storage service unavailable" },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     console.error("Storage error:", error);
     return NextResponse.json(
       { error: "Failed to store file" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

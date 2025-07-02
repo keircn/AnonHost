@@ -1,47 +1,30 @@
-import { promises as fs } from "fs";
 import path from "path";
-import mime from "mime-types";
-
-export async function ensureUploadDir(dir: string) {
-  try {
-    await fs.access(dir);
-  } catch {
-    await fs.mkdir(dir, { recursive: true });
-  }
-}
+import { uploadToR2, generateR2Key } from "@/lib/r2";
 
 export async function saveFile(
   buffer: Buffer,
   userId: string,
   filename: string,
   fileId: string,
-  type?: "avatar" | "banner",
+  type?: "avatar" | "banner"
 ): Promise<string> {
-  const uploadDir = path.join(process.cwd(), "uploads");
-  const userDir = path.join(uploadDir, userId);
+  const fileExt = path.extname(filename);
+  const r2Key = generateR2Key(userId, fileId, fileExt, type);
 
-  const finalDir =
-    type === "avatar"
-      ? path.join(userDir, "avatars")
-      : type === "banner"
-        ? path.join(userDir, "banners")
-        : userDir;
+  let contentType = "application/octet-stream";
+  const ext = fileExt.toLowerCase();
+  if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
+  else if (ext === ".png") contentType = "image/png";
+  else if (ext === ".gif") contentType = "image/gif";
+  else if (ext === ".webp") contentType = "image/webp";
+  else if (ext === ".svg") contentType = "image/svg+xml";
 
-  await ensureUploadDir(finalDir);
+  const url = await uploadToR2({
+    file: buffer,
+    key: r2Key,
+    contentType,
+    userId,
+  });
 
-  const fileName = `${fileId}${path.extname(filename)}`;
-  const filePath = path.join(finalDir, fileName);
-
-  await fs.writeFile(filePath, buffer);
-
-  return `/uploads/${userId}/${type ? `${type}s/` : ""}${fileName}`;
-}
-
-export async function getFile(
-  filePath: string,
-): Promise<{ buffer: Buffer; contentType: string }> {
-  const fullPath = path.join(process.cwd(), filePath);
-  const buffer = await fs.readFile(fullPath);
-  const contentType = mime.lookup(fullPath) || "application/octet-stream";
-  return { buffer, contentType };
+  return url;
 }

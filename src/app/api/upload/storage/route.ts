@@ -1,20 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
 import path from "path";
-
-async function checkDiskSpace(
-  uploadDir: string,
-  fileSize: number,
-): Promise<boolean> {
-  try {
-    const stats = await fs.statfs(uploadDir);
-    const freeSpace = stats.bfree * stats.bsize;
-    return freeSpace > fileSize * 2;
-  } catch (error) {
-    console.error("Error checking disk space:", error);
-    return false;
-  }
-}
+import { uploadToR2, generateR2Key, checkR2Connection } from "@/lib/r2";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,30 +14,26 @@ export async function POST(request: NextRequest) {
     if (!file || !fileId || !filename || !userId) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const uploadDir = path.join(process.cwd(), "uploads");
-    const userDir = path.join(uploadDir, userId);
-    const finalDir = type ? path.join(userDir, `${type}s`) : userDir;
-
-    if (!(await checkDiskSpace(uploadDir, file.size))) {
+    if (!(await checkR2Connection())) {
       return NextResponse.json(
-        { error: "Insufficient disk space" },
-        { status: 507 },
+        { error: "Storage service unavailable" },
+        { status: 503 }
       );
     }
-
-    await ensureUploadDir(finalDir);
-
-    const fileExt = path.extname(filename);
-    const filePath = path.join(finalDir, `${fileId}${fileExt}`);
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, buffer, { mode: 0o644 });
-
-    const url = `/uploads/${userId}${type ? `/${type}s` : ""}/${fileId}${fileExt}`;
+    const fileExt = path.extname(filename);
+    const r2Key = generateR2Key(userId, fileId, fileExt, type);
+    const url = await uploadToR2({
+      file: buffer,
+      key: r2Key,
+      contentType: file.type,
+      userId: userId,
+    });
 
     return NextResponse.json({
       url,
@@ -63,15 +45,7 @@ export async function POST(request: NextRequest) {
     console.error("Storage error:", error);
     return NextResponse.json(
       { error: "Failed to store file" },
-      { status: 500 },
+      { status: 500 }
     );
-  }
-}
-
-async function ensureUploadDir(dir: string) {
-  try {
-    await fs.access(dir);
-  } catch {
-    await fs.mkdir(dir, { recursive: true, mode: 0o755 });
   }
 }

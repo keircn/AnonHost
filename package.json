@@ -15,7 +15,7 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed --skip-generate",
     "db:push": "prisma db push --force",
-    "clear-bucket": "tsx scripts/clear-r2-bucket.ts"
+    "clear-bucket": "scripts/clear-r2-bucket.ts"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

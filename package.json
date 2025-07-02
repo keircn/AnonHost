@@ -1,15 +1,20 @@
 {
-  "name": "anonhost-v3",
-  "version": "0.1.0",
+  "name": "anonhost",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "NODE_ENV=development next dev --turbo",
     "build": "next build",
-    "start": "next start -p 9876",
-    "lint": "next lint",
+    "start": "NODE_ENV=production next start -p 1984",
+    "lint": "oxlint src --fix",
     "format": "prettier --write src",
-    "prisma-dev": "prisma migrate dev --name 'auto' && prisma generate",
-    "prisma-deploy": "prisma migrate deploy"
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force",
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed --skip-generate",
+    "db:push": "prisma db push --force"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

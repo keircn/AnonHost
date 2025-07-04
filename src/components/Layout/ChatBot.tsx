@@ -145,7 +145,7 @@ export function ChatBot() {
         {message.role === "assistant" ? (
           <>
             <AvatarImage src="/anon-avatar.png" alt="Anon" />
-            <AvatarFallback>CA</AvatarFallback>
+            <AvatarFallback>?</AvatarFallback>
           </>
         ) : (
           <>

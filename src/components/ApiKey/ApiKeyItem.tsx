@@ -1,18 +1,36 @@
-import { ApiKey } from "@/types/settings";
+"use client";
+
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { fadeIn } from "@/lib/animations";
-import { ShareXConfigDialog } from "@/components/ShareXConfigDialog";
-import { DeleteApiKeyDialog } from "@/components/DeleteApiKeyDialog";
+import { useToast } from "@/hooks/use-toast";
+import type { ApiKey } from "@/types/settings";
+import { ShareXConfigDialog } from "@/components/Files/ShareXConfigDialog";
+import { DeleteApiKeyDialog } from "@/components/ApiKey/DeleteApiKeyDialog";
 
-interface ApiKeyCardProps {
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+interface ApiKeyItemProps {
   apiKey: ApiKey;
-  onCopy: (key: string) => void;
+  onDeleted: () => Promise<void>;
 }
 
-export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
+export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
+  const { toast } = useToast();
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied to clipboard",
+      description: "API key copied to clipboard",
+    });
+  };
+
   return (
     <motion.div
       variants={fadeIn}
@@ -42,17 +60,18 @@ export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => onCopy(apiKey.key)}
+                    onClick={() => copyToClipboard(apiKey.key)}
                     title="Copy API Key"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
                 </motion.div>
-                <ShareXConfigDialog apiKey={apiKey} />
-                <DeleteApiKeyDialog
-                  apiKey={apiKey}
-                  onDeleted={async () => {}}
-                />
+                <motion.div whileHover={{ scale: 1.1 }}>
+                  <ShareXConfigDialog apiKey={apiKey} />
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }}>
+                  <DeleteApiKeyDialog apiKey={apiKey} onDeleted={onDeleted} />
+                </motion.div>
               </div>
             </div>
             <div className="bg-muted p-2 rounded-md font-mono text-sm overflow-x-auto">
@@ -63,4 +82,4 @@ export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
       </Card>
     </motion.div>
   );
-};
+}

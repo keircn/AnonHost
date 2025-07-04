@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   const page = Number.parseInt(url.searchParams.get("page") || "1");
   const limit = Math.min(
     Number.parseInt(url.searchParams.get("limit") || "20"),
-    100
+    100,
   );
   const sort = url.searchParams.get("sort") || "createdAt";
   const order = url.searchParams.get("order") || "desc";
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
           : settings?.customDomain
             ? `https://${settings.customDomain}/${item.id}`
             : `${baseUrl}/${item.id}`,
-      })
+      }),
     ),
     pagination: {
       total,
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Failed to upload media" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useApiKeys } from "@/hooks/use-api-keys";
-import { ApiKeyCreator } from "@/components/ApiKeyCreator";
-import { ApiKeysList } from "@/components/ApiKeysList";
+import { ApiKeyCreator } from "@/components/ApiKey/ApiKeyCreator";
+import { ApiKeysList } from "@/components/ApiKey/ApiKeysList";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },

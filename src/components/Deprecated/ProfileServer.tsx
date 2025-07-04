@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { getUserBadges } from "@/lib/utils";
-import { ProfileContainer } from "@/components/ProfileContainer";
+import { ProfileContainer } from "@/components/Deprecated/ProfileContainer";
 import type { Metadata } from "next";
 import { UserProfile } from "@/types/profile";
 

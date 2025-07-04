@@ -1,6 +1,6 @@
 import ProfileServer, {
   generateProfileMetadata,
-} from "@/components/ProfileServer";
+} from "@/components/Deprecated/ProfileServer";
 
 interface Props {
   params: { id: string };

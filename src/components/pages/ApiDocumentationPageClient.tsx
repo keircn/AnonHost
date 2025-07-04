@@ -145,7 +145,7 @@ export function ApiDocumentationPageClient() {
                           className="absolute top-2 right-2"
                           onClick={() =>
                             copyToClipboard(
-                              "Authorization: Bearer YOUR_API_KEY"
+                              "Authorization: Bearer YOUR_API_KEY",
                             )
                           }
                         >
@@ -322,7 +322,7 @@ fetch('https://anon.love/images', {
 })
 .catch(error => {
   console.error('Error:', error);
-});`
+});`,
                                       )
                                     }
                                   >
@@ -416,7 +416,7 @@ response = requests.get(url, headers=headers, params=params)
 data = response.json()
 
 print("Images:", data["images"])
-print("Pagination:", data["pagination"])`
+print("Pagination:", data["pagination"])`,
                                       )
                                     }
                                   >
@@ -456,7 +456,7 @@ print("Pagination:", data["pagination"])`
   -F "filename=custom-name.jpg" \\
   -F "public=true"`
                                           : `curl -X GET "https://anon.love/images?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`
+  -H "Authorization: Bearer YOUR_API_KEY"`,
                                       )
                                     }
                                   >
@@ -467,7 +467,7 @@ print("Pagination:", data["pagination"])`
                             </Tabs>
                           </div>
                         </motion.div>
-                      )
+                      ),
                     )}
                   </CardContent>
                 </Card>

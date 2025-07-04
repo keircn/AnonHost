@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { Card } from "@/components/ui/card";
 import { useProfileSettings } from "@/hooks/use-profile-settings";
-import { ProfileBasicInfo } from "@/components/ProfileBasicInfo";
-import { ProfileAvatarUpload } from "@/components/ProfileAvatarUpload";
-import { ProfileBannerUpload } from "@/components/ProfileBannerUpload";
-import { ProfileThemeSettings } from "@/components/ProfileThemeSettings";
-import { ProfileSocialLinks } from "@/components/ProfileSocialLinks";
+import { ProfileBasicInfo } from "@/components/Deprecated/ProfileBasicInfo";
+import { ProfileAvatarUpload } from "@/components/Deprecated/ProfileAvatarUpload";
+import { ProfileBannerUpload } from "@/components/Deprecated/ProfileBannerUpload";
+import { ProfileThemeSettings } from "@/components/Deprecated/ProfileThemeSettings";
+import { ProfileSocialLinks } from "@/components/Deprecated/ProfileSocialLinks";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types/profile";
 

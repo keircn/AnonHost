@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useNavbar } from "@/components/NavbarContext";
-import { ProfileContent } from "@/components/ProfileContent";
+import { useNavbar } from "@/components/Layout/NavbarContext";
+import { ProfileContent } from "@/components/Deprecated/ProfileContent";
 import { UserProfile } from "@/types/profile";
 
 interface ProfileContainerProps {

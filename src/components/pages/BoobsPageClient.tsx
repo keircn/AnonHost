@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useNavbar } from "@/components/NavbarContext";
+import { useNavbar } from "@/components/Layout/NavbarContext";
 
 export function BoobsPageClient() {
   const { setShowNavbar } = useNavbar();

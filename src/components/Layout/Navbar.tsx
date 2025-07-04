@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ModeToggle";
+import { ModeToggle } from "@/components/Layout/ModeToggle";
 import { ChatBot } from "@/components/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { UserMenuProps } from "@/types/user-menu-props";
@@ -17,7 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
 import { useState } from "react";
-import { useNavbar } from "@/components/NavbarContext";
+import { useNavbar } from "@/components/Layout/NavbarContext";
 
 export function Navbar() {
   interface NavLink {

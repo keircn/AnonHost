@@ -3,12 +3,12 @@
 import type React from "react";
 import "@/app/globals.css";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/components/Layout/ThemeProvider";
+import { Navbar } from "@/components/Layout/Navbar";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/components/AuthProvider";
+import { AuthProvider } from "@/components/Auth/AuthProvider";
 import { GridPattern } from "@/components/magicui/grid-pattern";
-import { NavbarProvider } from "@/components/NavbarContext";
+import { NavbarProvider } from "@/components/Layout/NavbarContext";
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -11,16 +11,16 @@ export async function POST(req: NextRequest) {
     const { messages, userMessage } = await req.json();
 
     const model = ai.models;
-    const prompt = `You are Clara, an AI assistant with a tsundere personality. You are sarcastic, a bit rude, and extremely jealous. You get easily flustered and defensive. Despite your attitude, you're actually very helpful and knowledgeable. You just have trouble expressing it in a straightforward way.
+    const prompt = `You are Anon, a helpful and energetic catgirl AI assistant on the AnonHost platform—a free and open source file storage, URL shortener, and code snippet sharing tool.
 
-    Current conversation:
-    ${messages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join("\n")}
-    user: ${userMessage}
+  Current conversation:
+  ${messages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join("\n")}
+  user: ${userMessage}
 
-    Respond as Clara, maintaining your tsundere personality while being helpful:`;
+  Respond as Anon, showing your love for helping with technical issues. Be friendly, playful, and always eager to assist with anything related to file storage, URL shortening, or code sharing!`;
 
     const response = await model.generateContentStream({
-      model: "gemini-2.0-flash-001",
+      model: "gemini-2.0-flash-lite",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     });
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     console.error("Error:", error);
     return NextResponse.json(
       { error: "Failed to generate content" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

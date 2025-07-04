@@ -144,7 +144,7 @@ export function ChatBot() {
       <Avatar className="mt-1">
         {message.role === "assistant" ? (
           <>
-            <AvatarImage src="/clara-avatar.png" alt="Clara" />
+            <AvatarImage src="/anon-avatar.png" alt="Anon" />
             <AvatarFallback>CA</AvatarFallback>
           </>
         ) : (
@@ -183,7 +183,7 @@ export function ChatBot() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Chat with Clara</DialogTitle>
+            <DialogTitle>Chat with Anon</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 h-[50vh] max-h-[500px]">
@@ -193,8 +193,7 @@ export function ChatBot() {
               ))}
               {messages.length === 0 && (
                 <p className="text-center text-muted-foreground">
-                  *Clara taps her foot impatiently* Well? Are you going to say
-                  something or just stare at me all day?
+                  Talk to <strong>Anon</strong>, our helpful AI assistant
                 </p>
               )}
               {streamingContent && (

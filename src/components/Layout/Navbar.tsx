@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/Layout/ModeToggle";
-import { ChatBot } from "@/components/ChatBot";
+import { ChatBot } from "@/components/Layout/ChatBot";
 import { signOut, useSession } from "next-auth/react";
 import { UserMenuProps } from "@/types/user-menu-props";
 import {

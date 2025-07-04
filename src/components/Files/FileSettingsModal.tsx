@@ -113,7 +113,6 @@ export function FileSettingsModal({
         </DialogHeader>
 
         <Accordion type="single" collapsible className="w-full">
-          {/* Domain Settings */}
           <AccordionItem value="domain">
             <AccordionTrigger>Custom Domain</AccordionTrigger>
             <AccordionContent>
@@ -143,7 +142,6 @@ export function FileSettingsModal({
             </AccordionContent>
           </AccordionItem>
 
-          {/* Compression Settings */}
           {fileType.isImage && (
             <AccordionItem value="compression">
               <AccordionTrigger>Compression</AccordionTrigger>
@@ -181,7 +179,6 @@ export function FileSettingsModal({
             </AccordionItem>
           )}
 
-          {/* Conversion Settings */}
           {(fileType.isImage || fileType.isVideo) && (
             <AccordionItem value="conversion">
               <AccordionTrigger>Format Conversion</AccordionTrigger>
@@ -228,7 +225,6 @@ export function FileSettingsModal({
             </AccordionItem>
           )}
 
-          {/* Resize Settings */}
           {(fileType.isImage || fileType.isVideo) && (
             <AccordionItem value="resize">
               <AccordionTrigger>Resize</AccordionTrigger>

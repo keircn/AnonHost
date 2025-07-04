@@ -12,9 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/use-settings";
-import { NotificationSettings } from "@/components/NotificationSettings";
-import { DirectLinksSettings } from "@/components/DirectLinksSettings";
-import { EmailChangeSection } from "@/components/EmailChangeSection";
+import { NotificationSettings } from "@/components/Settings/NotificationSettings";
+import { DirectLinksSettings } from "@/components/Settings/DirectLinksSettings";
+import { EmailChangeSection } from "@/components/Settings/EmailChangeSection";
 // import { CustomDomainSettings } from "@/components/CustomDomainSettings";
 
 const fadeIn = {

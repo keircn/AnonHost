@@ -118,7 +118,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
               initial="initial"
               animate="animate"
             >
-              {/* Profile Sidebar */}
               <motion.div
                 className="flex flex-col items-center text-center gap-6"
                 variants={fadeIn}
@@ -150,7 +149,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     {user.profile.title || user.name}
                   </motion.h1>
 
-                  {/* Badges */}
                   {badges.length > 0 && (
                     <motion.div
                       className="flex justify-center gap-2"
@@ -186,7 +184,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </motion.div>
                   )}
 
-                  {/* User Bio */}
                   {user.profile.description && (
                     <motion.p
                       className="text-md text-gray-300 whitespace-pre-wrap max-w-sm mx-auto mt-4"
@@ -196,7 +193,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </motion.p>
                   )}
 
-                  {/* Social Links */}
                   {user.profile.socialLinks &&
                     user.profile.socialLinks.length > 0 && (
                       <motion.div
@@ -237,7 +233,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                 </motion.div>
               </motion.div>
 
-              {/* User Stats */}
               <motion.div
                 className="md:col-span-2 space-y-6"
                 variants={fadeIn}
@@ -250,7 +245,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Media Stats */}
                   <Card className="bg-gray-800/40 border-gray-700 overflow-hidden group hover:bg-gray-800/60 transition-colors">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="p-3 rounded-full bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
@@ -265,7 +259,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </CardContent>
                   </Card>
 
-                  {/* Storage Usage */}
                   <Card className="bg-gray-800/40 border-gray-700 overflow-hidden group hover:bg-gray-800/60 transition-colors">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="p-3 rounded-full bg-purple-500/20 text-purple-400 group-hover:bg-purple-500/30 transition-colors">
@@ -280,7 +273,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </CardContent>
                   </Card>
 
-                  {/* Shortlinks */}
                   <Card className="bg-gray-800/40 border-gray-700 overflow-hidden group hover:bg-gray-800/60 transition-colors">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="p-3 rounded-full bg-green-500/20 text-green-400 group-hover:bg-green-500/30 transition-colors">
@@ -295,7 +287,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </CardContent>
                   </Card>
 
-                  {/* Total Views */}
                   <Card className="bg-gray-800/40 border-gray-700 overflow-hidden group hover:bg-gray-800/60 transition-colors">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="p-3 rounded-full bg-amber-500/20 text-amber-400 group-hover:bg-amber-500/30 transition-colors">
@@ -310,7 +301,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </CardContent>
                   </Card>
 
-                  {/* API Keys */}
                   <Card className="bg-gray-800/40 border-gray-700 overflow-hidden group hover:bg-gray-800/60 transition-colors">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="p-3 rounded-full bg-red-500/20 text-red-400 group-hover:bg-red-500/30 transition-colors">
@@ -325,7 +315,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                     </CardContent>
                   </Card>
 
-                  {/* Member Since */}
                   <Card className="bg-gray-800/40 border-gray-700 overflow-hidden group hover:bg-gray-800/60 transition-colors">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="p-3 rounded-full bg-teal-500/20 text-teal-400 group-hover:bg-teal-500/30 transition-colors">
@@ -345,7 +334,6 @@ export function ProfileContent({ user, badges }: ProfileContentProps) {
                   </Card>
                 </div>
 
-                {/* Account Status */}
                 <div className="mt-6">
                   <Card
                     className={`${user.premium ? "bg-gradient-to-r from-amber-900/40 to-amber-600/20" : "bg-gray-800/40"} border-${user.premium ? "amber-700/50" : "gray-700"}`}

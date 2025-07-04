@@ -101,7 +101,6 @@ export function SettingsPageClient() {
               {activeTab === "profile" && (
                 <motion.div className="space-y-2" variants={fadeIn}>
                   <Card className="p-6">
-                    {/* <ProfileSettingsTab /> */}
                     <p className="text-sm text-muted-foreground text-center my-4">
                       Profiles currently disabled
                     </p>

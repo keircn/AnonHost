@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { MediaActions } from "@/components/MediaActions";
+import { MediaActions } from "@/components/Files/MediaActions";
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";

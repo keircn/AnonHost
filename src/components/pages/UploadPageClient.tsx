@@ -19,7 +19,7 @@ import {
   Music,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileSettingsModal } from "@/components/Settings/FileSettingsModal";
+import { FileSettingsModal } from "@/components/Files/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import { formatFileSize } from "@/lib/utils";

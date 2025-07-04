@@ -8,6 +8,7 @@ import { betaMembers } from "@/lib/beta";
 import { Viewport } from "next";
 import { LuMusic } from "react-icons/lu";
 import { File, FileText } from "lucide-react";
+import { HideNavbar } from "@/components/Layout/HideNavbar";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -205,7 +206,6 @@ export default async function MediaPage(props: Props) {
 
   if (!mediaId) {
     notFound();
-    return null;
   }
 
   const media = await prisma.media.findUnique({
@@ -223,11 +223,11 @@ export default async function MediaPage(props: Props) {
 
   if (!media) {
     notFound();
-    return null;
   }
 
   return (
     <div className="container py-8">
+      <HideNavbar />
       <Card className="max-w-4xl mx-auto">
         <div className="relative aspect-video">
           {(() => {

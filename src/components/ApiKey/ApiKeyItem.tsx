@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { ApiKey } from "@/types/settings";
 import { ShareXConfigDialog } from "@/components/Files/ShareXConfigDialog";
 import { DeleteApiKeyDialog } from "@/components/ApiKey/DeleteApiKeyDialog";
@@ -21,14 +21,14 @@ interface ApiKeyItemProps {
 }
 
 export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
-  const { toast } = useToast();
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "API key copied to clipboard",
-    });
+    toast(
+      <div>
+        <strong>Copied to clipboard</strong>
+        <div>API key copied to clipboard</div>
+      </div>,
+    );
   };
 
   return (

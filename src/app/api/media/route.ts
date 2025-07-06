@@ -26,6 +26,7 @@ interface StatsInfo {
   apiRequests: number;
   isAdmin: boolean;
   uid: number;
+  createdAt: Date | null;
 }
 
 interface ApiResponse {

@@ -9,23 +9,23 @@ import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { FaDiscord as Discord } from "react-icons/fa6";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function RegisterPageClient() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
+      toast(
+        <div>
+          <strong>Invalid email</strong>
+          <div>Please enter a valid email address</div>
+        </div>,
+      );
       setIsLoading(false);
       return;
     }
@@ -42,19 +42,14 @@ export function RegisterPageClient() {
         throw new Error(data.error || "Failed to send verification code");
       }
 
-      toast({
-        title: "Check your email",
-        description: "We've sent you a verification code to continue",
-      });
+      toast.success(
+        "Check your email: A sign-in link has been sent to your email address",
+      );
 
       window.location.href = `/verify?email=${encodeURIComponent(email)}`;
     } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+      toast.error("Error: Failed to register");
+      console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }

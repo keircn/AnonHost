@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Link,
@@ -59,7 +59,6 @@ const staggerContainer = {
 
 export function ShortenerPageClient() {
   const { status } = useSession();
-  const { toast } = useToast();
   const [shortlinks, setShortlinks] = useState<Shortlink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -79,11 +78,7 @@ export function ShortenerPageClient() {
         setShortlinks(data.shortlinks || []);
       } catch (error) {
         console.error("Failed to fetch shortlinks:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch shortlinks",
-          variant: "destructive",
-        });
+        toast.error("Error: Failed to fetch shortlinks");
       } finally {
         setIsLoading(false);
       }
@@ -100,22 +95,14 @@ export function ShortenerPageClient() {
 
   const handleCreateShortlink = async () => {
     if (!newUrl) {
-      toast({
-        title: "URL required",
-        description: "Please enter a URL to shorten",
-        variant: "destructive",
-      });
+      toast.error("URL required");
       return;
     }
 
     try {
       new URL(newUrl);
     } catch {
-      toast({
-        title: "Invalid URL",
-        description: "Please enter a valid URL including http:// or https://",
-        variant: "destructive",
-      });
+      toast.error("Invalid URL");
       return;
     }
 
@@ -141,10 +128,7 @@ export function ShortenerPageClient() {
       const newShortlink = await response.json();
       setShortlinks((prev) => [newShortlink, ...prev]);
 
-      toast({
-        title: "Shortlink created",
-        description: "Your shortlink has been created successfully",
-      });
+      toast.success("Shortlink created");
 
       setNewUrl("");
       setNewTitle("");
@@ -152,12 +136,7 @@ export function ShortenerPageClient() {
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Failed to create shortlink:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to create shortlink",
-        variant: "destructive",
-      });
+      toast.error("Error: Failed to create shortlink");
     } finally {
       setIsCreating(false);
     }
@@ -173,26 +152,16 @@ export function ShortenerPageClient() {
 
       setShortlinks((prev) => prev.filter((link) => link.id !== id));
 
-      toast({
-        title: "Shortlink deleted",
-        description: "Your shortlink has been deleted successfully",
-      });
+      toast.success("Shortlink deleted");
     } catch (error) {
       console.error("Failed to delete shortlink:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete shortlink",
-        variant: "destructive",
-      });
+      toast.error("Error: Failed to delete shortlink");
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "Shortlink copied to clipboard",
-    });
+    toast.success("Copied to clipboard");
   };
 
   const renderContent = () => {

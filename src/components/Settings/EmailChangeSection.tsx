@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { changeEmail } from "@/lib/settings";
 
 const fadeIn = {
@@ -15,17 +15,12 @@ const fadeIn = {
 };
 
 export function EmailChangeSection() {
-  const { toast } = useToast();
   const [newEmail, setNewEmail] = useState("");
   const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const handleEmailChange = async () => {
     if (!newEmail || !newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
+      toast.error("Invalid email: Please enter a valid email address");
       return;
     }
 
@@ -33,19 +28,13 @@ export function EmailChangeSection() {
 
     try {
       await changeEmail(newEmail);
-      toast({
-        title: "Verification email sent",
-        description:
-          "Please check your new email address to confirm the change",
-      });
+      toast.success(
+        "Verification email sent: Please check your new email address to confirm the change",
+      );
       setNewEmail("");
     } catch (error) {
       console.error("Failed to change email:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update email address",
-        variant: "destructive",
-      });
+      toast.error("Error: Failed to change email");
     } finally {
       setIsChangingEmail(false);
     }

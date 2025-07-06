@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { Endpoint, Parameter } from "@/lib/endpoints";
 
 const codeBlockVariants = {
@@ -56,14 +56,9 @@ export function EndpointCard({
   isExpanded,
   onToggle,
 }: EndpointCardProps) {
-  const { toast } = useToast();
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "Code snippet copied to clipboard",
-    });
+    toast.success("Copied to clipboard");
   };
 
   return (

@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useSettings } from "@/hooks/use-settings";
 import { NotificationSettings } from "@/components/Settings/NotificationSettings";
 import { DirectLinksSettings } from "@/components/Settings/DirectLinksSettings";
@@ -30,7 +30,6 @@ const staggerContainer = {
 };
 
 export function GeneralSettingsTab() {
-  const { toast } = useToast();
   const { updateSettings, isLoading } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -38,17 +37,10 @@ export function GeneralSettingsTab() {
     setIsSaving(true);
     try {
       await updateSettings();
-      toast({
-        title: "Settings saved",
-        description: "Your settings have been saved successfully",
-      });
+      toast.success("Your settings have been saved successfully");
     } catch (error) {
       console.error("Failed to save settings:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save settings",
-        variant: "destructive",
-      });
+      toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
     }

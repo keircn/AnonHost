@@ -7,7 +7,7 @@ import { redirect, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Upload,
   X,
@@ -87,7 +87,6 @@ interface UploadProgress {
 export function UploadPageClient() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -118,11 +117,7 @@ export function UploadPageClient() {
   const validateFile = useCallback(
     (file: File): boolean => {
       if (BLOCKED_TYPES.includes(file.type)) {
-        toast({
-          title: "File type not allowed",
-          description: "This file type has been blocked for security reasons",
-          variant: "destructive",
-        });
+        toast.error("File type not allowed");
         return false;
       }
 
@@ -132,11 +127,9 @@ export function UploadPageClient() {
 
       if (file.size > sizeLimit) {
         const limitInMb = sizeLimit / (1024 * 1024);
-        toast({
-          title: "File too large",
-          description: `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"} users`,
-          variant: "destructive",
-        });
+        toast.error(
+          `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"} users`,
+        );
         return false;
       }
 
@@ -154,11 +147,7 @@ export function UploadPageClient() {
         const newFiles = Array.from(e.dataTransfer.files).filter(validateFile);
 
         if (newFiles.length === 0) {
-          toast({
-            title: "Invalid files",
-            description: "Files must be valid and within size limits",
-            variant: "destructive",
-          });
+          toast.error("Invalid files");
           return;
         }
 
@@ -173,11 +162,7 @@ export function UploadPageClient() {
       const newFiles = Array.from(e.target.files).filter(validateFile);
 
       if (newFiles.length === 0) {
-        toast({
-          title: "Invalid files",
-          description: "Files must be valid media and within size limits",
-          variant: "destructive",
-        });
+        toast.error("Invalid files");
         return;
       }
 
@@ -212,21 +197,15 @@ export function UploadPageClient() {
       const validFiles = newFiles.filter((file): file is File => file !== null);
 
       if (validFiles.length === 0) {
-        toast({
-          title: "Invalid files",
-          description:
-            "Pasted files must be valid media and within size limits",
-          variant: "destructive",
-        });
+        toast.error("Invalid files");
         return;
       }
 
       setFiles((prev) => [...prev, ...validFiles]);
 
-      toast({
-        title: "Files added",
-        description: `Added ${validFiles.length} file${validFiles.length > 1 ? "s" : ""} from clipboard`,
-      });
+      toast.success(
+        `Added ${validFiles.length} file${validFiles.length > 1 ? "s" : ""} from clipboard`,
+      );
     },
     [validateFile, toast],
   );
@@ -284,11 +263,7 @@ export function UploadPageClient() {
 
   const handleUpload = async () => {
     if (files.length === 0) {
-      toast({
-        title: "No files selected",
-        description: "Please select at least one file to upload",
-        variant: "destructive",
-      });
+      toast.error("No files selected");
       return;
     }
 
@@ -410,26 +385,18 @@ export function UploadPageClient() {
       );
 
       if (successful > 0) {
-        toast({
-          title: "Upload complete",
-          description: `Successfully uploaded ${successful} file${successful > 1 ? "s" : ""}${failed > 0 ? `. ${failed} file${failed > 1 ? "s" : ""} failed.` : ""}`,
-          variant: failed ? "destructive" : "default",
-        });
+        toast.success(
+          `Successfully uploaded ${successful} file${successful > 1 ? "s" : ""}${
+            failed > 0 ? `. ${failed} file${failed > 1 ? "s" : ""} failed.` : ""
+          }`,
+        );
         router.push("/dashboard");
       } else {
-        toast({
-          title: "Upload failed",
-          description: "All files failed to upload",
-          variant: "destructive",
-        });
+        toast.error("All files failed to upload");
       }
     } catch (error) {
       console.error("Upload failed:", error);
-      toast({
-        title: "Upload failed",
-        description: "There was an error uploading your files",
-        variant: "destructive",
-      });
+      toast.error("There was an error uploading your files");
     } finally {
       setIsUploading(false);
     }

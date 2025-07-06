@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { SiSharex } from "react-icons/si";
 import { Copy, Download } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { ApiKey } from "@/types/settings";
 import {
   Dialog,
@@ -31,18 +31,13 @@ interface ShareXConfigDialogProps {
 }
 
 export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
-  const { toast } = useToast();
-
   interface ShareXConfig {
     [key: string]: unknown;
   }
 
   const handleCopyConfig = (config: ShareXConfig, type: string): void => {
     navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    toast({
-      title: "Copied to clipboard",
-      description: `${type} configuration copied`,
-    });
+    toast.success(`${type} configuration copied`);
   };
 
   return (

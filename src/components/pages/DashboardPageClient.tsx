@@ -26,7 +26,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStorageStats } from "@/lib/upload";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { LuMusic } from "react-icons/lu";
 import { formatFileSize } from "@/lib/utils";
 
@@ -107,11 +107,7 @@ export function DashboardPageClient() {
     } catch (error) {
       console.error("Failed to fetch media:", error);
       setMediaItems([]);
-      toast({
-        title: "Error",
-        description: "Failed to fetch media",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch media");
     } finally {
       setIsLoading(false);
     }
@@ -131,17 +127,10 @@ export function DashboardPageClient() {
           (mediaItems.find((item) => item.id === id)?.size || 0),
       }));
 
-      toast({
-        title: "Success",
-        description: "Media deleted successfully",
-      });
+      toast.success("Media deleted successfully");
     } catch (error) {
       console.error("Failed to delete media:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete media",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete media");
     }
   };
 
@@ -149,10 +138,7 @@ export function DashboardPageClient() {
     const image = mediaItems.find((img) => img.id === imageId);
     if (image) {
       navigator.clipboard.writeText(image.displayUrl);
-      toast({
-        title: "Copied",
-        description: "Image URL copied to clipboard",
-      });
+      toast.success("Image URL copied to clipboard");
     }
   };
 

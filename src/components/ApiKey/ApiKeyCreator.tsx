@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useApiKeys } from "@/hooks/use-api-keys";
 
 const fadeIn = {
@@ -19,18 +19,13 @@ interface ApiKeyCreatorProps {
 }
 
 export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
-  const { toast } = useToast();
   const { createApiKey } = useApiKeys();
   const [newKeyName, setNewKeyName] = useState("");
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
 
   const handleCreateApiKey = async () => {
     if (!newKeyName.trim()) {
-      toast({
-        title: "Name required",
-        description: "Please provide a name for your API key",
-        variant: "destructive",
-      });
+      toast.error("Name required: Please provide a name for your API key");
       return;
     }
 
@@ -40,17 +35,12 @@ export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
       await createApiKey(newKeyName);
       setNewKeyName("");
       await onKeyCreated();
-      toast({
-        title: "API key created",
-        description: "Your new API key has been created successfully",
-      });
+      toast.success("API key created successfully");
     } catch (error) {
       console.error("Failed to create API key:", error);
-      toast({
-        title: "Failed to create API key",
-        description: "There was an error creating your API key",
-        variant: "destructive",
-      });
+      toast.error(
+        "Failed to create API key: There was an error creating your API key",
+      );
     } finally {
       setIsGeneratingKey(false);
     }

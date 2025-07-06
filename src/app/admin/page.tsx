@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,11 +70,7 @@ export default function AdminPage() {
       setUsers(data);
     } catch (error) {
       console.error("Failed to fetch users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch users",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch users");
     } finally {
       setIsLoading(false);
     }
@@ -97,17 +93,10 @@ export default function AdminPage() {
         users.map((user) => (user.id === id ? { ...user, ...data } : user)),
       );
 
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
+      toast.success("User updated successfully");
     } catch (error) {
       console.error("Failed to update user:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update user",
-        variant: "destructive",
-      });
+      toast.error("Failed to update user");
     }
   };
 
@@ -128,19 +117,12 @@ export default function AdminPage() {
         throw new Error(error.error || "Failed to send email");
       }
 
-      toast({
-        title: "Email Sent",
-        description: `Successfully sent email to ${selectedUser?.email}`,
-      });
+      toast.success("Email sent successfully");
       setIsDialogOpen(false);
     } catch (error: Error | unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to send email";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setIsEmailSending(false);
     }

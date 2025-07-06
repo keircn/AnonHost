@@ -1,7 +1,7 @@
 import NextAuth, { AuthOptions, User } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { CustomPrismaAdapter } from "@/lib/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { sendEmail } from "@/lib/mailgun";
 import { welcomeEmailTemplate } from "@/lib/email-templates";
@@ -17,7 +17,7 @@ BigInt.prototype.toJSON = function (): string {
 };
 
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: CustomPrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       id: "email-login",

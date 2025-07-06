@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { endpoints } from "@/lib/endpoints";
 import { EndpointCard } from "@/components/Docs/EndpointCard";
@@ -43,16 +43,12 @@ const codeBlockVariants = {
 };
 
 export function ApiDocumentationPageClient() {
-  const { toast } = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "Code snippet copied to clipboard",
-    });
+    toast.success("Copied to clipboard");
   };
 
   const toggleSection = (section: string) => {

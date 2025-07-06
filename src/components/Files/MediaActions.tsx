@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Download, Link as LinkIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface MediaActionsProps {
   url: string;
@@ -10,14 +10,14 @@ interface MediaActionsProps {
 }
 
 export function MediaActions({ url, filename }: MediaActionsProps) {
-  const { toast } = useToast();
-
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: "Link copied",
-      description: "The link has been copied to your clipboard",
-    });
+    toast(
+      <div>
+        <strong>Link copied</strong>
+        <div>The link has been copied to your clipboard</div>
+      </div>,
+    );
   };
 
   const handleDownload = () => {

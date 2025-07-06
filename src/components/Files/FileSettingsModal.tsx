@@ -24,7 +24,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import type { FileSettings } from "@/types/file-settings";
-import { publicDomains } from "@/lib/domains";
 
 interface FileSettingsModalProps {
   isOpen: boolean;
@@ -54,7 +53,6 @@ export function FileSettingsModal({
     },
   });
 
-  const defaultDomain = "anon.love";
   const fileType = useMemo(() => {
     const extension = fileName.split(".").pop()?.toLowerCase();
     return {

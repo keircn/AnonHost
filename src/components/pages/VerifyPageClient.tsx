@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 
@@ -41,7 +41,6 @@ function VerifyForm() {
   const email = searchParams.get("email");
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const { toast } = useToast();
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,12 +73,15 @@ function VerifyForm() {
         window.location.href = result.url;
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+      setIsVerifying(false);
+      let message = "Verification failed";
+      if (error instanceof Error) message = error.message;
+      toast(
+        <div>
+          <strong>Verification failed</strong>
+          <div>{message}</div>
+        </div>,
+      );
     } finally {
       setIsVerifying(false);
     }

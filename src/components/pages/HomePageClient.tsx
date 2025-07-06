@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -84,7 +84,6 @@ const features = [
 
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
-  const { toast } = useToast();
   const installCommand = "curl https://anon.love/install | bash";
 
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -97,18 +96,11 @@ export function HomePageClient() {
     try {
       await navigator.clipboard.writeText(installCommand);
       setIsCopied(true);
-      toast({
-        title: "Copied!",
-        description: "Installation command copied to clipboard.",
-      });
+      toast.success("Copied: Install command copied to clipboard");
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy text: ", err);
-      toast({
-        title: "Error",
-        description: "Failed to copy command.",
-        variant: "destructive",
-      });
+      toast.error("Error: Failed to fetch stats");
     }
   };
 

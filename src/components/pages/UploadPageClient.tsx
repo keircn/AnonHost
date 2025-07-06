@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { useState, useCallback, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import type React from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { redirect, useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import {
   Upload,
   X,
@@ -17,14 +17,14 @@ import {
   FileType,
   Code,
   Music,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FileSettingsModal } from "@/components/Files/FileSettingsModal";
-import type { FileSettings } from "@/types/file-settings";
-import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
-import { formatFileSize } from "@/lib/utils";
-import pLimit from "p-limit";
-import { nanoid } from "nanoid";
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileSettingsModal } from '@/components/Files/FileSettingsModal';
+import type { FileSettings } from '@/types/file-settings';
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from '@/lib/upload';
+import { formatFileSize } from '@/lib/utils';
+import pLimit from 'p-limit';
+import { nanoid } from 'nanoid';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -49,17 +49,17 @@ const dropZoneVariants = {
   initial: {
     opacity: 0,
     scale: 0.95,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   animate: {
     opacity: 1,
     scale: 1,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   dragOver: {
     scale: 1.02,
-    borderColor: "rgba(var(--primary),1)",
-    backgroundColor: "rgba(var(--primary),0.1)",
+    borderColor: 'rgba(var(--primary),1)',
+    backgroundColor: 'rgba(var(--primary),0.1)',
   },
 };
 
@@ -80,7 +80,7 @@ const defaultFileSettings: FileSettings = {
 
 interface UploadProgress {
   progress: number;
-  status: "pending" | "uploading" | "completed" | "error";
+  status: 'pending' | 'uploading' | 'completed' | 'error';
   message?: string;
 }
 
@@ -94,14 +94,14 @@ export function UploadPageClient() {
     Record<number, FileSettings>
   >({});
   const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(
-    null,
+    null
   );
   const [uploadProgress, setUploadProgress] = useState<
     Record<number, UploadProgress>
   >({});
 
-  if (status === "unauthenticated") {
-    redirect("/");
+  if (status === 'unauthenticated') {
+    redirect('/');
   }
 
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -117,7 +117,7 @@ export function UploadPageClient() {
   const validateFile = useCallback(
     (file: File): boolean => {
       if (BLOCKED_TYPES.includes(file.type)) {
-        toast.error("File type not allowed");
+        toast.error('File type not allowed');
         return false;
       }
 
@@ -128,14 +128,14 @@ export function UploadPageClient() {
       if (file.size > sizeLimit) {
         const limitInMb = sizeLimit / (1024 * 1024);
         toast.error(
-          `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? "premium" : "free"} users`,
+          `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? 'premium' : 'free'} users`
         );
         return false;
       }
 
       return true;
     },
-    [toast, session?.user?.premium],
+    [toast, session?.user?.premium]
   );
 
   const onDrop = useCallback(
@@ -147,14 +147,14 @@ export function UploadPageClient() {
         const newFiles = Array.from(e.dataTransfer.files).filter(validateFile);
 
         if (newFiles.length === 0) {
-          toast.error("Invalid files");
+          toast.error('Invalid files');
           return;
         }
 
         setFiles((prev) => [...prev, ...newFiles]);
       }
     },
-    [toast, validateFile],
+    [toast, validateFile]
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,7 +162,7 @@ export function UploadPageClient() {
       const newFiles = Array.from(e.target.files).filter(validateFile);
 
       if (newFiles.length === 0) {
-        toast.error("Invalid files");
+        toast.error('Invalid files');
         return;
       }
 
@@ -181,7 +181,7 @@ export function UploadPageClient() {
 
       const mediaItems = Array.from(items).filter(
         (item) =>
-          item.type.startsWith("image/") || item.type.startsWith("video/"),
+          item.type.startsWith('image/') || item.type.startsWith('video/')
       );
 
       if (mediaItems.length === 0) return;
@@ -191,27 +191,27 @@ export function UploadPageClient() {
           const file = item.getAsFile();
           if (!file) return null;
           return validateFile(file) ? file : null;
-        }),
+        })
       );
 
       const validFiles = newFiles.filter((file): file is File => file !== null);
 
       if (validFiles.length === 0) {
-        toast.error("Invalid files");
+        toast.error('Invalid files');
         return;
       }
 
       setFiles((prev) => [...prev, ...validFiles]);
 
       toast.success(
-        `Added ${validFiles.length} file${validFiles.length > 1 ? "s" : ""} from clipboard`,
+        `Added ${validFiles.length} file${validFiles.length > 1 ? 's' : ''} from clipboard`
       );
     },
-    [validateFile, toast],
+    [validateFile, toast]
   );
 
   const getFilePreview = (file: File) => {
-    if (file.type.startsWith("image/")) {
+    if (file.type.startsWith('image/')) {
       return (
         <Image
           src={URL.createObjectURL(file)}
@@ -219,51 +219,51 @@ export function UploadPageClient() {
           width={32}
           height={32}
           priority
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
         />
       );
     }
 
-    if (file.type.startsWith("video/")) {
+    if (file.type.startsWith('video/')) {
       return (
         <video
           src={URL.createObjectURL(file)}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
           controls={false}
         />
       );
     }
 
-    if (file.type.startsWith("audio/")) {
-      return <Music className="h-12 w-12 text-muted-foreground" />;
+    if (file.type.startsWith('audio/')) {
+      return <Music className="text-muted-foreground h-12 w-12" />;
     }
 
     const getFileIcon = () => {
-      if (file.type.startsWith("text/")) {
-        return <FileText className="h-12 w-12 text-muted-foreground" />;
+      if (file.type.startsWith('text/')) {
+        return <FileText className="text-muted-foreground h-12 w-12" />;
       }
-      if (file.type.includes("json") || file.type.includes("xml")) {
-        return <Code className="h-12 w-12 text-muted-foreground" />;
+      if (file.type.includes('json') || file.type.includes('xml')) {
+        return <Code className="text-muted-foreground h-12 w-12" />;
       }
-      if (file.type.includes("pdf")) {
-        return <FileType className="h-12 w-12 text-muted-foreground" />;
+      if (file.type.includes('pdf')) {
+        return <FileType className="text-muted-foreground h-12 w-12" />;
       }
-      return <File className="h-12 w-12 text-muted-foreground" />;
+      return <File className="text-muted-foreground h-12 w-12" />;
     };
 
     return getFileIcon();
   };
 
   useEffect(() => {
-    document.addEventListener("paste", handlePaste);
+    document.addEventListener('paste', handlePaste);
     return () => {
-      document.removeEventListener("paste", handlePaste);
+      document.removeEventListener('paste', handlePaste);
     };
   }, [handlePaste]);
 
   const handleUpload = async () => {
     if (files.length === 0) {
-      toast.error("No files selected");
+      toast.error('No files selected');
       return;
     }
 
@@ -278,44 +278,44 @@ export function UploadPageClient() {
       const uploadPromises = files.map((file, index) =>
         limit(async () => {
           console.log(
-            `Starting upload for ${file.name} (${formatFileSize(file.size)})`,
+            `Starting upload for ${file.name} (${formatFileSize(file.size)})`
           );
           const uploadStartTime = Date.now();
 
           setUploadProgress((prev) => ({
             ...prev,
-            [index]: { progress: 0, status: "uploading" },
+            [index]: { progress: 0, status: 'uploading' },
           }));
 
           const settings = fileSettings[index] || defaultFileSettings;
           const formData = new FormData();
-          formData.append("file", file);
-          formData.append("fileId", nanoid(6));
-          formData.append("filename", file.name);
-          formData.append("settings", JSON.stringify(settings));
+          formData.append('file', file);
+          formData.append('fileId', nanoid(6));
+          formData.append('filename', file.name);
+          formData.append('settings', JSON.stringify(settings));
 
-          if (settings.domain && settings.domain !== "anon.love") {
-            formData.append("domain", settings.domain);
+          if (settings.domain && settings.domain !== 'anon.love') {
+            formData.append('domain', settings.domain);
           }
 
           const xhr = new XMLHttpRequest();
           const uploadPromise = new Promise((resolve, reject) => {
-            xhr.upload.addEventListener("progress", (event) => {
+            xhr.upload.addEventListener('progress', (event) => {
               if (event.lengthComputable) {
                 const progress = Math.round((event.loaded / event.total) * 100);
                 setUploadProgress((prev) => ({
                   ...prev,
-                  [index]: { progress, status: "uploading" },
+                  [index]: { progress, status: 'uploading' },
                 }));
               }
             });
 
-            xhr.addEventListener("load", () => {
+            xhr.addEventListener('load', () => {
               if (xhr.status >= 200 && xhr.status < 300) {
                 const response = JSON.parse(xhr.responseText);
                 setUploadProgress((prev) => ({
                   ...prev,
-                  [index]: { progress: 100, status: "completed" },
+                  [index]: { progress: 100, status: 'completed' },
                 }));
                 resolve(response);
               } else {
@@ -323,27 +323,27 @@ export function UploadPageClient() {
                   ...prev,
                   [index]: {
                     progress: 0,
-                    status: "error",
-                    message: "Upload failed",
+                    status: 'error',
+                    message: 'Upload failed',
                   },
                 }));
-                reject(new Error("Upload failed"));
+                reject(new Error('Upload failed'));
               }
             });
 
-            xhr.addEventListener("error", () => {
+            xhr.addEventListener('error', () => {
               setUploadProgress((prev) => ({
                 ...prev,
                 [index]: {
                   progress: 0,
-                  status: "error",
-                  message: "Network error",
+                  status: 'error',
+                  message: 'Network error',
                 },
               }));
-              reject(new Error("Network error"));
+              reject(new Error('Network error'));
             });
 
-            xhr.open("POST", "/api/upload");
+            xhr.open('POST', '/api/upload');
             xhr.send(formData);
           });
 
@@ -358,45 +358,45 @@ export function UploadPageClient() {
           ).toFixed(2);
 
           console.log(
-            `Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`,
+            `Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`
           );
           console.log(
-            `Progress: ${completedUploads}/${files.length} files completed`,
+            `Progress: ${completedUploads}/${files.length} files completed`
           );
 
           return result;
-        }),
+        })
       );
 
       const results = await Promise.allSettled(uploadPromises);
       const totalDuration = (Date.now() - startTime) / 1000;
 
-      const successful = results.filter((r) => r.status === "fulfilled").length;
-      const failed = results.filter((r) => r.status === "rejected").length;
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = results.filter((r) => r.status === 'rejected').length;
       const totalSize = files.reduce((acc, file) => acc + file.size, 0);
 
-      console.log("\nUpload Summary:");
+      console.log('\nUpload Summary:');
       console.log(`Successfully uploaded: ${successful} files`);
       console.log(`Failed uploads: ${failed} files`);
       console.log(`Total size: ${formatFileSize(totalSize)}`);
       console.log(`Total duration: ${totalDuration.toFixed(1)}s`);
       console.log(
-        `Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`,
+        `Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`
       );
 
       if (successful > 0) {
         toast.success(
-          `Successfully uploaded ${successful} file${successful > 1 ? "s" : ""}${
-            failed > 0 ? `. ${failed} file${failed > 1 ? "s" : ""} failed.` : ""
-          }`,
+          `Successfully uploaded ${successful} file${successful > 1 ? 's' : ''}${
+            failed > 0 ? `. ${failed} file${failed > 1 ? 's' : ''} failed.` : ''
+          }`
         );
-        router.push("/dashboard");
+        router.push('/dashboard');
       } else {
-        toast.error("All files failed to upload");
+        toast.error('All files failed to upload');
       }
     } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("There was an error uploading your files");
+      console.error('Upload failed:', error);
+      toast.error('There was an error uploading your files');
     } finally {
       setIsUploading(false);
     }
@@ -404,7 +404,7 @@ export function UploadPageClient() {
 
   const updateFileSettings = (
     fileIndex: number,
-    settings: Partial<FileSettings>,
+    settings: Partial<FileSettings>
   ) => {
     setFileSettings((prev) => ({
       ...prev,
@@ -417,13 +417,13 @@ export function UploadPageClient() {
 
   return (
     <motion.div
-      className="container max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 xl:py-20"
+      className="container mx-auto max-w-7xl py-8 sm:py-12 lg:py-16 xl:py-20"
       variants={fadeIn}
       initial="initial"
       animate="animate"
     >
       <motion.h1
-        className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 lg:mb-8"
+        className="mb-6 text-3xl font-bold lg:mb-8 lg:text-4xl xl:text-5xl"
         variants={fadeIn}
       >
         Upload Media
@@ -433,10 +433,10 @@ export function UploadPageClient() {
         <Card>
           <CardContent className="p-6 lg:p-8 xl:p-10">
             <motion.div
-              className="border-2 border-dashed rounded-lg p-8 sm:p-12 lg:p-16 xl:p-20 text-center"
+              className="rounded-lg border-2 border-dashed p-8 text-center sm:p-12 lg:p-16 xl:p-20"
               variants={dropZoneVariants}
               initial="initial"
-              animate={isDragging ? "dragOver" : "animate"}
+              animate={isDragging ? 'dragOver' : 'animate'}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
@@ -448,19 +448,19 @@ export function UploadPageClient() {
                 animate="animate"
               >
                 <motion.div
-                  className="rounded-full bg-primary/10 p-4 lg:p-6"
+                  className="bg-primary/10 rounded-full p-4 lg:p-6"
                   whileHover={{ scale: 1.1 }}
                 >
-                  <Upload className="h-8 w-8 lg:h-12 lg:w-12 text-primary" />
+                  <Upload className="text-primary h-8 w-8 lg:h-12 lg:w-12" />
                 </motion.div>
                 <motion.div
                   className="space-y-2 lg:space-y-3"
                   variants={fadeIn}
                 >
-                  <h3 className="text-lg lg:text-2xl font-semibold">
+                  <h3 className="text-lg font-semibold lg:text-2xl">
                     Drag and drop your files here
                   </h3>
-                  <p className="text-sm lg:text-base text-muted-foreground">
+                  <p className="text-muted-foreground text-sm lg:text-base">
                     Click to browse from your device, or paste from your
                     clipboard
                   </p>
@@ -492,7 +492,7 @@ export function UploadPageClient() {
                   exit="exit"
                 >
                   <motion.h3
-                    className="text-lg font-semibold mb-4"
+                    className="mb-4 text-lg font-semibold"
                     variants={fadeIn}
                   >
                     Selected Files ({files.length})
@@ -509,38 +509,38 @@ export function UploadPageClient() {
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9, y: 20 }}
                           whileHover={cardHover}
-                          className="relative group"
+                          className="group relative"
                           layout
                         >
-                          <div className="border rounded-lg overflow-hidden">
-                            <div className="aspect-square relative bg-muted">
+                          <div className="overflow-hidden rounded-lg border">
+                            <div className="bg-muted relative aspect-square">
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
                               {fileSettings[index]?.compression.enabled && (
-                                <div className="absolute bottom-2 left-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs">
+                                <div className="bg-background/50 absolute bottom-2 left-2 rounded-md px-2 py-1 text-xs backdrop-blur-sm">
                                   {fileSettings[index].compression.quality}%
                                   Quality
                                 </div>
                               )}
                               {fileSettings[index]?.conversion.enabled &&
                                 fileSettings[index].conversion.format && (
-                                  <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/50 backdrop-blur-sm rounded-md text-xs uppercase">
+                                  <div className="bg-background/50 absolute right-2 bottom-2 rounded-md px-2 py-1 text-xs uppercase backdrop-blur-sm">
                                     {fileSettings[index].conversion.format}
                                   </div>
                                 )}
                             </div>
-                            <div className="p-2 space-y-1">
+                            <div className="space-y-1 p-2">
                               <motion.div
-                                className="text-sm truncate"
+                                className="truncate text-sm"
                                 variants={fadeIn}
                               >
                                 {file.name}
                               </motion.div>
                               {uploadProgress[index] && (
-                                <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                                <div className="bg-secondary h-1.5 w-full overflow-hidden rounded-full">
                                   <motion.div
-                                    className="h-full bg-primary"
+                                    className="bg-primary h-full"
                                     initial={{ width: 0 }}
                                     animate={{
                                       width: `${uploadProgress[index].progress}%`,
@@ -549,29 +549,29 @@ export function UploadPageClient() {
                                   />
                                 </div>
                               )}
-                              {uploadProgress[index]?.status === "error" && (
-                                <p className="text-xs text-destructive">
+                              {uploadProgress[index]?.status === 'error' && (
+                                <p className="text-destructive text-xs">
                                   {uploadProgress[index].message ||
-                                    "Upload failed"}
+                                    'Upload failed'}
                                 </p>
                               )}
                               {(fileSettings[index]?.compression.enabled ||
                                 fileSettings[index]?.conversion.enabled ||
                                 fileSettings[index]?.resize.enabled) && (
                                 <motion.div
-                                  className="text-xs text-muted-foreground truncate"
+                                  className="text-muted-foreground truncate text-xs"
                                   variants={fadeIn}
                                 >
                                   {[
                                     fileSettings[index]?.compression.enabled &&
-                                      "Compressed",
+                                      'Compressed',
                                     fileSettings[index]?.conversion.enabled &&
                                       `Convert to ${fileSettings[index]?.conversion.format}`,
                                     fileSettings[index]?.resize.enabled &&
-                                      "Resized",
+                                      'Resized',
                                   ]
                                     .filter(Boolean)
-                                    .join(" • ")}
+                                    .join(' • ')}
                                 </motion.div>
                               )}
                             </div>
@@ -585,7 +585,7 @@ export function UploadPageClient() {
                             <Button
                               variant="destructive"
                               size="icon"
-                              className="bg-background/50 backdrop-blur-sm hover:bg-destructive"
+                              className="bg-background/50 hover:bg-destructive backdrop-blur-sm"
                               onClick={() => removeFile(index)}
                             >
                               <X className="h-4 w-4" />
@@ -600,7 +600,7 @@ export function UploadPageClient() {
                             <Button
                               variant="secondary"
                               size="icon"
-                              className="bg-background/50 backdrop-blur-sm hover:bg-secondary"
+                              className="bg-background/50 hover:bg-secondary backdrop-blur-sm"
                               onClick={() => setActiveSettingsFile(index)}
                             >
                               <Settings2 className="h-4 w-4" />
@@ -618,7 +618,7 @@ export function UploadPageClient() {
                                 onSettingsChange={(newSettings) => {
                                   updateFileSettings(
                                     activeSettingsFile,
-                                    newSettings,
+                                    newSettings
                                   );
                                 }}
                               />
@@ -635,7 +635,7 @@ export function UploadPageClient() {
                   >
                     <motion.div whileHover={{ scale: 1.02 }}>
                       <Button onClick={handleUpload} disabled={isUploading}>
-                        {isUploading ? "Uploading..." : "Upload All Files"}
+                        {isUploading ? 'Uploading...' : 'Upload All Files'}
                       </Button>
                     </motion.div>
                   </motion.div>

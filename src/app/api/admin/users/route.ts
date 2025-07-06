@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.admin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
   const users = await prisma.user.findMany({
@@ -22,7 +22,7 @@ export async function GET() {
       settings: true,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.admin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
   try {
@@ -41,8 +41,8 @@ export async function PUT(request: Request) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 },
+        { error: 'User ID is required' },
+        { status: 400 }
       );
     }
 
@@ -56,10 +56,10 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("Failed to update user:", error);
+    console.error('Failed to update user:', error);
     return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 },
+      { error: 'Failed to update user' },
+      { status: 500 }
     );
   }
 }

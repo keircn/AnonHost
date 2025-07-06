@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import type { ApiKey } from "@/types/settings";
-import { useApiKeys } from "@/hooks/use-api-keys";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import type { ApiKey } from '@/types/settings';
+import { useApiKeys } from '@/hooks/use-api-keys';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface DeleteApiKeyDialogProps {
   apiKey: ApiKey;
@@ -60,7 +60,7 @@ export function DeleteApiKeyDialog({
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogFooter>
       </DialogContent>

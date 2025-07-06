@@ -1,10 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
-import { verifyApiKey } from "@/lib/auth";
-import { uploadFile, STORAGE_LIMITS } from "@/lib/upload";
-import { MediaType } from "@prisma/client";
+import { type NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
+import { verifyApiKey } from '@/lib/auth';
+import { uploadFile, STORAGE_LIMITS } from '@/lib/upload';
+import { MediaType } from '@prisma/client';
 
 interface MediaItem {
   id: string;
@@ -42,10 +42,10 @@ interface MediaItemResponse extends MediaItem {
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id.toString();
 
@@ -65,15 +65,15 @@ export async function GET(req: NextRequest) {
     userId = session!.user.id.toString();
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || "https://anon.love";
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://anon.love';
   const url = new URL(req.url);
-  const page = Number.parseInt(url.searchParams.get("page") || "1");
+  const page = Number.parseInt(url.searchParams.get('page') || '1');
   const limit = Math.min(
-    Number.parseInt(url.searchParams.get("limit") || "20"),
-    100,
+    Number.parseInt(url.searchParams.get('limit') || '20'),
+    100
   );
-  const sort = url.searchParams.get("sort") || "createdAt";
-  const order = url.searchParams.get("order") || "desc";
+  const sort = url.searchParams.get('sort') || 'createdAt';
+  const order = url.searchParams.get('order') || 'desc';
 
   const skip = (page - 1) * limit;
 
@@ -86,11 +86,11 @@ export async function GET(req: NextRequest) {
       prisma.media.findMany({
         where: { userId: userId.toString() },
         orderBy: {
-          [sort === "filename"
-            ? "filename"
-            : sort === "size"
-              ? "size"
-              : "createdAt"]: order === "asc" ? "asc" : "desc",
+          [sort === 'filename'
+            ? 'filename'
+            : sort === 'size'
+              ? 'size'
+              : 'createdAt']: order === 'asc' ? 'asc' : 'desc',
         },
         skip,
         take: limit,
@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
           : settings?.customDomain
             ? `https://${settings.customDomain}/${item.id}`
             : `${baseUrl}/${item.id}`,
-      }),
+      })
     ),
     pagination: {
       total,
@@ -167,11 +167,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
   const baseUrl = process.env.NEXTAUTH_URL;
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id.toString();
 
@@ -193,21 +193,21 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const type = formData.get("type") as "avatar" | "banner" | null;
-    const customDomain = formData.get("domain") as string | null;
+    const file = formData.get('file') as File;
+    const type = formData.get('type') as 'avatar' | 'banner' | null;
+    const customDomain = formData.get('domain') as string | null;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    if (type === "avatar" || type === "banner") {
+    if (type === 'avatar' || type === 'banner') {
       const uploadResult = await uploadFile(
         file,
         userId,
         file.name,
         crypto.randomUUID(),
-        type,
+        type
       );
       return NextResponse.json({
         url: uploadResult.url,
@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
       file,
       userId,
       file.name,
-      crypto.randomUUID(),
+      crypto.randomUUID()
     );
 
     const media = await prisma.media.create({
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
         duration: uploadResult.duration,
         type: uploadResult.type.toUpperCase() as MediaType,
         userId,
-        public: formData.get("public") === "true",
+        public: formData.get('public') === 'true',
         domain: customDomain || null,
       },
     });
@@ -264,10 +264,10 @@ export async function POST(req: NextRequest) {
       baseUrl: baseUrl,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { error: "Failed to upload media" },
-      { status: 500 },
+      { error: 'Failed to upload media' },
+      { status: 500 }
     );
   }
 }

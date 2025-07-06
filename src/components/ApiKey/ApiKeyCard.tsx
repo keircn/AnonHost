@@ -1,11 +1,11 @@
-import { ApiKey } from "@/types/settings";
-import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
-import { fadeIn } from "@/lib/animations";
-import { ShareXConfigDialog } from "@/components/Files/ShareXConfigDialog";
-import { DeleteApiKeyDialog } from "@/components/ApiKey/DeleteApiKeyDialog";
+import { ApiKey } from '@/types/settings';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { fadeIn } from '@/lib/animations';
+import { ShareXConfigDialog } from '@/components/Files/ShareXConfigDialog';
+import { DeleteApiKeyDialog } from '@/components/ApiKey/DeleteApiKeyDialog';
 
 interface ApiKeyCardProps {
   apiKey: ApiKey;
@@ -25,14 +25,14 @@ export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col space-y-4">
-            <div className="flex justify-between items-start">
+            <div className="flex items-start justify-between">
               <div>
                 <h4 className="font-medium">{apiKey.name}</h4>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Created: {new Date(apiKey.createdAt).toLocaleDateString()}
                 </p>
                 {apiKey.lastUsed && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Last used: {new Date(apiKey.lastUsed).toLocaleDateString()}
                   </p>
                 )}
@@ -55,7 +55,7 @@ export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
                 />
               </div>
             </div>
-            <div className="bg-muted p-2 rounded-md font-mono text-sm overflow-x-auto">
+            <div className="bg-muted overflow-x-auto rounded-md p-2 font-mono text-sm">
               {apiKey.key}
             </div>
           </div>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { SiSharex } from "react-icons/si";
-import { Copy, Download } from "lucide-react";
-import { toast } from "sonner";
-import type { ApiKey } from "@/types/settings";
+import { Button } from '@/components/ui/button';
+import { SiSharex } from 'react-icons/si';
+import { Copy, Download } from 'lucide-react';
+import { toast } from 'sonner';
+import type { ApiKey } from '@/types/settings';
 import {
   Dialog,
   DialogContent,
@@ -12,19 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   generateShareXConfig,
   generateShareXShortenerConfig,
   downloadShareXConfig,
-} from "@/lib/sharex";
+} from '@/lib/sharex';
 
 interface ShareXConfigDialogProps {
   apiKey: ApiKey;
@@ -55,10 +55,10 @@ export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Select the type of configuration you want to export for ShareX.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <ShareXConfigCard
               title="Image Uploader"
               description="Upload images directly to AnonHost"
@@ -67,16 +67,16 @@ export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
               onDownload={() => {
                 const config = generateShareXConfig(
                   apiKey.key,
-                  window.location.origin,
+                  window.location.origin
                 );
                 downloadShareXConfig(config, `${apiKey.name}-uploader`);
               }}
               onCopy={() => {
                 const config = generateShareXConfig(
                   apiKey.key,
-                  window.location.origin,
+                  window.location.origin
                 );
-                handleCopyConfig(config, "Image uploader");
+                handleCopyConfig(config, 'Image uploader');
               }}
             />
 
@@ -88,16 +88,16 @@ export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
               onDownload={() => {
                 const config = generateShareXShortenerConfig(
                   apiKey.key,
-                  window.location.origin,
+                  window.location.origin
                 );
                 downloadShareXConfig(config, `${apiKey.name}-shortener`);
               }}
               onCopy={() => {
                 const config = generateShareXShortenerConfig(
                   apiKey.key,
-                  window.location.origin,
+                  window.location.origin
                 );
-                handleCopyConfig(config, "URL shortener");
+                handleCopyConfig(config, 'URL shortener');
               }}
             />
           </div>
@@ -121,7 +121,7 @@ interface ShareXConfigCardProps {
   title: string;
   description: string;
   apiKey: ApiKey;
-  configType: "uploader" | "shortener";
+  configType: 'uploader' | 'shortener';
   onDownload: () => void;
   onCopy: () => void;
 }

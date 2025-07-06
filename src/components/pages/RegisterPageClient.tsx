@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { signIn } from "next-auth/react";
-import Link from "next/link";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { FaDiscord as Discord } from "react-icons/fa6";
-import { toast } from "sonner";
+import { signIn } from 'next-auth/react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { FaDiscord as Discord } from 'react-icons/fa6';
+import { toast } from 'sonner';
 
 export function RegisterPageClient() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -24,32 +24,32 @@ export function RegisterPageClient() {
         <div>
           <strong>Invalid email</strong>
           <div>Please enter a valid email address</div>
-        </div>,
+        </div>
       );
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch("/api/auth/email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/auth/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to send verification code");
+        throw new Error(data.error || 'Failed to send verification code');
       }
 
       toast.success(
-        "Check your email: A sign-in link has been sent to your email address",
+        'Check your email: A sign-in link has been sent to your email address'
       );
 
       window.location.href = `/verify?email=${encodeURIComponent(email)}`;
     } catch (error) {
-      toast.error("Error: Failed to register");
-      console.error("Registration error:", error);
+      toast.error('Error: Failed to register');
+      console.error('Registration error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +73,7 @@ export function RegisterPageClient() {
               <h1 className="text-2xl font-bold tracking-tight">
                 Create an Account or Login
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Join thousands of users already using AnonHost
               </p>
             </motion.div>
@@ -96,7 +96,7 @@ export function RegisterPageClient() {
                   />
                 </div>
                 <Button className="w-full" type="submit" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Continue with Email"}
+                  {isLoading ? 'Sending...' : 'Continue with Email'}
                 </Button>
               </form>
 
@@ -105,7 +105,7 @@ export function RegisterPageClient() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
+                  <span className="bg-background text-muted-foreground px-2">
                     Or continue with
                   </span>
                 </div>
@@ -113,25 +113,25 @@ export function RegisterPageClient() {
 
               <Button
                 className="w-full gap-2"
-                onClick={() => signIn("discord", { callbackUrl: "/dashboard" })}
+                onClick={() => signIn('discord', { callbackUrl: '/dashboard' })}
               >
                 <Discord className="h-5 w-5" />
                 Continue with Discord
-                <ArrowRight className="h-4 w-4 ml-auto" />
+                <ArrowRight className="ml-auto h-4 w-4" />
               </Button>
 
-              <p className="px-8 text-center text-sm text-muted-foreground">
-                By clicking continue, you agree to our{" "}
+              <p className="text-muted-foreground px-8 text-center text-sm">
+                By clicking continue, you agree to our{' '}
                 <Link
                   href="/terms"
-                  className="underline underline-offset-4 hover:text-primary"
+                  className="hover:text-primary underline underline-offset-4"
                 >
                   Terms of Service
-                </Link>{" "}
-                and{" "}
+                </Link>{' '}
+                and{' '}
                 <Link
                   href="/privacy"
-                  className="underline underline-offset-4 hover:text-primary"
+                  className="hover:text-primary underline underline-offset-4"
                 >
                   Privacy Policy
                 </Link>

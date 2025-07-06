@@ -1,29 +1,29 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import type { FileSettings } from "@/types/file-settings";
+} from '@/components/ui/accordion';
+import type { FileSettings } from '@/types/file-settings';
 
 interface FileSettingsModalProps {
   isOpen: boolean;
@@ -54,15 +54,15 @@ export function FileSettingsModal({
   });
 
   const fileType = useMemo(() => {
-    const extension = fileName.split(".").pop()?.toLowerCase();
+    const extension = fileName.split('.').pop()?.toLowerCase();
     return {
-      isImage: /^(jpg|jpeg|png|gif|webp)$/i.test(extension || ""),
-      isVideo: /^(mp4|webm|mov)$/i.test(extension || ""),
+      isImage: /^(jpg|jpeg|png|gif|webp)$/i.test(extension || ''),
+      isVideo: /^(mp4|webm|mov)$/i.test(extension || ''),
     };
   }, [fileName]);
 
   const updateCompression = (
-    update: Partial<typeof localSettings.compression>,
+    update: Partial<typeof localSettings.compression>
   ) => {
     setLocalSettings((prev) => ({
       ...prev,
@@ -74,7 +74,7 @@ export function FileSettingsModal({
   };
 
   const updateConversion = (
-    update: Partial<typeof localSettings.conversion>,
+    update: Partial<typeof localSettings.conversion>
   ) => {
     setLocalSettings((prev) => ({
       ...prev,
@@ -246,7 +246,7 @@ export function FileSettingsModal({
                           id="width"
                           type="number"
                           placeholder="Width"
-                          value={localSettings.resize.width || ""}
+                          value={localSettings.resize.width || ''}
                           onChange={(e) =>
                             updateResize({
                               width: parseInt(e.target.value) || undefined,
@@ -260,7 +260,7 @@ export function FileSettingsModal({
                           id="height"
                           type="number"
                           placeholder="Height"
-                          value={localSettings.resize.height || ""}
+                          value={localSettings.resize.height || ''}
                           onChange={(e) =>
                             updateResize({
                               height: parseInt(e.target.value) || undefined,

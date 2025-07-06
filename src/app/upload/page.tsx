@@ -1,9 +1,9 @@
-import { Metadata } from "next";
-import { UploadPageClient } from "@/components/pages/UploadPageClient";
+import { Metadata } from 'next';
+import { UploadPageClient } from '@/components/pages/UploadPageClient';
 
 export const metadata: Metadata = {
-  title: "Upload | AnonHost",
-  description: "Upload your files securely.",
+  title: 'Upload | AnonHost',
+  description: 'Upload your files securely.',
 };
 
 export default function UploadPage() {

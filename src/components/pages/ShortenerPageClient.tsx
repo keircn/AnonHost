@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -15,16 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Link,
   ExternalLink,
@@ -32,7 +32,7 @@ import {
   Trash2,
   Clock,
   BarChart,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface Shortlink {
   id: string;
@@ -63,8 +63,8 @@ export function ShortenerPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [newUrl, setNewUrl] = useState("");
-  const [newTitle, setNewTitle] = useState("");
+  const [newUrl, setNewUrl] = useState('');
+  const [newTitle, setNewTitle] = useState('');
   const [expiresIn, setExpiresIn] = useState<string | undefined>(undefined);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -72,46 +72,46 @@ export function ShortenerPageClient() {
     const fetchShortlinks = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/shortener");
-        if (!response.ok) throw new Error("Failed to fetch shortlinks");
+        const response = await fetch('/api/shortener');
+        if (!response.ok) throw new Error('Failed to fetch shortlinks');
         const data = await response.json();
         setShortlinks(data.shortlinks || []);
       } catch (error) {
-        console.error("Failed to fetch shortlinks:", error);
-        toast.error("Error: Failed to fetch shortlinks");
+        console.error('Failed to fetch shortlinks:', error);
+        toast.error('Error: Failed to fetch shortlinks');
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (status === "unauthenticated") {
-      redirect("/register");
+    if (status === 'unauthenticated') {
+      redirect('/register');
     }
 
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       fetchShortlinks();
     }
   }, [status, toast]);
 
   const handleCreateShortlink = async () => {
     if (!newUrl) {
-      toast.error("URL required");
+      toast.error('URL required');
       return;
     }
 
     try {
       new URL(newUrl);
     } catch {
-      toast.error("Invalid URL");
+      toast.error('Invalid URL');
       return;
     }
 
     setIsCreating(true);
 
     try {
-      const response = await fetch("/api/shortener", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/shortener', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           originalUrl: newUrl,
           title: newTitle || null,
@@ -122,21 +122,21 @@ export function ShortenerPageClient() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create shortlink");
+        throw new Error(error.error || 'Failed to create shortlink');
       }
 
       const newShortlink = await response.json();
       setShortlinks((prev) => [newShortlink, ...prev]);
 
-      toast.success("Shortlink created");
+      toast.success('Shortlink created');
 
-      setNewUrl("");
-      setNewTitle("");
+      setNewUrl('');
+      setNewTitle('');
       setExpiresIn(undefined);
       setIsDialogOpen(false);
     } catch (error) {
-      console.error("Failed to create shortlink:", error);
-      toast.error("Error: Failed to create shortlink");
+      console.error('Failed to create shortlink:', error);
+      toast.error('Error: Failed to create shortlink');
     } finally {
       setIsCreating(false);
     }
@@ -145,30 +145,30 @@ export function ShortenerPageClient() {
   const handleDeleteShortlink = async (id: string) => {
     try {
       const response = await fetch(`/api/shortener/${id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
-      if (!response.ok) throw new Error("Failed to delete shortlink");
+      if (!response.ok) throw new Error('Failed to delete shortlink');
 
       setShortlinks((prev) => prev.filter((link) => link.id !== id));
 
-      toast.success("Shortlink deleted");
+      toast.success('Shortlink deleted');
     } catch (error) {
-      console.error("Failed to delete shortlink:", error);
-      toast.error("Error: Failed to delete shortlink");
+      console.error('Failed to delete shortlink:', error);
+      toast.error('Error: Failed to delete shortlink');
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    toast.success('Copied to clipboard');
   };
 
   const renderContent = () => {
-    if (status === "loading") {
+    if (status === 'loading') {
       return (
         <motion.div
-          className="container flex items-center justify-center min-h-[calc(100vh-4rem)]"
+          className="container flex min-h-[calc(100vh-4rem)] items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -186,7 +186,7 @@ export function ShortenerPageClient() {
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="flex items-center justify-between mb-6"
+          className="mb-6 flex items-center justify-between"
           variants={fadeIn}
           initial="initial"
           animate="animate"
@@ -257,7 +257,7 @@ export function ShortenerPageClient() {
                   Cancel
                 </Button>
                 <Button onClick={handleCreateShortlink} disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create Shortlink"}
+                  {isCreating ? 'Creating...' : 'Create Shortlink'}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -271,14 +271,14 @@ export function ShortenerPageClient() {
           className="space-y-6"
         >
           {isLoading ? (
-            <motion.div className="text-center py-8" variants={fadeIn}>
+            <motion.div className="py-8 text-center" variants={fadeIn}>
               Loading your shortlinks...
             </motion.div>
           ) : shortlinks.length === 0 ? (
             <motion.div variants={fadeIn}>
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Link className="h-12 w-12 text-muted-foreground mb-4" />
+                  <Link className="text-muted-foreground mb-4 h-12 w-12" />
                   <p className="text-muted-foreground mb-4">
                     You haven&apos;t created any shortlinks yet
                   </p>
@@ -304,24 +304,24 @@ export function ShortenerPageClient() {
                     <Card>
                       <CardContent className="p-4">
                         <div className="flex flex-col space-y-4">
-                          <div className="flex justify-between items-start">
+                          <div className="flex items-start justify-between">
                             <div className="space-y-1">
-                              <h4 className="font-medium text-lg">
-                                {link.title || "Untitled Link"}
+                              <h4 className="text-lg font-medium">
+                                {link.title || 'Untitled Link'}
                               </h4>
-                              <div className="flex items-center text-muted-foreground">
-                                <BarChart className="h-4 w-4 mr-1" />
+                              <div className="text-muted-foreground flex items-center">
+                                <BarChart className="mr-1 h-4 w-4" />
                                 <span className="text-sm">
                                   {link.clicks} clicks
                                 </span>
                                 {link.expireAt && (
                                   <>
                                     <span className="mx-2">•</span>
-                                    <Clock className="h-4 w-4 mr-1" />
+                                    <Clock className="mr-1 h-4 w-4" />
                                     <span className="text-sm">
-                                      Expires:{" "}
+                                      Expires:{' '}
                                       {new Date(
-                                        link.expireAt,
+                                        link.expireAt
                                       ).toLocaleDateString()}
                                     </span>
                                   </>
@@ -342,7 +342,7 @@ export function ShortenerPageClient() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() =>
-                                  window.open(link.shortUrl, "_blank")
+                                  window.open(link.shortUrl, '_blank')
                                 }
                                 title="Open shortlink"
                               >
@@ -377,7 +377,7 @@ export function ShortenerPageClient() {
                             )}
                             <div className="flex flex-col">
                               <span className="font-medium">Original URL:</span>
-                              <span className="truncate text-muted-foreground">
+                              <span className="text-muted-foreground truncate">
                                 {link.originalUrl}
                               </span>
                             </div>

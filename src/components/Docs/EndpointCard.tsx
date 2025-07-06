@@ -1,21 +1,21 @@
-import { motion } from "framer-motion";
-import { Copy, ChevronDown, ChevronRight } from "lucide-react";
+import { motion } from 'framer-motion';
+import { Copy, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import type { Endpoint, Parameter } from "@/lib/endpoints";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import type { Endpoint, Parameter } from '@/lib/endpoints';
 
 const codeBlockVariants = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
   hover: {
-    boxShadow: "0 0 0 2px var(--primary)",
+    boxShadow: '0 0 0 2px var(--primary)',
     transition: { duration: 0.2 },
   },
 };
@@ -34,7 +34,7 @@ interface ParameterTableProps {
 const ParameterTable = ({ parameters, title }: ParameterTableProps) => (
   <div className="space-y-2">
     <h4 className="font-semibold">{title}</h4>
-    <div className="border rounded-md divide-y">
+    <div className="divide-y rounded-md border">
       <div className="grid grid-cols-3 p-3">
         <div className="font-medium">Name</div>
         <div className="font-medium">Type</div>
@@ -58,7 +58,7 @@ export function EndpointCard({
 }: EndpointCardProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    toast.success('Copied to clipboard');
   };
 
   return (
@@ -83,7 +83,7 @@ export function EndpointCard({
             <p>{endpoint.request.description}</p>
             {endpoint.request.headers && (
               <motion.div
-                className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                className="bg-muted relative rounded-md p-4 font-mono text-sm"
                 variants={codeBlockVariants}
                 initial="initial"
                 animate="animate"
@@ -132,7 +132,7 @@ export function EndpointCard({
               <p>{endpoint.response.description}</p>
             )}
             <motion.div
-              className="bg-muted p-4 rounded-md font-mono text-sm relative"
+              className="bg-muted relative rounded-md p-4 font-mono text-sm"
               variants={codeBlockVariants}
               initial="initial"
               animate="animate"
@@ -145,7 +145,7 @@ export function EndpointCard({
                 className="absolute top-2 right-2"
                 onClick={() =>
                   copyToClipboard(
-                    JSON.stringify(endpoint.response.example, null, 2),
+                    JSON.stringify(endpoint.response.example, null, 2)
                   )
                 }
               >

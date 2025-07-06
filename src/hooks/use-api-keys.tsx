@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import type { ApiKey } from "@/types/settings";
+import { useState, useEffect, useCallback } from 'react';
+import type { ApiKey } from '@/types/settings';
 import {
   fetchApiKeys,
   createApiKey as createKey,
   deleteApiKey as deleteKey,
-} from "@/lib/api-keys";
-import { toast } from "sonner";
+} from '@/lib/api-keys';
+import { toast } from 'sonner';
 
 export function useApiKeys() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
@@ -22,14 +22,14 @@ export function useApiKeys() {
       setError(null);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to load API keys"),
+        err instanceof Error ? err : new Error('Failed to load API keys')
       );
-      console.error("Failed to load API keys:", err);
+      console.error('Failed to load API keys:', err);
       toast(
         <div>
           <strong>Error</strong>
           <div>Failed to fetch API keys</div>
-        </div>,
+        </div>
       );
     } finally {
       setIsLoading(false);
@@ -48,19 +48,19 @@ export function useApiKeys() {
         await loadApiKeys();
       } catch (err) {
         setError(
-          err instanceof Error ? err : new Error("Failed to create API key"),
+          err instanceof Error ? err : new Error('Failed to create API key')
         );
         toast(
           <div>
             <strong>Error</strong>
             <div>Failed to create API key</div>
-          </div>,
+          </div>
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [loadApiKeys],
+    [loadApiKeys]
   );
 
   const deleteApiKey = useCallback(
@@ -73,23 +73,23 @@ export function useApiKeys() {
           <div>
             <strong>API key deleted</strong>
             <div>API key deleted successfully</div>
-          </div>,
+          </div>
         );
       } catch (err) {
         setError(
-          err instanceof Error ? err : new Error("Failed to delete API key"),
+          err instanceof Error ? err : new Error('Failed to delete API key')
         );
         toast(
           <div>
             <strong>Failed to delete API key</strong>
             <div>Failed to delete API key</div>
-          </div>,
+          </div>
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [loadApiKeys],
+    [loadApiKeys]
   );
 
   return {

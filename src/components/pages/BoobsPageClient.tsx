@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useNavbar } from "@/components/Layout/NavbarContext";
+import { useEffect } from 'react';
+import { useNavbar } from '@/components/Layout/NavbarContext';
 
 export function BoobsPageClient() {
   const { setShowNavbar } = useNavbar();
@@ -80,7 +80,7 @@ export function BoobsPageClient() {
 
   return (
     <div>
-      <pre className="text-xs text-center">{ascii_boobs}</pre>
+      <pre className="text-center text-xs">{ascii_boobs}</pre>
     </div>
   );
 }

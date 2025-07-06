@@ -1,14 +1,14 @@
-import "next-auth";
-import { AdapterUser } from "@auth/core/adapters";
-import type { DefaultSession } from "next-auth";
+import 'next-auth';
+import { AdapterUser } from '@auth/core/adapters';
+import type { DefaultSession } from 'next-auth';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
       premium?: boolean;
       admin?: boolean;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 
   interface User extends AdapterUser {
@@ -23,7 +23,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "@auth/core/adapters" {
+declare module '@auth/core/adapters' {
   interface AdapterUser {
     id: string;
     admin: boolean;

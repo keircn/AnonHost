@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion, AnimatePresence } from "framer-motion";
-import { GeneralSettingsTab } from "@/components/Settings/GeneralSettingsTab";
-import { ApiKeysTab } from "@/components/ApiKey/ApiKeysTab";
-import { useSettings } from "@/hooks/use-settings";
-import { useApiKeys } from "@/hooks/use-api-keys";
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion, AnimatePresence } from 'framer-motion';
+import { GeneralSettingsTab } from '@/components/Settings/GeneralSettingsTab';
+import { ApiKeysTab } from '@/components/ApiKey/ApiKeysTab';
+import { useSettings } from '@/hooks/use-settings';
+import { useApiKeys } from '@/hooks/use-api-keys';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -24,20 +24,20 @@ const slideAnimation = {
 
 export function SettingsPageClient() {
   const { status } = useSession();
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState('general');
   const { isLoading: isSettingsLoading } = useSettings();
   const { isLoading: isApiKeysLoading } = useApiKeys();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      redirect("/");
+    if (status === 'unauthenticated') {
+      redirect('/');
     }
   }, [status]);
 
-  if (status === "loading" || isSettingsLoading || isApiKeysLoading) {
+  if (status === 'loading' || isSettingsLoading || isApiKeysLoading) {
     return (
       <motion.div
-        className="container flex items-center justify-center min-h-[calc(100vh-4rem)]"
+        className="container flex min-h-[calc(100vh-4rem)] items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -55,7 +55,7 @@ export function SettingsPageClient() {
       exit={{ opacity: 0 }}
     >
       <motion.h1
-        className="text-3xl font-bold mb-6"
+        className="mb-6 text-3xl font-bold"
         variants={fadeIn}
         initial="initial"
         animate="animate"
@@ -85,11 +85,11 @@ export function SettingsPageClient() {
             transition={{ duration: 0.2 }}
           >
             <TabsContent value="general" forceMount>
-              {activeTab === "general" && <GeneralSettingsTab />}
+              {activeTab === 'general' && <GeneralSettingsTab />}
             </TabsContent>
 
             <TabsContent value="api-keys" forceMount>
-              {activeTab === "api-keys" && <ApiKeysTab />}
+              {activeTab === 'api-keys' && <ApiKeysTab />}
             </TabsContent>
           </motion.div>
         </AnimatePresence>

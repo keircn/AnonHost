@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useApiKeys } from "@/hooks/use-api-keys";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { useApiKeys } from '@/hooks/use-api-keys';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -20,12 +20,12 @@ interface ApiKeyCreatorProps {
 
 export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
   const { createApiKey } = useApiKeys();
-  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyName, setNewKeyName] = useState('');
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
 
   const handleCreateApiKey = async () => {
     if (!newKeyName.trim()) {
-      toast.error("Name required: Please provide a name for your API key");
+      toast.error('Name required: Please provide a name for your API key');
       return;
     }
 
@@ -33,13 +33,13 @@ export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
 
     try {
       await createApiKey(newKeyName);
-      setNewKeyName("");
+      setNewKeyName('');
       await onKeyCreated();
-      toast.success("API key created successfully");
+      toast.success('API key created successfully');
     } catch (error) {
-      console.error("Failed to create API key:", error);
+      console.error('Failed to create API key:', error);
       toast.error(
-        "Failed to create API key: There was an error creating your API key",
+        'Failed to create API key: There was an error creating your API key'
       );
     } finally {
       setIsGeneratingKey(false);
@@ -58,7 +58,7 @@ export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
         />
       </div>
       <Button onClick={handleCreateApiKey} disabled={isGeneratingKey}>
-        {isGeneratingKey ? "Generating..." : "Generate Key"}
+        {isGeneratingKey ? 'Generating...' : 'Generate Key'}
       </Button>
     </motion.div>
   );

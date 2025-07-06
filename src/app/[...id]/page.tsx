@@ -1,14 +1,14 @@
-import { Metadata } from "next";
-import { MediaActions } from "@/components/Files/MediaActions";
-import Image from "next/image";
-import prisma from "@/lib/prisma";
-import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { betaMembers } from "@/lib/beta";
-import { Viewport } from "next";
-import { LuMusic } from "react-icons/lu";
-import { File, FileText } from "lucide-react";
-import { HideNavbar } from "@/components/Layout/HideNavbar";
+import { Metadata } from 'next';
+import { MediaActions } from '@/components/Files/MediaActions';
+import Image from 'next/image';
+import prisma from '@/lib/prisma';
+import { notFound } from 'next/navigation';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { betaMembers } from '@/lib/beta';
+import { Viewport } from 'next';
+import { LuMusic } from 'react-icons/lu';
+import { File, FileText } from 'lucide-react';
+import { HideNavbar } from '@/components/Layout/HideNavbar';
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -16,17 +16,17 @@ interface Props {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return '0 Bytes';
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
     hour12: false,
   }).format(date);
 }
@@ -38,8 +38,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (!mediaId) {
     return {
-      title: "Media not found",
-      description: "The requested media could not be found.",
+      title: 'Media not found',
+      description: 'The requested media could not be found.',
     };
   }
 
@@ -58,44 +58,44 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (!media) {
     return {
-      title: "Media not found",
-      description: "The requested media could not be found.",
+      title: 'Media not found',
+      description: 'The requested media could not be found.',
     };
   }
 
   const premiumTheme = media.user?.premium
     ? {
         creator: media.user.name,
-        applicationName: "AnonHost Premium",
+        applicationName: 'AnonHost Premium',
       }
     : {};
 
-  const description = `${media.user?.premium ? "⭐ " : ""}Uploaded by ${
-    media.user?.name || "Anonymous"
+  const description = `${media.user?.premium ? '⭐ ' : ''}Uploaded by ${
+    media.user?.name || 'Anonymous'
   }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}`;
 
   const dimensions = {
-    width: typeof media.width === "number" ? media.width : 1280,
-    height: typeof media.height === "number" ? media.height : 720,
+    width: typeof media.width === 'number' ? media.width : 1280,
+    height: typeof media.height === 'number' ? media.height : 720,
   };
 
-  if (media.type === "VIDEO") {
+  if (media.type === 'VIDEO') {
     return {
-      title: media.filename || "Untitled",
+      title: media.filename || 'Untitled',
       description,
       ...premiumTheme,
       openGraph: {
-        title: media.filename || "Untitled",
+        title: media.filename || 'Untitled',
         description,
-        type: "video.other",
+        type: 'video.other',
         url: media.url,
-        siteName: media.user?.premium ? "AnonHost Premium" : "AnonHost",
+        siteName: media.user?.premium ? 'AnonHost Premium' : 'AnonHost',
         videos: [
           {
             url: media.url,
             width: dimensions.width,
             height: dimensions.height,
-            type: "video/mp4",
+            type: 'video/mp4',
           },
         ],
         images: [
@@ -103,13 +103,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
             url: `${media.url}?thumb=1`,
             width: dimensions.width,
             height: dimensions.height,
-            alt: media.filename || "Video thumbnail",
+            alt: media.filename || 'Video thumbnail',
           },
         ],
       },
       twitter: {
-        card: "player",
-        title: media.filename || "Untitled",
+        card: 'player',
+        title: media.filename || 'Untitled',
         description,
         images: [`${media.url}?thumb=1`],
         players: [
@@ -125,31 +125,31 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   return {
-    title: media.filename || "Untitled",
+    title: media.filename || 'Untitled',
     description,
     ...premiumTheme,
     openGraph: {
-      title: `${media.filename || "Untitled"}`,
+      title: `${media.filename || 'Untitled'}`,
       description,
-      type: "website",
+      type: 'website',
       url: media.url,
-      siteName: media.user?.premium ? "AnonHost Premium" : "AnonHost",
-      ...(media.type === "IMAGE" && {
+      siteName: media.user?.premium ? 'AnonHost Premium' : 'AnonHost',
+      ...(media.type === 'IMAGE' && {
         images: [
           {
             url: media.url,
             width: dimensions.width,
             height: dimensions.height,
-            alt: media.filename || "Image",
+            alt: media.filename || 'Image',
           },
         ],
       }),
     },
     twitter: {
-      card: media.type === "IMAGE" ? "summary_large_image" : "summary",
-      title: `${media.user?.premium ? "⭐ " : ""}${media.filename || "Untitled"}`,
+      card: media.type === 'IMAGE' ? 'summary_large_image' : 'summary',
+      title: `${media.user?.premium ? '⭐ ' : ''}${media.filename || 'Untitled'}`,
       description,
-      ...(media.type === "IMAGE" && { images: [media.url] }),
+      ...(media.type === 'IMAGE' && { images: [media.url] }),
       creator: media.user?.premium ? (media.user.name ?? undefined) : undefined,
     },
   };
@@ -162,7 +162,7 @@ export async function generateViewport(props: Props): Promise<Viewport> {
 
   if (!mediaId) {
     return {
-      width: "device-width",
+      width: 'device-width',
       initialScale: 1,
       maximumScale: 1,
       userScalable: false,
@@ -183,7 +183,7 @@ export async function generateViewport(props: Props): Promise<Viewport> {
 
   if (!media?.user?.premium) {
     return {
-      width: "device-width",
+      width: 'device-width',
       initialScale: 1,
       maximumScale: 1,
       userScalable: false,
@@ -191,11 +191,11 @@ export async function generateViewport(props: Props): Promise<Viewport> {
   }
 
   return {
-    width: "device-width",
+    width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: "#a855f7",
+    themeColor: '#a855f7',
   };
 }
 
@@ -228,43 +228,43 @@ export default async function MediaPage(props: Props) {
   return (
     <div className="container py-8">
       <HideNavbar />
-      <Card className="max-w-4xl mx-auto">
+      <Card className="mx-auto max-w-4xl">
         <div className="relative aspect-video">
           {(() => {
             switch (media.type) {
-              case "VIDEO":
+              case 'VIDEO':
                 return (
                   <video
                     src={media.url}
                     controls
-                    className="w-full h-full"
+                    className="h-full w-full"
                     autoPlay
                     playsInline
                   />
                 );
-              case "AUDIO":
+              case 'AUDIO':
                 return (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-muted/20">
-                    <LuMusic className="h-24 w-24 text-muted-foreground" />
+                  <div className="bg-muted/20 flex h-full w-full flex-col items-center justify-center gap-4">
+                    <LuMusic className="text-muted-foreground h-24 w-24" />
                     <audio controls className="w-3/4 max-w-xl">
                       <source src={media.url} type="audio/mpeg" />
                       Your browser does not support the audio element.
                     </audio>
                   </div>
                 );
-              case "TEXT":
+              case 'TEXT':
                 return (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <FileText className="h-24 w-24 text-muted-foreground" />
+                  <div className="flex h-full w-full items-center justify-center">
+                    <FileText className="text-muted-foreground h-24 w-24" />
                   </div>
                 );
-              case "DOCUMENT":
+              case 'DOCUMENT':
                 return (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <File className="h-24 w-24 text-muted-foreground" />
+                  <div className="flex h-full w-full items-center justify-center">
+                    <File className="text-muted-foreground h-24 w-24" />
                   </div>
                 );
-              case "IMAGE":
+              case 'IMAGE':
               default:
                 return (
                   <Image
@@ -279,18 +279,18 @@ export default async function MediaPage(props: Props) {
           })()}
         </div>
         <CardContent className="p-6">
-          <div className="flex justify-between items-center mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold text-foreground">
+              <h1 className="text-foreground text-2xl font-semibold">
                 {media.filename}
               </h1>
               {media.user?.premium && (
-                <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                <span className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 text-xs font-medium text-white">
                   Premium
                 </span>
               )}
               {media.user?.id && betaMembers.includes(media.user.id) && (
-                <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full">
+                <span className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 text-xs font-medium text-white">
                   Beta
                 </span>
               )}
@@ -301,51 +301,51 @@ export default async function MediaPage(props: Props) {
           <div className="grid grid-cols-4 gap-6">
             <Card>
               <CardHeader className="p-4">
-                <h3 className="text-sm font-medium text-foreground">
+                <h3 className="text-foreground text-sm font-medium">
                   Uploader
                 </h3>
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {media.user?.name || "Anonymous"}
+                <p className="text-muted-foreground text-sm font-semibold">
+                  {media.user?.name || 'Anonymous'}
                 </p>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="p-4">
-                <h3 className="text-sm font-medium text-foreground">Type</h3>
-                <p className="text-sm font-semibold text-muted-foreground">
+                <h3 className="text-foreground text-sm font-medium">Type</h3>
+                <p className="text-muted-foreground text-sm font-semibold">
                   {media.type}
                 </p>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="p-4">
-                <h3 className="text-sm font-medium text-foreground">Size</h3>
-                <p className="text-sm font-semibold text-muted-foreground">
+                <h3 className="text-foreground text-sm font-medium">Size</h3>
+                <p className="text-muted-foreground text-sm font-semibold">
                   {formatBytes(media.size)}
                 </p>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="p-4">
-                <h3 className="text-sm font-medium text-foreground">
+                <h3 className="text-foreground text-sm font-medium">
                   Uploaded
                 </h3>
-                <p className="text-sm font-semibold text-muted-foreground">
+                <p className="text-muted-foreground text-sm font-semibold">
                   {formatDate(media.createdAt)}
                 </p>
               </CardHeader>
             </Card>
           </div>
 
-          {media.type === "VIDEO" && media.duration && (
+          {media.type === 'VIDEO' && media.duration && (
             <Card className="mt-6">
               <CardHeader className="p-4">
-                <h3 className="text-sm font-medium text-foreground">
+                <h3 className="text-foreground text-sm font-medium">
                   Duration
                 </h3>
-                <p className="text-sm font-semibold text-muted-foreground">
+                <p className="text-muted-foreground text-sm font-semibold">
                   {Math.floor(media.duration / 60)}:
-                  {(media.duration % 60).toString().padStart(2, "0")}
+                  {(media.duration % 60).toString().padStart(2, '0')}
                 </p>
               </CardHeader>
             </Card>

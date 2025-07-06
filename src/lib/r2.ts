@@ -2,10 +2,10 @@ import {
   S3Client,
   PutObjectCommand,
   HeadBucketCommand,
-} from "@aws-sdk/client-s3";
+} from '@aws-sdk/client-s3';
 
 export const r2Client = new S3Client({
-  region: "auto",
+  region: 'auto',
   endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -42,8 +42,8 @@ export async function uploadToR2({
 
     return `${process.env.R2_PUBLIC_URL}/${key}`;
   } catch (error) {
-    console.error("R2 upload error:", error);
-    throw new Error("Failed to upload to R2");
+    console.error('R2 upload error:', error);
+    throw new Error('Failed to upload to R2');
   }
 }
 
@@ -56,7 +56,7 @@ export async function checkR2Connection(): Promise<boolean> {
     await r2Client.send(command);
     return true;
   } catch (error) {
-    console.error("R2 connection error:", error);
+    console.error('R2 connection error:', error);
     return false;
   }
 }
@@ -65,7 +65,7 @@ export function generateR2Key(
   userId: string,
   fileId: string,
   fileExt: string,
-  type?: string,
+  type?: string
 ): string {
   if (type) {
     return `${userId}/${type}s/${fileId}${fileExt}`;

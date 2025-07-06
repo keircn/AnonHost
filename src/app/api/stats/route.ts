@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { Stats } from "@/types/stats";
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { Stats } from '@/types/stats';
 
 const cache = {
   data: null as Stats | null,
@@ -36,10 +36,10 @@ export async function GET() {
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error("Failed to fetch stats:", error);
+    console.error('Failed to fetch stats:', error);
     return NextResponse.json(
-      { error: "Failed to fetch stats" },
-      { status: 500 },
+      { error: 'Failed to fetch stats' },
+      { status: 500 }
     );
   }
 }

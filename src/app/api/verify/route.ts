@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { sendEmail } from "@/lib/mailgun";
-import { welcomeEmailTemplate } from "@/lib/email-templates";
+import { type NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { sendEmail } from '@/lib/mailgun';
+import { welcomeEmailTemplate } from '@/lib/email-templates';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       where: {
         email,
         code: otp,
-        type: "registration",
+        type: 'registration',
         used: false,
         expiresAt: {
           gt: new Date(),
@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
 
     if (!otpRecord) {
       return NextResponse.json(
-        { error: "Invalid or expired code" },
-        { status: 400 },
+        { error: 'Invalid or expired code' },
+        { status: 400 }
       );
     }
 
@@ -38,12 +38,12 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const template = welcomeEmailTemplate("there");
+      const template = welcomeEmailTemplate('there');
       await sendEmail({
         to: email,
         ...template,
       }).catch((error) => {
-        console.error("Failed to send welcome email:", error);
+        console.error('Failed to send welcome email:', error);
       });
     }
 
@@ -53,10 +53,10 @@ export async function POST(req: NextRequest) {
       otp,
     });
   } catch (error) {
-    console.error("Failed to verify OTP:", error);
+    console.error('Failed to verify OTP:', error);
     return NextResponse.json(
-      { error: "Failed to verify code" },
-      { status: 500 },
+      { error: 'Failed to verify code' },
+      { status: 500 }
     );
   }
 }

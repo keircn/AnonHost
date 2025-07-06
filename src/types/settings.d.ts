@@ -21,7 +21,7 @@ export interface ShareXConfig {
   RequestURL: string;
   Headers: {
     Authorization: string;
-    "Content-Type"?: string;
+    'Content-Type'?: string;
   };
   Body: string;
   FileFormName?: string;

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useNavbar } from "@/components/Layout/NavbarContext";
+import { useEffect } from 'react';
+import { useNavbar } from '@/components/Layout/NavbarContext';
 
 interface HideNavbarProps {
   showOnUnmount?: boolean;

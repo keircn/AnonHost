@@ -1,16 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
-import { verifyApiKey } from "@/lib/auth";
-import type { Session } from "next-auth";
+import { type NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
+import { verifyApiKey } from '@/lib/auth';
+import type { Session } from 'next-auth';
 
 export async function GET(req: NextRequest) {
   const session = (await getServerSession(authOptions)) as Session | null;
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id;
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         userId,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -45,37 +45,37 @@ export async function GET(req: NextRequest) {
       count: shortlinks.length,
     });
   } catch (error) {
-    console.error("Error fetching shortlinks:", error);
+    console.error('Error fetching shortlinks:', error);
     return NextResponse.json(
-      { error: "Failed to fetch shortlinks" },
-      { status: 500 },
+      { error: 'Failed to fetch shortlinks' },
+      { status: 500 }
     );
   }
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
 
   let originalUrl, title, isPublic, expiresIn;
 
-  const contentType = req.headers.get("content-type");
-  if (contentType?.includes("application/json")) {
+  const contentType = req.headers.get('content-type');
+  if (contentType?.includes('application/json')) {
     const jsonData = await req.json();
     originalUrl = jsonData.originalUrl;
     title = jsonData.title;
-    isPublic = jsonData.public === "true";
+    isPublic = jsonData.public === 'true';
     expiresIn = jsonData.expiresIn;
   } else {
     const formData = await req.formData();
-    originalUrl = formData.get("originalUrl");
-    title = formData.get("title");
-    isPublic = formData.get("public") === "true";
-    expiresIn = formData.get("expiresIn");
+    originalUrl = formData.get('originalUrl');
+    title = formData.get('title');
+    isPublic = formData.get('public') === 'true';
+    expiresIn = formData.get('expiresIn');
   }
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id;
 
@@ -98,27 +98,27 @@ export async function POST(req: NextRequest) {
   try {
     if (!originalUrl) {
       return NextResponse.json(
-        { error: "Original URL is required" },
-        { status: 400 },
+        { error: 'Original URL is required' },
+        { status: 400 }
       );
     }
 
     try {
       const url = new URL(originalUrl as string);
-      if (!["http:", "https:"].includes(url.protocol)) {
+      if (!['http:', 'https:'].includes(url.protocol)) {
         return NextResponse.json(
-          { error: "URL must use HTTP or HTTPS protocol" },
-          { status: 400 },
+          { error: 'URL must use HTTP or HTTPS protocol' },
+          { status: 400 }
         );
       }
     } catch {
       return NextResponse.json(
         {
-          error: "Invalid URL format",
+          error: 'Invalid URL format',
           details:
-            "Please provide a valid URL including protocol (e.g., https://example.com)",
+            'Please provide a valid URL including protocol (e.g., https://example.com)',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       title: shortlink.title,
       shortUrl: new URL(
         `/s/${shortlink.id}`,
-        process.env.NEXTAUTH_URL || "https://anon.love",
+        process.env.NEXTAUTH_URL || 'https://anon.love'
       ).toString(),
       public: shortlink.public,
       createdAt: shortlink.createdAt,
@@ -154,8 +154,8 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to create shortlink:", details: error },
-      { status: 500 },
+      { error: 'Failed to create shortlink:', details: error },
+      { status: 500 }
     );
   }
 }

@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import { type NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       where: {
         userId: session.user.id,
         code: otp,
-        type: "email-change",
+        type: 'email-change',
         used: false,
         expiresAt: {
           gt: new Date(),
@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
 
     if (!otpRecord) {
       return NextResponse.json(
-        { error: "Invalid or expired code" },
-        { status: 400 },
+        { error: 'Invalid or expired code' },
+        { status: 400 }
       );
     }
 
@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to verify email change:", error);
+    console.error('Failed to verify email change:', error);
     return NextResponse.json(
-      { error: "Failed to verify email change" },
-      { status: 500 },
+      { error: 'Failed to verify email change' },
+      { status: 500 }
     );
   }
 }

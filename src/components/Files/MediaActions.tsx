@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Download, Link as LinkIcon } from "lucide-react";
-import { toast } from "sonner";
+import { Button } from '@/components/ui/button';
+import { Download, Link as LinkIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MediaActionsProps {
   url: string;
@@ -16,12 +16,12 @@ export function MediaActions({ url, filename }: MediaActionsProps) {
       <div>
         <strong>Link copied</strong>
         <div>The link has been copied to your clipboard</div>
-      </div>,
+      </div>
     );
   };
 
   const handleDownload = () => {
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);

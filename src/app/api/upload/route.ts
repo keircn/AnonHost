@@ -1,31 +1,31 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import { type NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
 import {
   BLOCKED_TYPES,
   uploadFile,
   FILE_SIZE_LIMITS,
   STORAGE_LIMITS,
-} from "@/lib/upload";
-import { verifyApiKey } from "@/lib/auth";
-import { MediaType } from "@prisma/client";
-import { sendDiscordWebhook } from "@/lib/discord";
-import { processFile } from "@/lib/process-file";
-import { FileSettings } from "@/types/file-settings";
-import { nanoid } from "nanoid";
+} from '@/lib/upload';
+import { verifyApiKey } from '@/lib/auth';
+import { MediaType } from '@prisma/client';
+import { sendDiscordWebhook } from '@/lib/discord';
+import { processFile } from '@/lib/process-file';
+import { FileSettings } from '@/types/file-settings';
+import { nanoid } from 'nanoid';
 
 function isErrorWithCause(error: unknown): error is { cause: unknown } {
-  return typeof error === "object" && error !== null && "cause" in error;
+  return typeof error === 'object' && error !== null && 'cause' in error;
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
   const baseUrl = process.env.NEXTAUTH_URL;
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id.toString();
     isPremium = user.premium;
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | Blob;
-    const settingsStr = formData.get("settings") as string | null;
+    const file = formData.get('file') as File | Blob;
+    const settingsStr = formData.get('settings') as string | null;
     let settings: FileSettings = {
       conversion: {
         enabled: false,
@@ -91,22 +91,22 @@ export async function POST(req: NextRequest) {
           },
         };
       } catch (e) {
-        console.warn("Failed to parse settings:", e);
+        console.warn('Failed to parse settings:', e);
       }
     }
-    const customDomain = formData.get("domain") as string | null;
+    const customDomain = formData.get('domain') as string | null;
     const fileId = nanoid(6);
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const originalName = (file as File).name || "untitled";
+    const originalName = (file as File).name || 'untitled';
     const newFormat =
       settings.conversion.enabled && settings.conversion.format
         ? settings.conversion.format
-        : originalName.split(".").pop();
-    const newFilename = `${originalName.split(".")[0]}.${newFormat}`;
+        : originalName.split('.').pop();
+    const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
 
     const sizeLimit = isPremium
       ? FILE_SIZE_LIMITS.PREMIUM
@@ -116,9 +116,9 @@ export async function POST(req: NextRequest) {
       const limitInMb = sizeLimit / (1024 * 1024);
       return NextResponse.json(
         {
-          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? "premium" : "free"} users`,
+          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? 'premium' : 'free'} users`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -133,9 +133,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             error:
-              "Storage limit reached. Upgrade to premium for unlimited storage.",
+              'Storage limit reached. Upgrade to premium for unlimited storage.',
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -143,9 +143,9 @@ export async function POST(req: NextRequest) {
     if (BLOCKED_TYPES.includes(file.type)) {
       return NextResponse.json(
         {
-          error: "This file type is not allowed for security reasons.",
+          error: 'This file type is not allowed for security reasons.',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
       processedFile,
       userId.toString(),
       newFilename,
-      fileId,
+      fileId
     );
 
     const dbData = {
@@ -204,18 +204,18 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error details:", {
+      console.error('Error details:', {
         name: error.name,
         message: error.message,
         stack: error.stack,
         cause: isErrorWithCause(error) ? error.cause : undefined,
       });
     } else {
-      console.error("Unknown error:", error);
+      console.error('Unknown error:', error);
     }
     return NextResponse.json(
-      { error: "Failed to upload media" },
-      { status: 500 },
+      { error: 'Failed to upload media' },
+      { status: 500 }
     );
   }
 }

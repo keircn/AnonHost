@@ -1,72 +1,72 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Mail, MessageSquare, HelpCircle, ArrowRight } from "lucide-react";
+} from '@/components/ui/accordion';
+import { Mail, MessageSquare, HelpCircle, ArrowRight } from 'lucide-react';
 
 const contactMethods = [
   {
-    title: "Email Support",
-    description: "Get in touch with our support team",
+    title: 'Email Support',
+    description: 'Get in touch with our support team',
     icon: <Mail className="h-6 w-6" />,
-    href: "mailto:support@mg.anon.love",
+    href: 'mailto:support@mg.anon.love',
     external: true,
   },
   {
-    title: "Discord Community",
-    description: "Join our Discord server for rapid support",
+    title: 'Discord Community',
+    description: 'Join our Discord server for rapid support',
     icon: <MessageSquare className="h-6 w-6" />,
-    href: "https://discord.gg/jPxJ52GF3r",
+    href: 'https://discord.gg/jPxJ52GF3r',
     external: true,
   },
   {
-    title: "Help Center",
-    description: "Browse our documentation and guides",
+    title: 'Help Center',
+    description: 'Browse our documentation and guides',
     icon: <HelpCircle className="h-6 w-6" />,
-    href: "/docs",
+    href: '/docs',
     external: false,
   },
 ];
 
 const faqs = [
   {
-    question: "What file types are supported?",
+    question: 'What file types are supported?',
     answer:
-      "We support most image formats (PNG, JPEG, GIF, WebP), videos, audio files, and documents. Each file must be under 50MB for free users and 100MB for premium users.",
+      'We support most image formats (PNG, JPEG, GIF, WebP), videos, audio files, and documents. Each file must be under 50MB for free users and 100MB for premium users.',
   },
   {
-    question: "How long are files stored?",
+    question: 'How long are files stored?',
     answer:
-      "Files are stored indefinitely as long as your account remains active. Premium users get priority storage and additional features.",
+      'Files are stored indefinitely as long as your account remains active. Premium users get priority storage and additional features.',
   },
   {
-    question: "Is my content private?",
+    question: 'Is my content private?',
     answer:
-      "Yes! By default, all uploads are private. You can choose to make specific files public by sharing their links.",
+      'Yes! By default, all uploads are private. You can choose to make specific files public by sharing their links.',
   },
   {
-    question: "What are the upload limits?",
+    question: 'What are the upload limits?',
     answer:
-      "Free users can upload up to 50MB per file and 500MB total storage. Premium users get increased limits of 100MB per file and 1GB storage.",
+      'Free users can upload up to 50MB per file and 500MB total storage. Premium users get increased limits of 100MB per file and 1GB storage.',
   },
   {
-    question: "How do I get premium?",
+    question: 'How do I get premium?',
     answer:
-      "While billing is not yet implemented, you can contact me directly in the Discord server if you are interested",
+      'While billing is not yet implemented, you can contact me directly in the Discord server if you are interested',
   },
 ];
 
 export function ContactPageClient() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
@@ -95,9 +95,9 @@ export function ContactPageClient() {
                 >
                   <Link
                     href={method.href}
-                    target={method.external ? "_blank" : undefined}
+                    target={method.external ? '_blank' : undefined}
                   >
-                    <Card className="h-full transition-colors hover:border-primary">
+                    <Card className="hover:border-primary h-full transition-colors">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           {method.icon}
@@ -105,7 +105,7 @@ export function ContactPageClient() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {method.description}
                         </p>
                       </CardContent>

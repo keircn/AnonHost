@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useSettings } from "@/hooks/use-settings";
-import { NotificationSettings } from "@/components/Settings/NotificationSettings";
-import { DirectLinksSettings } from "@/components/Settings/DirectLinksSettings";
-import { EmailChangeSection } from "@/components/Settings/EmailChangeSection";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { useSettings } from '@/hooks/use-settings';
+import { NotificationSettings } from '@/components/Settings/NotificationSettings';
+import { DirectLinksSettings } from '@/components/Settings/DirectLinksSettings';
+import { EmailChangeSection } from '@/components/Settings/EmailChangeSection';
 // import { CustomDomainSettings } from "@/components/CustomDomainSettings";
 
 const fadeIn = {
@@ -37,10 +37,10 @@ export function GeneralSettingsTab() {
     setIsSaving(true);
     try {
       await updateSettings();
-      toast.success("Your settings have been saved successfully");
+      toast.success('Your settings have been saved successfully');
     } catch (error) {
-      console.error("Failed to save settings:", error);
-      toast.error("Failed to save settings");
+      console.error('Failed to save settings:', error);
+      toast.error('Failed to save settings');
     } finally {
       setIsSaving(false);
     }
@@ -70,7 +70,7 @@ export function GeneralSettingsTab() {
 
           <motion.div className="flex justify-end" variants={fadeIn}>
             <Button onClick={handleSaveSettings} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save Settings"}
+              {isSaving ? 'Saving...' : 'Save Settings'}
             </Button>
           </motion.div>
         </CardContent>

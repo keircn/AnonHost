@@ -1,65 +1,65 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LuCheck } from "react-icons/lu";
-import Link from "next/link";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { LuCheck } from 'react-icons/lu';
+import Link from 'next/link';
 
 const features = {
   free: [
-    "Up to 100MB per file",
-    "1GB total storage",
-    "Image optimization & conversion",
-    "Video compression",
-    "URL shortening",
-    "Basic API access",
-    "Community support",
+    'Up to 100MB per file',
+    '1GB total storage',
+    'Image optimization & conversion',
+    'Video compression',
+    'URL shortening',
+    'Basic API access',
+    'Community support',
   ],
   premium: [
-    "Everything in Free, plus:",
-    "Up to 500MB per file",
-    "Unlimited storage",
-    "Priority storage allocation",
-    "Custom domains",
-    "Advanced file processing",
-    "Premium API features",
-    "Priority support",
-    "Early access to new features",
-    "Support development",
+    'Everything in Free, plus:',
+    'Up to 500MB per file',
+    'Unlimited storage',
+    'Priority storage allocation',
+    'Custom domains',
+    'Advanced file processing',
+    'Premium API features',
+    'Priority support',
+    'Early access to new features',
+    'Support development',
   ],
 };
 
 export function PricingPageClient() {
   return (
-    <div className="container max-w-6xl py-16 space-y-12 mx-auto md:mt-24">
+    <div className="container mx-auto max-w-6xl space-y-12 py-16 md:mt-24">
       <motion.div
-        className="text-center space-y-4"
+        className="space-y-4 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-4xl font-bold">Simple, Transparent Pricing</h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-muted-foreground text-lg">
           Choose the plan that works for you
         </p>
       </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid gap-8 md:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <Card className="h-full">
-            <CardHeader className="space-y-1 mb-6">
+            <CardHeader className="mb-6 space-y-1">
               <Badge variant="secondary" className="w-fit">
                 Free Forever
               </Badge>
@@ -73,7 +73,7 @@ export function PricingPageClient() {
               <ul className="space-y-2">
                 {features.free.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <LuCheck className="h-4 w-4 text-primary" />
+                    <LuCheck className="text-primary h-4 w-4" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -92,12 +92,12 @@ export function PricingPageClient() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="h-full relative overflow-hidden border-primary">
-            <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-sm rounded">
+          <Card className="border-primary relative h-full overflow-hidden">
+            <div className="bg-primary text-primary-foreground absolute top-0 right-0 rounded px-3 py-1 text-sm">
               Coming Soon
             </div>
             <CardHeader className="space-y-1">
-              <Badge variant="default" className="w-fit bg-primary">
+              <Badge variant="default" className="bg-primary w-fit">
                 Premium
               </Badge>
               <CardTitle className="text-2xl">Supporter</CardTitle>
@@ -106,7 +106,7 @@ export function PricingPageClient() {
                   <span className="text-3xl font-bold">$5</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   or $50/year (save $10)
                 </div>
               </div>
@@ -115,7 +115,7 @@ export function PricingPageClient() {
               <ul className="space-y-2">
                 {features.premium.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <LuCheck className="h-4 w-4 text-primary" />
+                    <LuCheck className="text-primary h-4 w-4" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -132,16 +132,16 @@ export function PricingPageClient() {
                   <span>Donate</span>
                 </Button>
               </Link>
-              <p className="text-sm text-muted-foreground text-center">
-                Join our{" "}
+              <p className="text-muted-foreground text-center text-sm">
+                Join our{' '}
                 <a
                   href="https://discord.gg/WZJksYs8"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline text-primary"
+                  className="text-primary underline"
                 >
                   Discord
-                </a>{" "}
+                </a>{' '}
                 for more info
               </p>
             </CardFooter>
@@ -150,7 +150,7 @@ export function PricingPageClient() {
       </div>
 
       <motion.div
-        className="text-center text-sm text-muted-foreground"
+        className="text-muted-foreground text-center text-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}

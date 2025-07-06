@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { endpoints } from "@/lib/endpoints";
-import { EndpointCard } from "@/components/Docs/EndpointCard";
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import { endpoints } from '@/lib/endpoints';
+import { EndpointCard } from '@/components/Docs/EndpointCard';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -37,18 +37,18 @@ const codeBlockVariants = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
   hover: {
-    boxShadow: "0 0 0 2px var(--primary)",
+    boxShadow: '0 0 0 2px var(--primary)',
     transition: { duration: 0.2 },
   },
 };
 
 export function ApiDocumentationPageClient() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    toast.success('Copied to clipboard');
   };
 
   const toggleSection = (section: string) => {
@@ -66,7 +66,7 @@ export function ApiDocumentationPageClient() {
       initial="initial"
       animate="animate"
     >
-      <motion.h1 className="text-3xl font-bold mb-2" variants={fadeIn}>
+      <motion.h1 className="mb-2 text-3xl font-bold" variants={fadeIn}>
         API Documentation
       </motion.h1>
       <motion.p className="text-muted-foreground mb-6" variants={fadeIn}>
@@ -80,7 +80,7 @@ export function ApiDocumentationPageClient() {
       >
         <motion.div variants={fadeIn}>
           <TabsList className="mb-4">
-            {["overview", "endpoints", "examples"].map((tab, index) => (
+            {['overview', 'endpoints', 'examples'].map((tab, index) => (
               <motion.div
                 key={tab}
                 variants={tabVariants}
@@ -128,7 +128,7 @@ export function ApiDocumentationPageClient() {
                         Include your API key in the request headers as follows:
                       </p>
                       <motion.div
-                        className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                        className="bg-muted relative rounded-md p-4 font-mono text-sm"
                         variants={codeBlockVariants}
                         initial="initial"
                         animate="animate"
@@ -141,7 +141,7 @@ export function ApiDocumentationPageClient() {
                           className="absolute top-2 right-2"
                           onClick={() =>
                             copyToClipboard(
-                              "Authorization: Bearer YOUR_API_KEY",
+                              'Authorization: Bearer YOUR_API_KEY'
                             )
                           }
                         >
@@ -157,7 +157,7 @@ export function ApiDocumentationPageClient() {
                         URL:
                       </p>
                       <motion.div
-                        className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                        className="bg-muted relative rounded-md p-4 font-mono text-sm"
                         variants={codeBlockVariants}
                         initial="initial"
                         animate="animate"
@@ -169,7 +169,7 @@ export function ApiDocumentationPageClient() {
                           size="icon"
                           className="absolute top-2 right-2"
                           onClick={() =>
-                            copyToClipboard("https://anon.love/api")
+                            copyToClipboard('https://anon.love/api')
                           }
                         >
                           <Copy className="h-4 w-4" />
@@ -216,7 +216,7 @@ export function ApiDocumentationPageClient() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {["Upload an Image", "List All Images"].map(
+                    {['Upload an Image', 'List All Images'].map(
                       (example, index) => (
                         <motion.div
                           key={example}
@@ -237,14 +237,14 @@ export function ApiDocumentationPageClient() {
 
                               <TabsContent value="js" className="mt-4">
                                 <motion.div
-                                  className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                                  className="bg-muted relative rounded-md p-4 font-mono text-sm"
                                   variants={codeBlockVariants}
                                   initial="initial"
                                   animate="animate"
                                   whileHover="hover"
                                 >
                                   <pre>
-                                    {example === "Upload an Image"
+                                    {example === 'Upload an Image'
                                       ? `const form = new FormData();
 form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
@@ -285,7 +285,7 @@ fetch('https://anon.love/api/images', {
                                     className="absolute top-2 right-2"
                                     onClick={() =>
                                       copyToClipboard(
-                                        example === "Upload an Image"
+                                        example === 'Upload an Image'
                                           ? `const form = new FormData();
 form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
@@ -318,7 +318,7 @@ fetch('https://anon.love/images', {
 })
 .catch(error => {
   console.error('Error:', error);
-});`,
+});`
                                       )
                                     }
                                   >
@@ -329,14 +329,14 @@ fetch('https://anon.love/images', {
 
                               <TabsContent value="python" className="mt-4">
                                 <motion.div
-                                  className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                                  className="bg-muted relative rounded-md p-4 font-mono text-sm"
                                   variants={codeBlockVariants}
                                   initial="initial"
                                   animate="animate"
                                   whileHover="hover"
                                 >
                                   <pre>
-                                    {example === "Upload an Image"
+                                    {example === 'Upload an Image'
                                       ? `import requests
 
 url = "https://anon.love/images"
@@ -378,7 +378,7 @@ print("Pagination:", data["pagination"])`}
                                     className="absolute top-2 right-2"
                                     onClick={() =>
                                       copyToClipboard(
-                                        example === "Upload an Image"
+                                        example === 'Upload an Image'
                                           ? `import requests
 
 url = "https://anon.love/images"
@@ -412,7 +412,7 @@ response = requests.get(url, headers=headers, params=params)
 data = response.json()
 
 print("Images:", data["images"])
-print("Pagination:", data["pagination"])`,
+print("Pagination:", data["pagination"])`
                                       )
                                     }
                                   >
@@ -423,14 +423,14 @@ print("Pagination:", data["pagination"])`,
 
                               <TabsContent value="curl" className="mt-4">
                                 <motion.div
-                                  className="bg-muted p-4 rounded-md font-mono text-sm relative"
+                                  className="bg-muted relative rounded-md p-4 font-mono text-sm"
                                   variants={codeBlockVariants}
                                   initial="initial"
                                   animate="animate"
                                   whileHover="hover"
                                 >
                                   <pre>
-                                    {example === "Upload an Image"
+                                    {example === 'Upload an Image'
                                       ? `curl -X POST https://anon.love/images \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -F "file=@image.jpg" \\
@@ -445,14 +445,14 @@ print("Pagination:", data["pagination"])`,
                                     className="absolute top-2 right-2"
                                     onClick={() =>
                                       copyToClipboard(
-                                        example === "Upload an Image"
+                                        example === 'Upload an Image'
                                           ? `curl -X POST https://anon.love/images \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -F "file=@image.jpg" \\
   -F "filename=custom-name.jpg" \\
   -F "public=true"`
                                           : `curl -X GET "https://anon.love/images?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`,
+  -H "Authorization: Bearer YOUR_API_KEY"`
                                       )
                                     }
                                   >
@@ -463,7 +463,7 @@ print("Pagination:", data["pagination"])`,
                             </Tabs>
                           </div>
                         </motion.div>
-                      ),
+                      )
                     )}
                   </CardContent>
                 </Card>

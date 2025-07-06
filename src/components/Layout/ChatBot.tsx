@@ -1,36 +1,36 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import { useSession } from "next-auth/react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+} from '@/components/ui/dialog';
+import { Card } from '@/components/ui/card';
+import { Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { useSession } from 'next-auth/react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface Message {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
 }
 
 export function ChatBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
+  const [streamingContent, setStreamingContent] = useState('');
   const { data: session } = useSession();
   const lastMessageTime = useRef<number>(0);
   const messageCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   useEffect(() => {
@@ -73,16 +73,16 @@ export function ChatBot() {
     }
 
     const userMessage = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setInput('');
+    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
-    setStreamingContent("");
+    setStreamingContent('');
 
     try {
-      const response = await fetch("/api/gemini", {
-        method: "POST",
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -91,12 +91,12 @@ export function ChatBot() {
       });
 
       if (!response.body) {
-        throw new Error("Response body is empty");
+        throw new Error('Response body is empty');
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let accumulatedResponse = "";
+      let accumulatedResponse = '';
 
       while (true) {
         const { done, value } = await reader.read();
@@ -111,17 +111,17 @@ export function ChatBot() {
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: accumulatedResponse },
+        { role: 'assistant', content: accumulatedResponse },
       ]);
-      setStreamingContent("");
+      setStreamingContent('');
       messageCount.current++;
       lastMessageTime.current = Date.now();
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
       setMessages((prev) => [
         ...prev,
         {
-          role: "assistant",
+          role: 'assistant',
           content:
             "Hmph! Something went wrong, but it's not like I care or anything! *crosses arms*",
         },
@@ -139,10 +139,10 @@ export function ChatBot() {
     isStreaming?: boolean;
   }) => (
     <div
-      className={`flex items-start gap-3 ${message.role === "assistant" ? "flex-row" : "flex-row-reverse"}`}
+      className={`flex items-start gap-3 ${message.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'}`}
     >
       <Avatar className="mt-1">
-        {message.role === "assistant" ? (
+        {message.role === 'assistant' ? (
           <>
             <AvatarImage src="/anon-avatar.png" alt="Anon" />
             <AvatarFallback>?</AvatarFallback>
@@ -150,15 +150,15 @@ export function ChatBot() {
         ) : (
           <>
             <AvatarImage
-              src={session?.user?.image || ""}
-              alt={session?.user?.name || "User"}
+              src={session?.user?.image || ''}
+              alt={session?.user?.name || 'User'}
             />
-            <AvatarFallback>{session?.user?.name?.[0] || "U"}</AvatarFallback>
+            <AvatarFallback>{session?.user?.name?.[0] || 'U'}</AvatarFallback>
           </>
         )}
       </Avatar>
       <Card
-        className={`p-3 flex-1 ${message.role === "assistant" ? "bg-primary/10" : "bg-muted"}`}
+        className={`flex-1 p-3 ${message.role === 'assistant' ? 'bg-primary/10' : 'bg-muted'}`}
       >
         <div className="prose dark:prose-invert prose-sm">
           <ReactMarkdown>
@@ -186,19 +186,19 @@ export function ChatBot() {
             <DialogTitle>Chat with Anon</DialogTitle>
           </DialogHeader>
 
-          <div className="flex flex-col gap-4 h-[50vh] max-h-[500px]">
-            <div className="flex-1 overflow-y-auto space-y-4 p-4 rounded-md border">
+          <div className="flex h-[50vh] max-h-[500px] flex-col gap-4">
+            <div className="flex-1 space-y-4 overflow-y-auto rounded-md border p-4">
               {messages.map((message, i) => (
                 <MessageComponent key={i} message={message} />
               ))}
               {messages.length === 0 && (
-                <p className="text-center text-muted-foreground">
+                <p className="text-muted-foreground text-center">
                   Talk to <strong>Anon</strong>, our helpful AI assistant
                 </p>
               )}
               {streamingContent && (
                 <MessageComponent
-                  message={{ role: "assistant", content: "" }}
+                  message={{ role: 'assistant', content: '' }}
                   isStreaming={true}
                 />
               )}

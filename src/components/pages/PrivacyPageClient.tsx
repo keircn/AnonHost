@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Server, Lock, Key } from "lucide-react";
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Server, Lock, Key } from 'lucide-react';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -12,31 +12,31 @@ const fadeIn = {
 
 const sections = [
   {
-    icon: <Lock className="h-6 w-6 text-primary" />,
-    title: "Data Encryption",
+    icon: <Lock className="text-primary h-6 w-6" />,
+    title: 'Data Encryption',
     content: [
-      "AES-256 encryption for all stored data",
-      "End-to-end encryption in transit",
-      "Zero-knowledge encryption",
-      "Military-grade security protocols",
+      'AES-256 encryption for all stored data',
+      'End-to-end encryption in transit',
+      'Zero-knowledge encryption',
+      'Military-grade security protocols',
     ],
   },
   {
-    icon: <Key className="h-6 w-6 text-primary" />,
-    title: "Security Measures",
+    icon: <Key className="text-primary h-6 w-6" />,
+    title: 'Security Measures',
     content: [
-      "Multi-layer data protection",
-      "Regular package updates and security patches",
-      "Secure key management system",
+      'Multi-layer data protection',
+      'Regular package updates and security patches',
+      'Secure key management system',
     ],
   },
   {
-    icon: <Server className="h-6 w-6 text-primary" />,
-    title: "Storage Security",
+    icon: <Server className="text-primary h-6 w-6" />,
+    title: 'Storage Security',
     content: [
-      "Data encrypted at rest with industry standards",
-      "Redundant secure storage - Cloudflare R2",
-      "Automated backup systems",
+      'Data encrypted at rest with industry standards',
+      'Redundant secure storage - Cloudflare R2',
+      'Automated backup systems',
     ],
   },
 ];
@@ -56,7 +56,7 @@ export function PrivacyPageClient() {
           },
         }}
       >
-        <motion.div className="text-center space-y-4" variants={fadeIn}>
+        <motion.div className="space-y-4 text-center" variants={fadeIn}>
           <h1 className="text-4xl font-bold tracking-tight">
             We take your privacy seriously
           </h1>
@@ -70,9 +70,9 @@ export function PrivacyPageClient() {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <Card className="h-full hover:shadow-lg transition-shadow">
+              <Card className="h-full transition-shadow hover:shadow-lg">
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="mb-4 flex items-center gap-4">
                     {section.icon}
                     <h2 className="text-xl font-semibold">{section.title}</h2>
                   </div>
@@ -82,7 +82,7 @@ export function PrivacyPageClient() {
                         key={i}
                         className="text-muted-foreground flex items-start"
                       >
-                        <span className="mr-2 text-primary">•</span>
+                        <span className="text-primary mr-2">•</span>
                         {item}
                       </li>
                     ))}
@@ -94,13 +94,13 @@ export function PrivacyPageClient() {
         </motion.div>
 
         <motion.div
-          className="bg-primary/5 rounded-lg p-6 max-w-3xl mx-auto"
+          className="bg-primary/5 mx-auto max-w-3xl rounded-lg p-6"
           variants={fadeIn}
         >
-          <h3 className="text-lg font-semibold mb-3 text-center">
+          <h3 className="mb-3 text-center text-lg font-semibold">
             Our Encryption Promise
           </h3>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-muted-foreground text-center text-sm">
             Every file is encrypted using AES-256 encryption before storage,
             with keys secured using RSA-4096. Data in transit is protected by
             TLS 1.3, ensuring end-to-end security. Our zero-knowledge
@@ -110,12 +110,12 @@ export function PrivacyPageClient() {
         </motion.div>
 
         <motion.div
-          className="text-center text-sm text-muted-foreground max-w-2xl mx-auto space-y-4"
+          className="text-muted-foreground mx-auto max-w-2xl space-y-4 text-center text-sm"
           variants={fadeIn}
         >
           <p>
             To exercise your privacy rights or ask questions about our privacy
-            practices, please contact us at{" "}
+            practices, please contact us at{' '}
             <span className="text-primary">support@anon.love</span>
           </p>
           <p className="text-xs">

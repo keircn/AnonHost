@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @source '../../*.{js,ts,jsx,tsx,mdx}';
 
@@ -189,10 +189,10 @@
   }
 
   button,
-  [role="button"],
-  [type="button"],
-  [type="reset"],
-  [type="submit"] {
+  [role='button'],
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
     cursor: pointer;
   }
 

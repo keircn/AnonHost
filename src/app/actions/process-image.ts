@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import sharp from "sharp";
+import sharp from 'sharp';
 
 export async function getImageDimensions(
-  buffer: Buffer,
+  buffer: Buffer
 ): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata();
   return {

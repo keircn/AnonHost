@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { useApiKeys } from "@/hooks/use-api-keys";
-import { ApiKeyCreator } from "@/components/ApiKey/ApiKeyCreator";
-import { ApiKeysList } from "@/components/ApiKey/ApiKeysList";
+} from '@/components/ui/card';
+import { useApiKeys } from '@/hooks/use-api-keys';
+import { ApiKeyCreator } from '@/components/ApiKey/ApiKeyCreator';
+import { ApiKeysList } from '@/components/ApiKey/ApiKeysList';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },

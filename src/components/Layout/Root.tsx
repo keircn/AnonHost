@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type React from "react";
-import "@/app/globals.css";
-import { Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/Layout/ThemeProvider";
-import { Navbar } from "@/components/Layout/Navbar";
-import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/components/Auth/AuthProvider";
-import { NavbarProvider } from "@/components/Layout/NavbarContext";
-import { GridPattern } from "@/components/magicui/grid-pattern";
+import type React from 'react';
+import '@/app/globals.css';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@/components/Layout/ThemeProvider';
+import { Navbar } from '@/components/Layout/Navbar';
+import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/components/Auth/AuthProvider';
+import { NavbarProvider } from '@/components/Layout/NavbarContext';
+import { GridPattern } from '@/components/magicui/grid-pattern';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const Root = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -21,8 +21,8 @@ export const Root = ({ children }: { children: React.ReactNode }) => {
             <NavbarProvider>
               <div className="relative flex min-h-screen flex-col">
                 <Navbar />
-                <GridPattern className="absolute inset-0 z-0 pointer-events-none opacity-10 text-muted-foreground" />
-                <div className="flex-1 flex justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-[2000px] mx-auto w-full">
+                <GridPattern className="text-muted-foreground pointer-events-none absolute inset-0 z-0 opacity-10" />
+                <div className="mx-auto flex w-full max-w-[2000px] flex-1 justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
                   {children}
                 </div>
               </div>

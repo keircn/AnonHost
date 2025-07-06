@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -23,14 +23,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 
 interface User {
   id: string;
@@ -64,13 +64,13 @@ export default function AdminPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/admin/users");
-      if (!response.ok) throw new Error("Failed to fetch users");
+      const response = await fetch('/api/admin/users');
+      if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       setUsers(data);
     } catch (error) {
-      console.error("Failed to fetch users:", error);
-      toast.error("Failed to fetch users");
+      console.error('Failed to fetch users:', error);
+      toast.error('Failed to fetch users');
     } finally {
       setIsLoading(false);
     }
@@ -78,34 +78,34 @@ export default function AdminPage() {
 
   const updateUser = async (
     id: string,
-    data: { premium?: boolean; admin?: boolean },
+    data: { premium?: boolean; admin?: boolean }
   ) => {
     try {
-      const response = await fetch("/api/admin/users", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...data }),
       });
 
-      if (!response.ok) throw new Error("Failed to update user");
+      if (!response.ok) throw new Error('Failed to update user');
 
       setUsers(
-        users.map((user) => (user.id === id ? { ...user, ...data } : user)),
+        users.map((user) => (user.id === id ? { ...user, ...data } : user))
       );
 
-      toast.success("User updated successfully");
+      toast.success('User updated successfully');
     } catch (error) {
-      console.error("Failed to update user:", error);
-      toast.error("Failed to update user");
+      console.error('Failed to update user:', error);
+      toast.error('Failed to update user');
     }
   };
 
   const sendEmail = async (formData: EmailFormData) => {
     setIsEmailSending(true);
     try {
-      const response = await fetch("/api/admin/email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/admin/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: selectedUser?.email,
           ...formData,
@@ -114,14 +114,14 @@ export default function AdminPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to send email");
+        throw new Error(error.error || 'Failed to send email');
       }
 
-      toast.success("Email sent successfully");
+      toast.success('Email sent successfully');
       setIsDialogOpen(false);
     } catch (error: Error | unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to send email";
+        error instanceof Error ? error.message : 'Failed to send email';
       toast.error(errorMessage);
     } finally {
       setIsEmailSending(false);
@@ -130,7 +130,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!session?.user?.admin) {
-      redirect("/");
+      redirect('/');
     }
     fetchUsers();
   }, [session]);
@@ -141,7 +141,7 @@ export default function AdminPage() {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <h1 className="mb-6 text-3xl font-bold">Admin Dashboard</h1>
 
       <Tabs defaultValue="users">
         <TabsList>
@@ -182,7 +182,7 @@ export default function AdminPage() {
                       <TableCell>{user._count.Media}</TableCell>
                       <TableCell>{user._count.apiKeys}</TableCell>
                       <TableCell>
-                        {user.settings?.customDomain || "—"}
+                        {user.settings?.customDomain || '—'}
                       </TableCell>
                       <TableCell>
                         <Switch
@@ -225,8 +225,8 @@ export default function AdminPage() {
                                 e.preventDefault();
                                 const formData = new FormData(e.currentTarget);
                                 sendEmail({
-                                  subject: formData.get("subject") as string,
-                                  message: formData.get("message") as string,
+                                  subject: formData.get('subject') as string,
+                                  message: formData.get('message') as string,
                                 });
                               }}
                               className="space-y-4"
@@ -245,7 +245,7 @@ export default function AdminPage() {
                                 disabled={isEmailSending}
                               />
                               <Button type="submit" disabled={isEmailSending}>
-                                {isEmailSending ? "Sending..." : "Send Email"}
+                                {isEmailSending ? 'Sending...' : 'Send Email'}
                               </Button>
                             </form>
                           </DialogContent>

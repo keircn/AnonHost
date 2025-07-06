@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 const rateLimit = new Map();
 
@@ -10,18 +10,18 @@ const MAX_REQUESTS_PER_WINDOW = {
   unauthenticated: 60,
 };
 
-const RATE_LIMITED_METHODS = ["POST", "PUT", "DELETE", "GET"];
+const RATE_LIMITED_METHODS = ['POST', 'PUT', 'DELETE', 'GET'];
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/api/auth/")) {
+  if (request.nextUrl.pathname.startsWith('/api/auth/')) {
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname.startsWith("/uploads/")) {
+  if (request.nextUrl.pathname.startsWith('/uploads/')) {
     const response = NextResponse.next();
 
-    response.headers.set("Cache-Control", "public, max-age=31536000");
-    response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set('Cache-Control', 'public, max-age=31536000');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
 
     return response;
   }
@@ -32,8 +32,8 @@ export async function middleware(request: NextRequest) {
   try {
     const token = await getToken({ req: request });
 
-    const ip = request.headers.get("x-forwarded-for") || "unknown";
-    const key = `${ip}:${token ? "auth" : "unauth"}`;
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const key = `${ip}:${token ? 'auth' : 'unauth'}`;
 
     const now = Date.now();
     const windowData = rateLimit.get(key) || {
@@ -58,40 +58,40 @@ export async function middleware(request: NextRequest) {
       return new NextResponse(
         JSON.stringify({
           success: false,
-          message: "Too Many Requests",
+          message: 'Too Many Requests',
         }),
         {
           status: 429,
           headers: {
-            "Content-Type": "application/json",
-            "X-RateLimit-Limit": maxRequests.toString(),
-            "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": (
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': maxRequests.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': (
               windowData.start + RATE_LIMIT_WINDOW
             ).toString(),
           },
-        },
+        }
       );
     }
 
     const response = NextResponse.next();
-    response.headers.set("X-RateLimit-Limit", maxRequests.toString());
+    response.headers.set('X-RateLimit-Limit', maxRequests.toString());
     response.headers.set(
-      "X-RateLimit-Remaining",
-      Math.max(0, maxRequests - windowData.count).toString(),
+      'X-RateLimit-Remaining',
+      Math.max(0, maxRequests - windowData.count).toString()
     );
     response.headers.set(
-      "X-RateLimit-Reset",
-      (windowData.start + RATE_LIMIT_WINDOW).toString(),
+      'X-RateLimit-Reset',
+      (windowData.start + RATE_LIMIT_WINDOW).toString()
     );
 
     return response;
   } catch (error) {
-    console.error("Rate limiting error:", error);
+    console.error('Rate limiting error:', error);
     return NextResponse.next();
   }
 }
 
 export const config = {
-  matcher: ["/((?!api/auth|_next|favicon.ico|sitemap.xml).*)"],
+  matcher: ['/((?!api/auth|_next|favicon.ico|sitemap.xml).*)'],
 };

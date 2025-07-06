@@ -1,8 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { sendEmail } from "@/lib/mailgun";
-import { generateOTP } from "@/lib/utils";
-import { verificationEmailTemplate } from "@/lib/email-templates";
+import { type NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { sendEmail } from '@/lib/mailgun';
+import { generateOTP } from '@/lib/utils';
+import { verificationEmailTemplate } from '@/lib/email-templates';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     await prisma.oTP.deleteMany({
       where: {
         email,
-        type: "registration",
+        type: 'registration',
         used: false,
       },
     });
@@ -23,14 +23,14 @@ export async function POST(req: NextRequest) {
         email,
         code: otp,
         expiresAt,
-        type: "registration",
+        type: 'registration',
       },
     });
 
     const { subject, text, html } = verificationEmailTemplate(
       otp,
       email,
-      "login",
+      'login'
     );
 
     await sendEmail({
@@ -42,10 +42,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to send OTP:", error);
+    console.error('Failed to send OTP:', error);
     return NextResponse.json(
-      { error: "Failed to send verification code" },
-      { status: 500 },
+      { error: 'Failed to send verification code' },
+      { status: 500 }
     );
   }
 }

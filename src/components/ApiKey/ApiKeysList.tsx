@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import { ApiKeyItem } from "@/components/ApiKey/ApiKeyItem";
-import type { ApiKey } from "@/types/settings";
+import { motion, AnimatePresence } from 'framer-motion';
+import { ApiKeyItem } from '@/components/ApiKey/ApiKeyItem';
+import type { ApiKey } from '@/types/settings';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -36,7 +36,7 @@ export function ApiKeysList({
       <AnimatePresence>
         {isLoading ? (
           <motion.div
-            className="text-center py-8 text-muted-foreground"
+            className="text-muted-foreground py-8 text-center"
             variants={fadeIn}
             initial="initial"
             animate="animate"
@@ -46,7 +46,7 @@ export function ApiKeysList({
           </motion.div>
         ) : apiKeys.length === 0 ? (
           <motion.div
-            className="text-center py-8 text-muted-foreground"
+            className="text-muted-foreground py-8 text-center"
             variants={fadeIn}
             initial="initial"
             animate="animate"

@@ -183,7 +183,10 @@ export function HomePageClient() {
             xl:top-[28%] xl:left-[55%] 
             2xl:top-[23%] 2xl:left-[55%]
             w-full max-w-[280px] md:max-w-[320px] lg:max-w-md xl:max-w-lg 
-            z-0"
+            z-20
+            transition-all duration-300
+            hover:scale-105 hover:shadow-2xl hover:-translate-y-2 hover:-rotate-6
+            "
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
@@ -201,13 +204,15 @@ export function HomePageClient() {
               }}
               className="transform translate-y-[min(0px,var(--scroll-offset,0px))]"
             >
-              <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm">
-                <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
-                  <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4">
-                    <LuUpload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
+              <Link href="/upload" className="block">
+                <Card className="border-2 border-dashed shadow-xl bg-background/95 backdrop-blur-sm hover:shadow-2xl transition-shadow cursor-pointer">
+                  <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10">
+                    <div className="rounded-full bg-primary/10 p-3 sm:p-4 mb-3 sm:mb-4">
+                      <LuUpload className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 text-primary" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </motion.div>
           </motion.div>
         </section>

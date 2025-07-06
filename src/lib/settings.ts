@@ -49,16 +49,3 @@ export async function changeEmail(newEmail: string): Promise<void> {
     throw new Error(data.error || "Failed to update email");
   }
 }
-
-export async function verifyBuyMeACoffeeMembership(email: string) {
-  const response = await fetch(
-    `/api/bmc/check-subscription?email=${encodeURIComponent(email)}`,
-  );
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to verify subscription");
-  }
-
-  return data;
-}

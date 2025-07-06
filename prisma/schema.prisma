@@ -36,7 +36,6 @@ model User {
   Media         Media[]
   Shortlink     Shortlink[]
   profile       Profile?
-  bmcEmails     BMCEmail[]
 }
 
 model Account {
@@ -168,16 +167,6 @@ model Transaction {
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model BMCEmail {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
 
   @@index([userId])
 }

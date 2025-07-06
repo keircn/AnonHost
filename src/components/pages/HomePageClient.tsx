@@ -58,9 +58,9 @@ const features = [
     icon: <LuLink2 className="h-5 w-5 text-primary" />,
   },
   {
-    title: "Personal Bio",
+    title: "Fast & Secure",
     description:
-      "Showcase your uploads with a customizable profile page featuring themes, banners, and social links.",
+      "Lightning-fast uploads with secure file storage and reliable delivery.",
     icon: <LuUser className="h-5 w-5 text-primary" />,
   },
   {

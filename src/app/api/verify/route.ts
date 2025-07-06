@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const { email, otp } = await req.json();
 
-    const otpRecord = await prisma.OTP.findFirst({
+    const otpRecord = await prisma.oTP.findFirst({
       where: {
         email,
         code: otp,

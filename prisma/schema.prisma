@@ -35,7 +35,6 @@ model User {
   OTP           OTP[]
   Media         Media[]
   Shortlink     Shortlink[]
-  profile       Profile?
 }
 
 model Account {
@@ -99,31 +98,6 @@ model Settings {
   makeImagesPublic    Boolean @default(false)
   enableDirectLinks   Boolean @default(true)
   customDomain        String? @db.VarChar(253)
-}
-
-model Profile {
-  id            String       @id @default(uuid())
-  userId        String       @unique
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title         String?
-  description   String?      @db.Text
-  avatarUrl     String?
-  bannerUrl     String?
-  theme         String?      @default("default")
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  socialLinks   SocialLink[]
-  themeSettings Json?
-}
-
-model SocialLink {
-  id        String   @id @default(uuid())
-  profileId String
-  platform  String
-  url       String
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model OTP {

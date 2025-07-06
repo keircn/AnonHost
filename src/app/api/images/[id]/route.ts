@@ -30,7 +30,7 @@ export async function DELETE(
   }
 
   try {
-    const image = await prisma.image.findUnique({
+    const image = await prisma.media.findUnique({
       where: { id },
       select: { userId: true },
     });
@@ -43,7 +43,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.image.delete({
+    await prisma.media.delete({
       where: { id },
     });
 

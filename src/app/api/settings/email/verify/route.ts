@@ -13,9 +13,9 @@ export async function POST(req: NextRequest) {
   try {
     const { otp } = await req.json();
 
-    const otpRecord = await prisma.OTP.findFirst({
+    const otpRecord = await prisma.oTP.findFirst({
       where: {
-        userId: BigInt(session.user.id),
+        userId: session.user.id,
         code: otp,
         type: "email-change",
         used: false,
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
           emailVerified: new Date(),
         },
       }),
-      prisma.OTP.update({
+      prisma.oTP.update({
         where: { id: otpRecord.id },
         data: { used: true },
       }),

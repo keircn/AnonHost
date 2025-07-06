@@ -199,7 +199,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === "avatar" || type === "banner") {
-      const uploadResult = await uploadFile(file, userId, type);
+      const uploadResult = await uploadFile(
+        file,
+        userId,
+        file.name,
+        crypto.randomUUID(),
+        type,
+      );
       return NextResponse.json({
         url: uploadResult.url,
         filename: uploadResult.filename,
@@ -207,7 +213,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const uploadResult = await uploadFile(file, userId);
+    const uploadResult = await uploadFile(
+      file,
+      userId,
+      file.name,
+      crypto.randomUUID(),
+    );
 
     const media = await prisma.media.create({
       data: {

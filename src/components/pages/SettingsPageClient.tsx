@@ -8,9 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GeneralSettingsTab } from "@/components/Settings/GeneralSettingsTab";
 import { ApiKeysTab } from "@/components/ApiKey/ApiKeysTab";
 import { useSettings } from "@/hooks/use-settings";
-import { useProfileSettings } from "@/hooks/use-profile-settings";
 import { useApiKeys } from "@/hooks/use-api-keys";
-import { Card } from "@/components/ui/card";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -28,7 +26,6 @@ export function SettingsPageClient() {
   const { status } = useSession();
   const [activeTab, setActiveTab] = useState("general");
   const { isLoading: isSettingsLoading } = useSettings();
-  const { isLoading: isProfileLoading } = useProfileSettings();
   const { isLoading: isApiKeysLoading } = useApiKeys();
 
   useEffect(() => {
@@ -37,12 +34,7 @@ export function SettingsPageClient() {
     }
   }, [status]);
 
-  if (
-    status === "loading" ||
-    isSettingsLoading ||
-    isProfileLoading ||
-    isApiKeysLoading
-  ) {
+  if (status === "loading" || isSettingsLoading || isApiKeysLoading) {
     return (
       <motion.div
         className="container flex items-center justify-center min-h-[calc(100vh-4rem)]"
@@ -79,7 +71,6 @@ export function SettingsPageClient() {
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="api-keys">API Keys</TabsTrigger>
           </TabsList>
         </motion.div>
@@ -95,18 +86,6 @@ export function SettingsPageClient() {
           >
             <TabsContent value="general" forceMount>
               {activeTab === "general" && <GeneralSettingsTab />}
-            </TabsContent>
-
-            <TabsContent value="profile" forceMount>
-              {activeTab === "profile" && (
-                <motion.div className="space-y-2" variants={fadeIn}>
-                  <Card className="p-6">
-                    <p className="text-sm text-muted-foreground text-center my-4">
-                      Profiles currently disabled
-                    </p>
-                  </Card>
-                </motion.div>
-              )}
             </TabsContent>
 
             <TabsContent value="api-keys" forceMount>

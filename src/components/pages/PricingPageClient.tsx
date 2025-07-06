@@ -20,7 +20,6 @@ const features = {
     "Image optimization & conversion",
     "Video compression",
     "URL shortening",
-    "Custom profile page",
     "Basic API access",
     "Community support",
   ],

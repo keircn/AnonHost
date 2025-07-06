@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
 
         if (!dbUser) return null;
 
-        const otpRecord = await prisma.OTP.findFirst({
+        const otpRecord = await prisma.oTP.findFirst({
           where: {
             email: credentials.email,
             code: credentials.otp,
@@ -58,7 +58,7 @@ export const authOptions: AuthOptions = {
 
         if (!otpRecord) return null;
 
-        await prisma.OTP.update({
+        await prisma.oTP.update({
           where: { id: otpRecord.id },
           data: { used: true },
         });
@@ -108,8 +108,6 @@ export const authOptions: AuthOptions = {
         session.user.id = token.sub!;
         session.user.admin = token.admin as boolean;
         session.user.premium = token.premium as boolean;
-        session.user.uid = token.uid as number;
-        session.user.createdAt = token.createdAt as string;
       }
       return session;
     },

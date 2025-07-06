@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    await prisma.OTP.create({
+    await prisma.oTP.create({
       data: {
         email,
         code: otp,
@@ -70,17 +70,17 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    await prisma.OTP.deleteMany({
+    await prisma.oTP.deleteMany({
       where: {
-        userId: BigInt(session.user.id),
+        userId: session.user.id,
         type: otpType,
         used: false,
       },
     });
 
-    await prisma.OTP.create({
+    await prisma.oTP.create({
       data: {
-        userId: BigInt(session.user.id),
+        userId: session.user.id,
         email,
         code: otp,
         expiresAt,

@@ -468,20 +468,20 @@ export function DashboardPageClient() {
                         description: "Your current subscription tier",
                         value: session?.user?.premium ? "Premium" : "Free",
                       },
-                      {
-                        title: "Member Since",
-                        description: "Account creation date",
-                        value: session?.user?.createdAt
-                          ? new Date(session.user.createdAt).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "2-digit",
-                              },
-                            )
-                          : "N/A",
-                      },
+                      // {
+                      //   title: "Member Since",
+                      //   description: "Account creation date",
+                      //   value: session?.user?.createdAt
+                      //     ? new Date(session.user.createdAt).toLocaleDateString(
+                      //         "en-US",
+                      //         {
+                      //           year: "numeric",
+                      //           month: "long",
+                      //           day: "2-digit",
+                      //         },
+                      //       )
+                      //     : "N/A",
+                      // },
                     ];
                     return (
                       <motion.div

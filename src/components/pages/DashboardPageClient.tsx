@@ -322,7 +322,7 @@ export function DashboardPageClient() {
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {new Date(
-                                        item.createdAt
+                                        item.createdAt,
                                       ).toLocaleDateString("en-US", {
                                         year: "numeric",
                                         month: "long",
@@ -415,7 +415,7 @@ export function DashboardPageClient() {
                               <PaginationNext
                                 onClick={() =>
                                   setCurrentPage((p) =>
-                                    Math.min(paginationInfo.pages, p + 1)
+                                    Math.min(paginationInfo.pages, p + 1),
                                   )
                                 }
                               />
@@ -436,7 +436,7 @@ export function DashboardPageClient() {
                     const storageStats = getStorageStats(
                       stats.storageUsed,
                       session?.user?.premium ?? false,
-                      session?.user?.admin ?? false
+                      session?.user?.admin ?? false,
                     );
                     const statsData = [
                       {
@@ -479,7 +479,7 @@ export function DashboardPageClient() {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              }
+                              },
                             )
                           : "N/A",
                       },

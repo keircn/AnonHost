@@ -64,7 +64,7 @@ export function FileSettingsModal({
   }, [fileName]);
 
   const updateCompression = (
-    update: Partial<typeof localSettings.compression>,
+    update: Partial<typeof localSettings.compression>
   ) => {
     setLocalSettings((prev) => ({
       ...prev,
@@ -76,7 +76,7 @@ export function FileSettingsModal({
   };
 
   const updateConversion = (
-    update: Partial<typeof localSettings.conversion>,
+    update: Partial<typeof localSettings.conversion>
   ) => {
     setLocalSettings((prev) => ({
       ...prev,
@@ -113,7 +113,7 @@ export function FileSettingsModal({
         </DialogHeader>
 
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="domain">
+          {/* <AccordionItem value="domain">
             <AccordionTrigger>Custom Domain</AccordionTrigger>
             <AccordionContent>
               <Select
@@ -140,7 +140,7 @@ export function FileSettingsModal({
                 </SelectContent>
               </Select>
             </AccordionContent>
-          </AccordionItem>
+          </AccordionItem> */}
 
           {fileType.isImage && (
             <AccordionItem value="compression">

@@ -115,7 +115,7 @@ export function HomePageClient() {
   return (
     <div className="flex flex-col min-h-screen py-8">
       <main className="flex-1 pt-24">
-        <section className="w-full overflow-hidden relative min-h-[80vh] md:min-h-screen lg:min-h-1/2 pb-24 pt-8">
+        <section className="w-full overflow-hidden relative pb-32 pt-8">
           <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">
             <div className="grid gap-6 lg:gap-12 items-center max-w-8xl mx-auto">
               <motion.div
@@ -220,7 +220,7 @@ export function HomePageClient() {
           </motion.div>
         </section>
 
-        <section className="w-full py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
+        <section className="w-full py-12 sm:py-16 md:py-20">
           <motion.div
             className="container max-w-7xl mx-auto px-4 md:px-6"
             initial={{ opacity: 0, y: 20 }}

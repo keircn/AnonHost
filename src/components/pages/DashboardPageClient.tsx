@@ -46,6 +46,7 @@ interface Stats {
   storageUsed: number;
   apiRequests: number;
   uid: number;
+  createdAt?: string | null;
   memberSince?: string;
   accountType?: string;
 }
@@ -321,7 +322,7 @@ export function DashboardPageClient() {
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {new Date(
-                                        item.createdAt,
+                                        item.createdAt
                                       ).toLocaleDateString("en-US", {
                                         year: "numeric",
                                         month: "long",
@@ -414,7 +415,7 @@ export function DashboardPageClient() {
                               <PaginationNext
                                 onClick={() =>
                                   setCurrentPage((p) =>
-                                    Math.min(paginationInfo.pages, p + 1),
+                                    Math.min(paginationInfo.pages, p + 1)
                                   )
                                 }
                               />
@@ -435,7 +436,7 @@ export function DashboardPageClient() {
                     const storageStats = getStorageStats(
                       stats.storageUsed,
                       session?.user?.premium ?? false,
-                      session?.user?.admin ?? false,
+                      session?.user?.admin ?? false
                     );
                     const statsData = [
                       {
@@ -458,8 +459,8 @@ export function DashboardPageClient() {
                         value: stats.apiRequests,
                       },
                       {
-                        title: "User ID",
-                        description: "Your unique identifier",
+                        title: "UID",
+                        description: "Your user ID",
                         value: stats.uid || "N/A",
                         prefix: "#",
                       },
@@ -468,20 +469,20 @@ export function DashboardPageClient() {
                         description: "Your current subscription tier",
                         value: session?.user?.premium ? "Premium" : "Free",
                       },
-                      // {
-                      //   title: "Member Since",
-                      //   description: "Account creation date",
-                      //   value: session?.user?.createdAt
-                      //     ? new Date(session.user.createdAt).toLocaleDateString(
-                      //         "en-US",
-                      //         {
-                      //           year: "numeric",
-                      //           month: "long",
-                      //           day: "2-digit",
-                      //         },
-                      //       )
-                      //     : "N/A",
-                      // },
+                      {
+                        title: "Member Since",
+                        description: "Account creation date",
+                        value: stats.createdAt
+                          ? new Date(stats.createdAt).toLocaleDateString(
+                              "en-GB",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )
+                          : "N/A",
+                      },
                     ];
                     return (
                       <motion.div

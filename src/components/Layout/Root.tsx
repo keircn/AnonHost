@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/Layout/ThemeProvider";
 import { Navbar } from "@/components/Layout/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/Auth/AuthProvider";
-import { GridPattern } from "@/components/magicui/grid-pattern";
 import { NavbarProvider } from "@/components/Layout/NavbarContext";
+import { GridPattern } from "@/components/magicui/grid-pattern";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,14 +20,9 @@ export const Root = ({ children }: { children: React.ReactNode }) => {
           <AuthProvider>
             <NavbarProvider>
               <div className="relative flex min-h-screen flex-col">
-                <GridPattern
-                  className="absolute inset-0 z-0 opacity-10"
-                  width={50}
-                  height={50}
-                  color="bg-accent"
-                />
                 <Navbar />
-                <div className="flex-1 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-[2000px] mx-auto w-full">
+                <GridPattern className="absolute inset-0 z-0 pointer-events-none opacity-10 text-muted-foreground" />
+                <div className="flex-1 flex justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-[2000px] mx-auto w-full">
                   {children}
                 </div>
               </div>

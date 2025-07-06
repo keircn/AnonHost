@@ -95,7 +95,7 @@ export function UploadPageClient() {
     Record<number, FileSettings>
   >({});
   const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(
-    null
+    null,
   );
   const [uploadProgress, setUploadProgress] = useState<
     Record<number, UploadProgress>
@@ -142,7 +142,7 @@ export function UploadPageClient() {
 
       return true;
     },
-    [toast, session?.user?.premium]
+    [toast, session?.user?.premium],
   );
 
   const onDrop = useCallback(
@@ -165,7 +165,7 @@ export function UploadPageClient() {
         setFiles((prev) => [...prev, ...newFiles]);
       }
     },
-    [toast, validateFile]
+    [toast, validateFile],
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,7 +196,7 @@ export function UploadPageClient() {
 
       const mediaItems = Array.from(items).filter(
         (item) =>
-          item.type.startsWith("image/") || item.type.startsWith("video/")
+          item.type.startsWith("image/") || item.type.startsWith("video/"),
       );
 
       if (mediaItems.length === 0) return;
@@ -206,7 +206,7 @@ export function UploadPageClient() {
           const file = item.getAsFile();
           if (!file) return null;
           return validateFile(file) ? file : null;
-        })
+        }),
       );
 
       const validFiles = newFiles.filter((file): file is File => file !== null);
@@ -228,7 +228,7 @@ export function UploadPageClient() {
         description: `Added ${validFiles.length} file${validFiles.length > 1 ? "s" : ""} from clipboard`,
       });
     },
-    [validateFile, toast]
+    [validateFile, toast],
   );
 
   const getFilePreview = (file: File) => {
@@ -303,7 +303,7 @@ export function UploadPageClient() {
       const uploadPromises = files.map((file, index) =>
         limit(async () => {
           console.log(
-            `Starting upload for ${file.name} (${formatFileSize(file.size)})`
+            `Starting upload for ${file.name} (${formatFileSize(file.size)})`,
           );
           const uploadStartTime = Date.now();
 
@@ -383,14 +383,14 @@ export function UploadPageClient() {
           ).toFixed(2);
 
           console.log(
-            `Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`
+            `Uploaded ${file.name} (${formatFileSize(file.size)}) in ${uploadDuration.toFixed(1)}s (${uploadSpeed} MB/s)`,
           );
           console.log(
-            `Progress: ${completedUploads}/${files.length} files completed`
+            `Progress: ${completedUploads}/${files.length} files completed`,
           );
 
           return result;
-        })
+        }),
       );
 
       const results = await Promise.allSettled(uploadPromises);
@@ -406,7 +406,7 @@ export function UploadPageClient() {
       console.log(`Total size: ${formatFileSize(totalSize)}`);
       console.log(`Total duration: ${totalDuration.toFixed(1)}s`);
       console.log(
-        `Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`
+        `Average speed: ${(totalSize / totalDuration / 1024 / 1024).toFixed(2)} MB/s`,
       );
 
       if (successful > 0) {
@@ -437,7 +437,7 @@ export function UploadPageClient() {
 
   const updateFileSettings = (
     fileIndex: number,
-    settings: Partial<FileSettings>
+    settings: Partial<FileSettings>,
   ) => {
     setFileSettings((prev) => ({
       ...prev,
@@ -651,7 +651,7 @@ export function UploadPageClient() {
                                 onSettingsChange={(newSettings) => {
                                   updateFileSettings(
                                     activeSettingsFile,
-                                    newSettings
+                                    newSettings,
                                   );
                                 }}
                               />

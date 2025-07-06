@@ -64,7 +64,7 @@ export function FileSettingsModal({
   }, [fileName]);
 
   const updateCompression = (
-    update: Partial<typeof localSettings.compression>
+    update: Partial<typeof localSettings.compression>,
   ) => {
     setLocalSettings((prev) => ({
       ...prev,
@@ -76,7 +76,7 @@ export function FileSettingsModal({
   };
 
   const updateConversion = (
-    update: Partial<typeof localSettings.conversion>
+    update: Partial<typeof localSettings.conversion>,
   ) => {
     setLocalSettings((prev) => ({
       ...prev,

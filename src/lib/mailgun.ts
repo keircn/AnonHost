@@ -13,7 +13,7 @@ const mailgun = new Mailgun(formData);
 const client = mailgun.client({
   username: 'api',
   key: process.env.MAILGUN_API_KEY,
-  url: 'https://api.eu.mailgun.net',
+  url: process.env.MAILGUN_API_URL || 'https://api.mailgun.net',
 });
 
 export async function sendEmail({
@@ -28,6 +28,13 @@ export async function sendEmail({
   html?: string;
 }) {
   try {
+    console.log('Attempting to send email:', {
+      to,
+      subject,
+      domain: process.env.MAILGUN_DOMAIN,
+      from: process.env.MAILGUN_FROM_EMAIL,
+    });
+
     const result = await client.messages.create(process.env.MAILGUN_DOMAIN!, {
       from: process.env.MAILGUN_FROM_EMAIL,
       to: [to],
@@ -35,9 +42,12 @@ export async function sendEmail({
       text,
       html,
     });
+
     console.log('Email sent successfully:', result.id);
     return result;
   } catch (error: unknown) {
+    console.error('Failed to send email:', error);
+
     if (
       error &&
       typeof error === 'object' &&

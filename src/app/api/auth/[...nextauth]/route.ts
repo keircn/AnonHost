@@ -4,7 +4,11 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { CustomPrismaAdapter } from '@/lib/prisma-adapter';
 import prisma from '@/lib/prisma';
 import { sendEmail } from '@/lib/mailgun';
-import { welcomeEmailTemplate } from '@/lib/email-templates';
+import {
+  welcomeEmailTemplate,
+  verificationEmailTemplate,
+} from '@/lib/email-templates';
+import { generateOTP } from '@/lib/utils';
 
 declare global {
   interface BigInt {
@@ -129,7 +133,7 @@ export const authOptions: AuthOptions = {
         try {
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
-            select: { id: true },
+            select: { id: true, emailVerified: true },
           });
 
           if (!existingUser) {
@@ -145,8 +149,118 @@ export const authOptions: AuthOptions = {
               });
             });
           }
+
+          if (!existingUser?.emailVerified) {
+            console.log(
+              'Sending verification email to Discord user:',
+              user.email
+            );
+            const otp = generateOTP();
+            const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+            await prisma.oTP.deleteMany({
+              where: {
+                email: user.email!,
+                type: 'registration',
+                used: false,
+              },
+            });
+
+            await prisma.oTP.create({
+              data: {
+                email: user.email!,
+                code: otp,
+                expiresAt,
+                type: 'registration',
+              },
+            });
+
+            const { subject, text, html } = verificationEmailTemplate(
+              otp,
+              user.email!,
+              'login'
+            );
+
+            await sendEmail({
+              to: user.email!,
+              subject,
+              text,
+              html,
+            }).catch((error) => {
+              console.error('Failed to send verification email:', {
+                error,
+                user: user.email,
+              });
+            });
+          }
         } catch (error) {
           console.error('Error in signIn callback:', error);
+        }
+      }
+
+      if (account?.provider === 'email-login') {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+            select: { id: true, emailVerified: true },
+          });
+
+          if (!existingUser) {
+            console.log('Sending welcome email to new email user:', user.email);
+            const welcomeTemplate = welcomeEmailTemplate(user.name || 'there');
+            await sendEmail({
+              to: user.email!,
+              ...welcomeTemplate,
+            }).catch((error) => {
+              console.error('Failed to send welcome email:', {
+                error,
+                user: user.email,
+              });
+            });
+          }
+
+          if (!existingUser?.emailVerified) {
+            console.log('Sending verification email to user:', user.email);
+            const otp = generateOTP();
+            const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+            await prisma.oTP.deleteMany({
+              where: {
+                email: user.email!,
+                type: 'registration',
+                used: false,
+              },
+            });
+
+            await prisma.oTP.create({
+              data: {
+                email: user.email!,
+                code: otp,
+                expiresAt,
+                type: 'registration',
+              },
+            });
+
+            const { subject, text, html } = verificationEmailTemplate(
+              otp,
+              user.email!,
+              'login'
+            );
+
+            await sendEmail({
+              to: user.email!,
+              subject,
+              text,
+              html,
+            }).catch((error) => {
+              console.error('Failed to send verification email:', {
+                error,
+                user: user.email,
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error in email signIn callback:', error);
         }
       }
       return true;

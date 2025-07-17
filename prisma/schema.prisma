@@ -13,6 +13,7 @@ enum MediaType {
   AUDIO
   TEXT
   DOCUMENT
+  ARCHIVE
 }
 
 model User {
@@ -23,7 +24,6 @@ model User {
   emailVerified DateTime?
   image         String?
   premium       Boolean       @default(false)
-  transactions  Transaction[]
   admin         Boolean       @default(false)
   accounts      Account[]
   sessions      Session[]
@@ -64,19 +64,22 @@ model Session {
 }
 
 model Media {
-  id        String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
-  url       String    @db.Text
-  filename  String    @db.VarChar(255)
-  size      Int
-  width     Int?
-  height    Int?
-  duration  Int?
-  type      MediaType @default(IMAGE)
-  userId    String
-  public    Boolean   @default(false)
-  domain    String?   @db.VarChar(253)
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(dbgenerated("substring(md5(random()::text) from 1 for 6)")) @db.Char(6)
+  url          String    @db.Text
+  filename     String    @db.VarChar(255)
+  size         Int
+  width        Int?
+  height       Int?
+  duration     Int?
+  type         MediaType @default(IMAGE)
+  userId       String
+  public       Boolean   @default(false)
+  domain       String?   @db.VarChar(253)
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  archiveType  String?
+  fileCount    Int?
+  archiveMeta  Json?
 }
 
 model ApiKey {
@@ -130,17 +133,3 @@ model Shortlink {
   @@index([originalUrl])
 }
 
-model Transaction {
-  id            String   @id @default(cuid())
-  transactionId String   @unique
-  userId        String
-  amount        Float
-  currency      String
-  type          String
-  processed     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}

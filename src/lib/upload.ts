@@ -1,3 +1,5 @@
+import { ArchiveProcessor } from './archive-processor';
+
 export const STORAGE_LIMITS = {
   PREMIUM: Number.MAX_SAFE_INTEGER,
   FREE: 1024 * 1024 * 1024,
@@ -36,7 +38,7 @@ interface UploadResult {
   width: number | null;
   height: number | null;
   duration?: number | null;
-  type: 'image' | 'video' | 'text' | 'document' | 'audio' | 'other';
+  type: 'image' | 'video' | 'text' | 'document' | 'audio' | 'archive' | 'other';
 }
 
 export function formatFileSize(bytes: number): string {
@@ -115,7 +117,9 @@ export async function uploadFile(
     const result = await response.json();
 
     let fileType: UploadResult['type'];
-    if (file.type.startsWith('image/')) {
+    if (ArchiveProcessor.isArchive(filename)) {
+      fileType = 'archive';
+    } else if (file.type.startsWith('image/')) {
       fileType = 'image';
     } else if (file.type.startsWith('video/')) {
       fileType = 'video';

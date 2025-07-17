@@ -12,6 +12,7 @@ import { verifyApiKey } from '@/lib/auth';
 import { MediaType } from '@prisma/client';
 import { sendDiscordWebhook } from '@/lib/discord';
 import { processFile } from '@/lib/process-file';
+import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { FileSettings } from '@/types/file-settings';
 import { nanoid } from 'nanoid';
 
@@ -157,6 +158,24 @@ export async function POST(req: NextRequest) {
       fileId
     );
 
+    let archiveMetadata = null;
+    let archiveType = null;
+    let fileCount = null;
+
+    if (ServerArchiveProcessor.isArchive(originalName)) {
+      try {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        archiveMetadata = await ServerArchiveProcessor.processArchive(
+          buffer,
+          originalName
+        );
+        archiveType = archiveMetadata.archiveType;
+        fileCount = archiveMetadata.totalFiles;
+      } catch (error) {
+        console.warn('Failed to process archive metadata:', error);
+      }
+    }
+
     const dbData = {
       id: fileId,
       url: uploadResult.url,
@@ -169,6 +188,9 @@ export async function POST(req: NextRequest) {
       userId,
       public: true,
       domain: customDomain || null,
+      archiveType,
+      fileCount,
+      archiveMeta: archiveMetadata ? (archiveMetadata as any) : null,
     };
 
     const [media, userSettings] = await Promise.all([

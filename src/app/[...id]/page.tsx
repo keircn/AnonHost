@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { MediaActions } from '@/components/Files/MediaActions';
+import { ArchivePreview } from '@/components/Archive/ArchivePreview';
 import Image from 'next/image';
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { betaMembers } from '@/lib/beta';
 import { Viewport } from 'next';
 import { LuMusic } from 'react-icons/lu';
-import { File, FileText } from 'lucide-react';
+import { File, FileText, Archive } from 'lucide-react';
 import { HideNavbar } from '@/components/Layout/HideNavbar';
 
 interface Props {
@@ -231,7 +232,7 @@ export default async function MediaPage(props: Props) {
       <Card className="mx-auto max-w-4xl">
         <div className="relative aspect-video">
           {(() => {
-            switch (media.type) {
+            switch ((media as any).type) {
               case 'VIDEO':
                 return (
                   <video
@@ -262,6 +263,12 @@ export default async function MediaPage(props: Props) {
                 return (
                   <div className="flex h-full w-full items-center justify-center">
                     <File className="text-muted-foreground h-24 w-24" />
+                  </div>
+                );
+              case 'ARCHIVE':
+                return (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Archive className="text-muted-foreground h-24 w-24" />
                   </div>
                 );
               case 'IMAGE':
@@ -349,6 +356,16 @@ export default async function MediaPage(props: Props) {
                 </p>
               </CardHeader>
             </Card>
+          )}
+
+          {(media as any).type === 'ARCHIVE' && (media as any).archiveMeta && (
+            <div className="mt-6">
+              <ArchivePreview
+                metadata={(media as any).archiveMeta}
+                filename={media.filename}
+                downloadUrl={media.url}
+              />
+            </div>
           )}
         </CardContent>
       </Card>

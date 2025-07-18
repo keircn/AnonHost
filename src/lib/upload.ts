@@ -6,9 +6,11 @@ export const STORAGE_LIMITS = {
 };
 
 export const FILE_SIZE_LIMITS = {
-  PREMIUM: 500 * 1024 * 1024,
-  FREE: 100 * 1024 * 1024,
+  PREMIUM: 1024 * 1024 * 1024,
+  FREE: 250 * 1024 * 1024,
 };
+
+export const CHUNK_SIZE = 25 * 1024 * 1024;
 
 export const BLOCKED_TYPES = [
   'application/x-msdownload',

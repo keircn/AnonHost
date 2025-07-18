@@ -21,7 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileSettingsModal } from '@/components/Files/FileSettingsModal';
 import type { FileSettings } from '@/types/file-settings';
-import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from '@/lib/upload';
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS, CHUNK_SIZE } from '@/lib/upload';
 import { formatFileSize } from '@/lib/utils';
 import pLimit from 'p-limit';
 import { nanoid } from 'nanoid';
@@ -126,9 +126,12 @@ export function UploadPageClient() {
         : FILE_SIZE_LIMITS.FREE;
 
       if (file.size > sizeLimit) {
-        const limitInMb = sizeLimit / (1024 * 1024);
+        const limitInMb =
+          sizeLimit >= 1024 * 1024 * 1024
+            ? `${sizeLimit / (1024 * 1024 * 1024)}GB`
+            : `${sizeLimit / (1024 * 1024)}MB`;
         toast.error(
-          `Maximum file size is ${limitInMb}MB for ${session?.user?.premium ? 'premium' : 'free'} users`
+          `Maximum file size is ${limitInMb} for ${session?.user?.premium ? 'premium' : 'free'} users`
         );
         return false;
       }
@@ -261,6 +264,194 @@ export function UploadPageClient() {
     };
   }, [handlePaste]);
 
+  const uploadFileWithChunks = async (file: File, index: number) => {
+    const settings = fileSettings[index] || defaultFileSettings;
+    const fileId = nanoid(6);
+    const needsChunking = file.size > 80 * 1024 * 1024;
+
+    if (!needsChunking) {
+      return uploadFileDirect(file, index, fileId, settings);
+    }
+
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    console.log(
+      `Uploading ${file.name} in ${totalChunks} chunks of ${CHUNK_SIZE / 1024 / 1024}MB each`
+    );
+
+    setUploadProgress((prev) => ({
+      ...prev,
+      [index]: { progress: 0, status: 'uploading' },
+    }));
+
+    try {
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end);
+
+        const formData = new FormData();
+        formData.append('chunk', chunk);
+        formData.append('chunkIndex', chunkIndex.toString());
+        formData.append('totalChunks', totalChunks.toString());
+        formData.append('fileId', fileId);
+        formData.append('fileName', file.name);
+
+        const response = await fetch('/api/upload/chunk', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload chunk ${chunkIndex}`);
+        }
+
+        const chunkResult = await response.json();
+        const chunkProgress = ((chunkIndex + 1) / totalChunks) * 90;
+
+        setUploadProgress((prev) => ({
+          ...prev,
+          [index]: { progress: Math.round(chunkProgress), status: 'uploading' },
+        }));
+
+        console.log(
+          `Uploaded chunk ${chunkIndex + 1}/${totalChunks} for ${file.name}`
+        );
+
+        if (chunkResult.allChunksUploaded) {
+          console.log(
+            `All chunks uploaded for ${file.name}, starting reassembly`
+          );
+          break;
+        }
+      }
+
+      setUploadProgress((prev) => ({
+        ...prev,
+        [index]: { progress: 95, status: 'uploading' },
+      }));
+
+      const reassembleResponse = await fetch('/api/upload/reassemble', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileId,
+          fileName: file.name,
+          totalChunks,
+          totalSize: file.size,
+          settings: JSON.stringify(settings),
+          customDomain:
+            settings.domain && settings.domain !== 'anon.love'
+              ? settings.domain
+              : null,
+        }),
+      });
+
+      if (!reassembleResponse.ok) {
+        const errorData = await reassembleResponse.json();
+        throw new Error(errorData.error || 'Failed to reassemble file');
+      }
+
+      const result = await reassembleResponse.json();
+
+      setUploadProgress((prev) => ({
+        ...prev,
+        [index]: { progress: 100, status: 'completed' },
+      }));
+
+      return result;
+    } catch (error) {
+      console.error(`Error uploading ${file.name}:`, error);
+      setUploadProgress((prev) => ({
+        ...prev,
+        [index]: {
+          progress: 0,
+          status: 'error',
+          message: error instanceof Error ? error.message : 'Upload failed',
+        },
+      }));
+      throw error;
+    }
+  };
+
+  const uploadFileDirect = async (
+    file: File,
+    index: number,
+    fileId: string,
+    settings: FileSettings
+  ) => {
+    console.log(
+      `Starting direct upload for ${file.name} (${formatFileSize(file.size)})`
+    );
+
+    setUploadProgress((prev) => ({
+      ...prev,
+      [index]: { progress: 0, status: 'uploading' },
+    }));
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileId', fileId);
+    formData.append('filename', file.name);
+    formData.append('settings', JSON.stringify(settings));
+
+    if (settings.domain && settings.domain !== 'anon.love') {
+      formData.append('domain', settings.domain);
+    }
+
+    const xhr = new XMLHttpRequest();
+    const uploadPromise = new Promise((resolve, reject) => {
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress((prev) => ({
+            ...prev,
+            [index]: { progress, status: 'uploading' },
+          }));
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+          setUploadProgress((prev) => ({
+            ...prev,
+            [index]: { progress: 100, status: 'completed' },
+          }));
+          resolve(response);
+        } else {
+          setUploadProgress((prev) => ({
+            ...prev,
+            [index]: {
+              progress: 0,
+              status: 'error',
+              message: 'Upload failed',
+            },
+          }));
+          reject(new Error('Upload failed'));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        setUploadProgress((prev) => ({
+          ...prev,
+          [index]: {
+            progress: 0,
+            status: 'error',
+            message: 'Network error',
+          },
+        }));
+        reject(new Error('Network error'));
+      });
+
+      xhr.open('POST', '/api/upload');
+      xhr.send(formData);
+    });
+
+    return uploadPromise;
+  };
+
   const handleUpload = async () => {
     if (files.length === 0) {
       toast.error('No files selected');
@@ -271,83 +462,16 @@ export function UploadPageClient() {
     console.log(`Starting upload of ${files.length} files...`);
 
     try {
-      const limit = pLimit(3);
+      const limit = pLimit(2);
       let completedUploads = 0;
       const startTime = Date.now();
 
       const uploadPromises = files.map((file, index) =>
         limit(async () => {
-          console.log(
-            `Starting upload for ${file.name} (${formatFileSize(file.size)})`
-          );
           const uploadStartTime = Date.now();
 
-          setUploadProgress((prev) => ({
-            ...prev,
-            [index]: { progress: 0, status: 'uploading' },
-          }));
+          const result = await uploadFileWithChunks(file, index);
 
-          const settings = fileSettings[index] || defaultFileSettings;
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('fileId', nanoid(6));
-          formData.append('filename', file.name);
-          formData.append('settings', JSON.stringify(settings));
-
-          if (settings.domain && settings.domain !== 'anon.love') {
-            formData.append('domain', settings.domain);
-          }
-
-          const xhr = new XMLHttpRequest();
-          const uploadPromise = new Promise((resolve, reject) => {
-            xhr.upload.addEventListener('progress', (event) => {
-              if (event.lengthComputable) {
-                const progress = Math.round((event.loaded / event.total) * 100);
-                setUploadProgress((prev) => ({
-                  ...prev,
-                  [index]: { progress, status: 'uploading' },
-                }));
-              }
-            });
-
-            xhr.addEventListener('load', () => {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                const response = JSON.parse(xhr.responseText);
-                setUploadProgress((prev) => ({
-                  ...prev,
-                  [index]: { progress: 100, status: 'completed' },
-                }));
-                resolve(response);
-              } else {
-                setUploadProgress((prev) => ({
-                  ...prev,
-                  [index]: {
-                    progress: 0,
-                    status: 'error',
-                    message: 'Upload failed',
-                  },
-                }));
-                reject(new Error('Upload failed'));
-              }
-            });
-
-            xhr.addEventListener('error', () => {
-              setUploadProgress((prev) => ({
-                ...prev,
-                [index]: {
-                  progress: 0,
-                  status: 'error',
-                  message: 'Network error',
-                },
-              }));
-              reject(new Error('Network error'));
-            });
-
-            xhr.open('POST', '/api/upload');
-            xhr.send(formData);
-          });
-
-          const result = await uploadPromise;
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;
           const uploadSpeed = (
@@ -517,6 +641,11 @@ export function UploadPageClient() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
+                              {file.size > 80 * 1024 * 1024 && (
+                                <div className="absolute top-2 left-2 rounded-md bg-blue-600/80 px-2 py-1 text-xs text-white backdrop-blur-sm">
+                                  Chunked
+                                </div>
+                              )}
                               {fileSettings[index]?.compression.enabled && (
                                 <div className="bg-background/50 absolute bottom-2 left-2 rounded-md px-2 py-1 text-xs backdrop-blur-sm">
                                   {fileSettings[index].compression.quality}%
@@ -529,7 +658,7 @@ export function UploadPageClient() {
                                     {fileSettings[index].conversion.format}
                                   </div>
                                 )}
-                            </div>
+                            </div>{' '}
                             <div className="space-y-1 p-2">
                               <motion.div
                                 className="truncate text-sm"

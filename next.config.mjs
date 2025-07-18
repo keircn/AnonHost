@@ -3,9 +3,9 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "*",
-        pathname: "/**",
+        protocol: 'https',
+        hostname: '*',
+        pathname: '/**',
       },
     ],
   },
@@ -14,6 +14,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    serverComponentsExternalPackages: [],
   },
 
   typescript: {
@@ -27,8 +28,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/uploads/:path*",
-        destination: "/api/upload/storage/:path*",
+        source: '/uploads/:path*',
+        destination: '/api/upload/storage/:path*',
       },
     ];
   },
@@ -36,24 +37,30 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/uploads/:path*",
+        source: '/uploads/:path*',
         headers: [
           {
-            key: "Cache-Control",
-            value: "public, max-age=31536000",
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000',
           },
         ],
       },
       {
-        source: "/api/:path*",
+        source: '/api/:path*',
         headers: [
           {
-            key: "Cache-Control",
-            value: "no-store, max-age=0",
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
           },
         ],
       },
     ];
+  },
+
+  serverRuntimeConfig: {
+    bodyParser: {
+      sizeLimit: '100mb',
+    },
   },
 };
 

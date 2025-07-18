@@ -18,6 +18,9 @@ import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { FileSettings } from '@/types/file-settings';
 
+export const maxDuration = 300;
+export const dynamic = 'force-dynamic';
+
 const TEMP_DIR = join(tmpdir(), 'anon-chunks');
 
 export async function POST(req: NextRequest) {
@@ -142,12 +145,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const chunks = [];
-    for (let i = 0; i < totalChunks; i++) {
-      const chunkPath = join(TEMP_DIR, `${fileId}_${i}`);
-      const chunkBuffer = await fs.readFile(chunkPath);
-      chunks.push(chunkBuffer);
-    }
+    const chunks = await Promise.all(
+      Array.from({ length: totalChunks }, async (_, i) => {
+        const chunkPath = join(TEMP_DIR, `${fileId}_${i}`);
+        try {
+          return await fs.readFile(chunkPath);
+        } catch (error) {
+          console.error(`Failed to read chunk ${i}:`, error);
+          throw new Error(`Missing chunk ${i}`);
+        }
+      })
+    );
 
     const fileBuffer = Buffer.concat(chunks);
     const mimeType = await getMimeType(fileName);

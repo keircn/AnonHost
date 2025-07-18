@@ -6,6 +6,9 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
+export const maxDuration = 300;
+export const dynamic = 'force-dynamic';
+
 const TEMP_DIR = join(tmpdir(), 'anon-chunks');
 
 async function ensureTempDir() {
@@ -55,8 +58,13 @@ export async function POST(req: NextRequest) {
     }
 
     const chunkPath = join(TEMP_DIR, `${fileId}_${chunkIndex}`);
-    const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
-    await fs.writeFile(chunkPath, chunkBuffer);
+    try {
+      const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
+      await fs.writeFile(chunkPath, chunkBuffer);
+    } catch (error) {
+      console.error(`Failed to write chunk ${chunkIndex}:`, error);
+      throw error;
+    }
     const uploadedChunks = [];
     for (let i = 0; i < totalChunks; i++) {
       const chunkFile = join(TEMP_DIR, `${fileId}_${i}`);

@@ -18,7 +18,7 @@ import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { FileSettings } from '@/types/file-settings';
 
-export const maxDuration = 300;
+export const maxDuration = 600;
 export const dynamic = 'force-dynamic';
 
 const TEMP_DIR = join(tmpdir(), 'anon-chunks');

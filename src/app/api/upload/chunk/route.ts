@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
-export const maxDuration = 300;
+export const maxDuration = 600;
 export const dynamic = 'force-dynamic';
 
 const TEMP_DIR = join(tmpdir(), 'anon-chunks');
@@ -37,7 +37,16 @@ export async function POST(req: NextRequest) {
   try {
     await ensureTempDir();
 
-    const formData = await req.formData();
+    // Add timeout wrapper for formData parsing
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 120000); // 2 min timeout
+    });
+
+    const formDataPromise = req.formData();
+    const formData = (await Promise.race([
+      formDataPromise,
+      timeoutPromise,
+    ])) as FormData;
     const chunk = formData.get('chunk') as File;
     const chunkIndex = parseInt(formData.get('chunkIndex') as string);
     const totalChunks = parseInt(formData.get('totalChunks') as string);
@@ -60,9 +69,27 @@ export async function POST(req: NextRequest) {
     const chunkPath = join(TEMP_DIR, `${fileId}_${chunkIndex}`);
     try {
       const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
+
+      // Validate chunk size
+      if (chunkBuffer.length === 0) {
+        throw new Error('Empty chunk received');
+      }
+
       await fs.writeFile(chunkPath, chunkBuffer);
+
+      // Verify chunk was written correctly
+      const stat = await fs.stat(chunkPath);
+      if (stat.size !== chunkBuffer.length) {
+        throw new Error('Chunk size mismatch after write');
+      }
     } catch (error) {
       console.error(`Failed to write chunk ${chunkIndex}:`, error);
+
+      // Cleanup failed chunk
+      try {
+        await fs.unlink(chunkPath);
+      } catch {}
+
       throw error;
     }
     const uploadedChunks = [];

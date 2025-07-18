@@ -47,6 +47,23 @@ const nextConfig = {
         ],
       },
       {
+        source: '/api/upload/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+          },
+          {
+            key: 'Connection',
+            value: 'keep-alive',
+          },
+          {
+            key: 'Keep-Alive',
+            value: 'timeout=600',
+          },
+        ],
+      },
+      {
         source: '/api/:path*',
         headers: [
           {

@@ -10,11 +10,12 @@ const nextConfig = {
     ],
   },
 
+  serverExternalPackages: [],
+
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
-    serverComponentsExternalPackages: [],
   },
 
   typescript: {

@@ -15,6 +15,11 @@ import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { FileSettings } from '@/types/file-settings';
 import { nanoid } from 'nanoid';
+import { 
+  getCachedStorageUsage, 
+  setCachedStorageUsage, 
+  updateCachedStorageUsage 
+} from '@/lib/storage-cache';
 
 function isErrorWithCause(error: unknown): error is { cause: unknown } {
   return typeof error === 'object' && error !== null && 'cause' in error;
@@ -124,11 +129,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isPremium) {
-      const totalUsed = await prisma.media.aggregate({
-        where: { userId },
-        _sum: { size: true },
-      });
-      const currentUsage = Number(totalUsed._sum?.size || 0);
+      // Try to get storage usage from cache first
+      let currentUsage = getCachedStorageUsage(userId);
+      
+      if (currentUsage === null) {
+        // Cache miss - fetch from database
+        const totalUsed = await prisma.media.aggregate({
+          where: { userId },
+          _sum: { size: true },
+        });
+        currentUsage = Number(totalUsed._sum?.size || 0);
+        setCachedStorageUsage(userId, currentUsage);
+      }
 
       if (currentUsage + file.size > STORAGE_LIMITS.FREE) {
         return NextResponse.json(
@@ -200,6 +212,9 @@ export async function POST(req: NextRequest) {
         select: { customDomain: true },
       }),
     ]);
+
+    // Update the cached storage usage
+    updateCachedStorageUsage(userId, uploadResult.size);
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { type Settings, fetchSettings, updateSettings } from '@/lib/settings';
 
 export function useSettings() {
@@ -12,38 +12,38 @@ export function useSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchSettings();
-        setSettings(data);
-        setError(null);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error('Failed to load settings')
-        );
-        console.error('Failed to load settings:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSettings();
+  const loadSettings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchSettings();
+      setSettings(data);
+      setError(null);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err : new Error('Failed to load settings')
+      );
+      console.error('Failed to load settings:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   interface UpdateSettingsField {
     (field: keyof Settings, value: Settings[keyof Settings]): void;
   }
 
-  const updateSettingsField: UpdateSettingsField = (field, value) => {
+  const updateSettingsField: UpdateSettingsField = useCallback((field, value) => {
     setSettings((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
-  const saveSettings = async () => {
+  const saveSettings = useCallback(async () => {
     try {
       setIsLoading(true);
       const updatedSettings = await updateSettings(settings);
@@ -59,13 +59,14 @@ export function useSettings() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [settings]);
 
-  return {
+  // Memoize the return object to prevent unnecessary re-renders
+  return useMemo(() => ({
     settings,
     updateSettings: saveSettings,
     updateSettingsField,
     isLoading,
     error,
-  };
+  }), [settings, saveSettings, updateSettingsField, isLoading, error]);
 }

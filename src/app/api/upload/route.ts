@@ -20,6 +20,7 @@ import {
   setCachedStorageUsage, 
   updateCachedStorageUsage 
 } from '@/lib/storage-cache';
+import { timeAsync } from '@/lib/performance';
 
 function isErrorWithCause(error: unknown): error is { cause: unknown } {
   return typeof error === 'object' && error !== null && 'cause' in error;
@@ -162,12 +163,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const processedFile = await processFile(file, settings);
-    const uploadResult = await uploadFile(
-      processedFile,
-      userId.toString(),
-      newFilename,
-      fileId
+    const processedFile = await timeAsync('file-processing', () => 
+      processFile(file, settings), 
+      { fileSize: file.size, fileType: file.type }
+    );
+    
+    const uploadResult = await timeAsync('file-upload', () =>
+      uploadFile(processedFile, userId.toString(), newFilename, fileId),
+      { fileSize: processedFile.size }
     );
 
     let archiveMetadata = null;
@@ -177,9 +180,9 @@ export async function POST(req: NextRequest) {
     if (ServerArchiveProcessor.isArchive(originalName)) {
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        archiveMetadata = await ServerArchiveProcessor.processArchive(
-          buffer,
-          originalName
+        archiveMetadata = await timeAsync('archive-processing', () =>
+          ServerArchiveProcessor.processArchive(buffer, originalName),
+          { fileSize: buffer.length, archiveType: ServerArchiveProcessor.getArchiveType(originalName) }
         );
         archiveType = archiveMetadata.archiveType;
         fileCount = archiveMetadata.totalFiles;

@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
-export const maxDuration = 600;
+export const maxDuration = 300; // Increased from 600 to 300 for more responsive handling
 export const dynamic = 'force-dynamic';
 
 const TEMP_DIR = join(tmpdir(), 'anon-chunks');
@@ -37,9 +37,9 @@ export async function POST(req: NextRequest) {
   try {
     await ensureTempDir();
 
-    // Add timeout wrapper for formData parsing
+    // Add timeout wrapper for formData parsing with shorter timeout
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), 120000); // 2 min timeout
+      setTimeout(() => reject(new Error('Request timeout')), 60000); // Reduced from 2 min to 1 min
     });
 
     const formDataPromise = req.formData();

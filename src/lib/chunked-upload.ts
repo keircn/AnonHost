@@ -142,8 +142,14 @@ async function uploadChunkWithRetry(
         throw new Error(`Failed to upload chunk ${chunkIndex} after ${maxRetries + 1} attempts: ${lastError.message}`);
       }
       
-      // Exponential backoff with jitter
-      const delay = retryDelayMs * Math.pow(2, attempt) + Math.random() * 1000;
+      // Adaptive delay based on error type
+      let delay = retryDelayMs * Math.pow(2, attempt) + Math.random() * 1000;
+      
+      // Longer delays for server errors (5xx) to avoid overwhelming the server
+      if (lastError.message.includes('HTTP 5') || lastError.message.includes('429')) {
+        delay *= 2; // Double the delay for server errors
+      }
+      
       console.warn(`Chunk ${chunkIndex} upload attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms:`, lastError.message);
       
       await new Promise(resolve => setTimeout(resolve, delay));

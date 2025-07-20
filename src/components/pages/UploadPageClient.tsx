@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileSettingsModal } from '@/components/Files/FileSettingsModal';
 import type { FileSettings } from '@/types/file-settings';
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS, CHUNK_SIZE } from '@/lib/upload';
+import { uploadFileInChunks } from '@/lib/chunked-upload';
 import { formatFileSize } from '@/lib/utils';
 import pLimit from 'p-limit';
 import { nanoid } from 'nanoid';
@@ -267,7 +268,8 @@ export function UploadPageClient() {
   const uploadFileWithChunks = async (file: File, index: number) => {
     const settings = fileSettings[index] || defaultFileSettings;
     const fileId = nanoid(6);
-    const needsChunking = file.size > 80 * 1024 * 1024;
+    // Lower threshold for chunking to handle weak connections better
+    const needsChunking = file.size > 50 * 1024 * 1024; // Reduced from 80MB to 50MB
 
     if (!needsChunking) {
       return uploadFileDirect(file, index, fileId, settings);
@@ -284,46 +286,23 @@ export function UploadPageClient() {
     }));
 
     try {
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-        const start = chunkIndex * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, file.size);
-        const chunk = file.slice(start, end);
-
-        const formData = new FormData();
-        formData.append('chunk', chunk);
-        formData.append('chunkIndex', chunkIndex.toString());
-        formData.append('totalChunks', totalChunks.toString());
-        formData.append('fileId', fileId);
-        formData.append('fileName', file.name);
-
-        const response = await fetch('/api/upload/chunk', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to upload chunk ${chunkIndex}`);
-        }
-
-        const chunkResult = await response.json();
-        const chunkProgress = ((chunkIndex + 1) / totalChunks) * 90;
-
-        setUploadProgress((prev) => ({
-          ...prev,
-          [index]: { progress: Math.round(chunkProgress), status: 'uploading' },
-        }));
-
-        console.log(
-          `Uploaded chunk ${chunkIndex + 1}/${totalChunks} for ${file.name}`
-        );
-
-        if (chunkResult.allChunksUploaded) {
-          console.log(
-            `All chunks uploaded for ${file.name}, starting reassembly`
-          );
-          break;
-        }
-      }
+      // Use the improved chunked upload with retry logic
+      await uploadFileInChunks({
+        file,
+        maxConcurrentChunks: 1, // Sequential uploads for weak connections
+        maxRetries: 3,
+        timeoutMs: 60000, // 60 second timeout per chunk
+        retryDelayMs: 1000,
+        onProgress: (progress) => {
+          setUploadProgress((prev) => ({
+            ...prev,
+            [index]: { progress: Math.round(progress * 0.9), status: 'uploading' }, // Reserve 10% for reassembly
+          }));
+        },
+        onChunkComplete: (chunkIndex, totalChunks) => {
+          console.log(`Uploaded chunk ${chunkIndex + 1}/${totalChunks} for ${file.name}`);
+        },
+      });
 
       setUploadProgress((prev) => ({
         ...prev,
@@ -401,6 +380,8 @@ export function UploadPageClient() {
     }
 
     const xhr = new XMLHttpRequest();
+    xhr.timeout = 120000; // 2 minute timeout for direct uploads
+    
     const uploadPromise = new Promise((resolve, reject) => {
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
@@ -426,10 +407,10 @@ export function UploadPageClient() {
             [index]: {
               progress: 0,
               status: 'error',
-              message: 'Upload failed',
+              message: `Upload failed: HTTP ${xhr.status}`,
             },
           }));
-          reject(new Error('Upload failed'));
+          reject(new Error(`Upload failed: HTTP ${xhr.status}`));
         }
       });
 
@@ -443,6 +424,18 @@ export function UploadPageClient() {
           },
         }));
         reject(new Error('Network error'));
+      });
+
+      xhr.addEventListener('timeout', () => {
+        setUploadProgress((prev) => ({
+          ...prev,
+          [index]: {
+            progress: 0,
+            status: 'error',
+            message: 'Upload timeout',
+          },
+        }));
+        reject(new Error('Upload timeout'));
       });
 
       xhr.open('POST', '/api/upload');
@@ -462,7 +455,7 @@ export function UploadPageClient() {
     console.log(`Starting upload of ${files.length} files...`);
 
     try {
-      const limit = pLimit(2);
+      const limit = pLimit(1); // Reduced to 1 for better reliability on weak connections
       let completedUploads = 0;
       const startTime = Date.now();
 

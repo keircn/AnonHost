@@ -10,7 +10,7 @@ export const FILE_SIZE_LIMITS = {
   FREE: 250 * 1024 * 1024,
 };
 
-export const CHUNK_SIZE = 25 * 1024 * 1024;
+export const CHUNK_SIZE = 10 * 1024 * 1024; // Reduced from 25MB to 10MB for better reliability
 
 export const BLOCKED_TYPES = [
   'application/x-msdownload',

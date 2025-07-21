@@ -6,9 +6,6 @@ export interface ChunkedUploadOptions {
   onProgress?: (progress: number) => void;
   onChunkComplete?: (chunkIndex: number, totalChunks: number) => void;
   maxConcurrentChunks?: number;
-  maxRetries?: number;
-  timeoutMs?: number;
-  retryDelayMs?: number;
 }
 
 export interface ChunkedUploadResult {
@@ -24,10 +21,7 @@ export async function uploadFileInChunks({
   file,
   onProgress,
   onChunkComplete,
-  maxConcurrentChunks = 2, // Reduced for better reliability on weak connections
-  maxRetries = 3,
-  timeoutMs = 60000, // 60 second timeout per chunk
-  retryDelayMs = 1000,
+  maxConcurrentChunks = 3,
 }: ChunkedUploadOptions): Promise<ChunkedUploadResult> {
   const totalSize = file.size;
   const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
@@ -49,7 +43,7 @@ export async function uploadFileInChunks({
     
     const uploadPromise = semaphore.acquire().then(async (release) => {
       try {
-        await uploadChunkWithRetry(chunk, fileId, chunkIndex, totalChunks, maxRetries, timeoutMs, retryDelayMs);
+        await uploadChunk(chunk, fileId, chunkIndex, totalChunks);
         
         uploadedBytes += chunk.size;
         const progress = (uploadedBytes / totalSize) * 100;
@@ -120,49 +114,11 @@ function createFileChunk(file: File, chunkIndex: number, chunkSize: number): Fil
   });
 }
 
-async function uploadChunkWithRetry(
-  chunk: File,
-  fileId: string,
-  chunkIndex: number,
-  totalChunks: number,
-  maxRetries: number,
-  timeoutMs: number,
-  retryDelayMs: number
-): Promise<void> {
-  let lastError: Error | null = null;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      await uploadChunk(chunk, fileId, chunkIndex, totalChunks, timeoutMs);
-      return; // Success
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      
-      if (attempt === maxRetries) {
-        throw new Error(`Failed to upload chunk ${chunkIndex} after ${maxRetries + 1} attempts: ${lastError.message}`);
-      }
-      
-      // Adaptive delay based on error type
-      let delay = retryDelayMs * Math.pow(2, attempt) + Math.random() * 1000;
-      
-      // Longer delays for server errors (5xx) to avoid overwhelming the server
-      if (lastError.message.includes('HTTP 5') || lastError.message.includes('429')) {
-        delay *= 2; // Double the delay for server errors
-      }
-      
-      console.warn(`Chunk ${chunkIndex} upload attempt ${attempt + 1} failed, retrying in ${Math.round(delay)}ms:`, lastError.message);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-}
-
 async function uploadChunk(
   chunk: File,
   fileId: string,
   chunkIndex: number,
-  totalChunks: number,
-  timeoutMs?: number
+  totalChunks: number
 ): Promise<void> {
   const formData = new FormData();
   formData.append('chunk', chunk);
@@ -170,138 +126,55 @@ async function uploadChunk(
   formData.append('chunkIndex', chunkIndex.toString());
   formData.append('totalChunks', totalChunks.toString());
 
-  const controller = new AbortController();
-  const timeoutId = timeoutMs ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  const response = await fetch('/api/upload/chunk', {
+    method: 'POST',
+    body: formData,
+  });
 
-  try {
-    const response = await fetch('/api/upload/chunk', {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal,
-      // Add keep-alive and connection management headers
-      headers: {
-        'Connection': 'keep-alive',
-      },
-    });
-
-    if (timeoutId) clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-    }
-  } catch (error) {
-    if (timeoutId) clearTimeout(timeoutId);
-    
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        throw new Error(`Chunk upload timeout after ${timeoutMs}ms`);
-      }
-      throw error;
-    }
-    throw new Error('Unknown error occurred during chunk upload');
+  if (!response.ok) {
+    throw new Error(`Failed to upload chunk ${chunkIndex}: ${response.statusText}`);
   }
 }
 
 async function reassembleFile(fileId: string, totalChunks: number): Promise<void> {
-  const maxRetries = 3;
-  const retryDelayMs = 2000;
-  let lastError: Error | null = null;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+  const response = await fetch('/api/upload/reassemble', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      fileId,
+      totalChunks,
+    }),
+  });
 
-      const response = await fetch('/api/upload/reassemble', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Connection': 'keep-alive',
-        },
-        body: JSON.stringify({
-          fileId,
-          totalChunks,
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-      }
-      
-      return; // Success
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      
-      if (attempt === maxRetries) {
-        throw new Error(`Failed to reassemble file after ${maxRetries + 1} attempts: ${lastError.message}`);
-      }
-      
-      const delay = retryDelayMs * Math.pow(2, attempt);
-      console.warn(`Reassemble attempt ${attempt + 1} failed, retrying in ${delay}ms:`, lastError.message);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
+  if (!response.ok) {
+    throw new Error(`Failed to reassemble file: ${response.statusText}`);
   }
 }
 
 async function uploadSingleFile(file: File): Promise<ChunkedUploadResult> {
-  // For small files, use the regular upload endpoint with retry logic
+  // For small files, use the regular upload endpoint
   const fileId = generateFileId();
-  const maxRetries = 3;
-  const retryDelayMs = 1000;
-  let lastError: Error | null = null;
   
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fileId', fileId);
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('fileId', fileId);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal,
-        headers: {
-          'Connection': 'keep-alive',
-        },
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-      }
-
-      return {
-        fileId,
-        totalChunks: 1,
-        totalSize: file.size,
-      };
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      
-      if (attempt === maxRetries) {
-        throw new Error(`Failed to upload file after ${maxRetries + 1} attempts: ${lastError.message}`);
-      }
-      
-      const delay = retryDelayMs * Math.pow(2, attempt);
-      console.warn(`Upload attempt ${attempt + 1} failed, retrying in ${delay}ms:`, lastError.message);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
+  if (!response.ok) {
+    throw new Error(`Failed to upload file: ${response.statusText}`);
   }
-  
-  // This should never be reached due to the throw in the loop
-  throw lastError || new Error('Upload failed for unknown reason');
+
+  return {
+    fileId,
+    totalChunks: 1,
+    totalSize: file.size,
+  };
 }
 
 function generateFileId(): string {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ApiKey } from '@/types/settings';
 import {
   fetchApiKeys,
@@ -8,6 +8,7 @@ import {
   deleteApiKey as deleteKey,
 } from '@/lib/api-keys';
 import { toast } from 'sonner';
+import React from 'react';
 
 export function useApiKeys() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
@@ -25,58 +26,82 @@ export function useApiKeys() {
         err instanceof Error ? err : new Error('Failed to load API keys')
       );
       console.error('Failed to load API keys:', err);
-      toast.error('Failed to fetch API keys');
+      toast(
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement('strong', null, 'Error'),
+          React.createElement('div', null, 'Failed to fetch API keys')
+        )
+      );
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     loadApiKeys();
   }, [loadApiKeys]);
 
-  const createApiKey = useCallback(async (name: string) => {
+  const createApiKey = async (name: string) => {
     try {
       setIsLoading(true);
       const newKey = await createKey(name);
-      // Optimistically update the state instead of refetching
       setApiKeys((currentKeys) => [...currentKeys, newKey]);
-      setError(null);
-      toast.success('API key created successfully');
+      await loadApiKeys();
       return newKey;
     } catch (err) {
       console.error('Failed to create API key:', err);
-      toast.error('Failed to create API key');
+      toast(
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement('strong', null, 'Error'),
+          React.createElement('div', null, 'Failed to create API key')
+        )
+      );
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const deleteApiKey = useCallback(async (id: string) => {
+  const deleteApiKey = async (id: string) => {
     try {
       setIsLoading(true);
       await deleteKey(id);
-      // Optimistically update the state instead of refetching
       setApiKeys((currentKeys) => currentKeys.filter((key) => key.id !== id));
-      setError(null);
-      toast.success('API key deleted successfully');
+      await loadApiKeys();
+      toast(
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement('strong', null, 'API key deleted'),
+          React.createElement('div', null, 'API key deleted successfully')
+        )
+      );
     } catch (err) {
       console.error('Failed to delete API key:', err);
-      toast.error('Failed to delete API key');
+      toast(
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement('strong', null, 'Failed to delete API key'),
+          React.createElement('div', null, 'Failed to delete API key')
+        )
+      );
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  // Memoize the return object to prevent unnecessary re-renders
-  return useMemo(() => ({
+  return {
     apiKeys,
     createApiKey,
     deleteApiKey,
     isLoading,
     error,
     refreshApiKeys: loadApiKeys,
-  }), [apiKeys, createApiKey, deleteApiKey, isLoading, error, loadApiKeys]);
+  };
 }

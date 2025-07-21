@@ -54,45 +54,29 @@ export class ServerArchiveProcessor {
       let totalDirectories = 0;
       let uncompressedSize = 0;
 
-      // Process entries in batches to reduce memory pressure
-      const batchSize = 100;
-      const entries = Object.entries(zip.files);
-      
-      for (let i = 0; i < entries.length; i += batchSize) {
-        const batch = entries.slice(i, i + batchSize);
-        
-        for (const [relativePath, file] of batch) {
-          const entry: ArchiveEntry = {
-            name: relativePath,
-            size: 0, // JSZip doesn't expose uncompressed size directly in this context
-            isDirectory: file.dir,
-            lastModified: file.date || undefined,
-            compressedSize: 0, // JSZip doesn't expose compressed size directly
-          };
+      zip.forEach((relativePath, file) => {
+        const entry: ArchiveEntry = {
+          name: relativePath,
+          size: 0,
+          isDirectory: file.dir,
+          lastModified: file.date || undefined,
+        };
 
-          archiveEntries.push(entry);
+        archiveEntries.push(entry);
 
-          if (file.dir) {
-            totalDirectories++;
-          } else {
-            totalFiles++;
-            // Note: We can't easily get individual file sizes without decompressing
-            // This is a limitation of the JSZip API
-          }
+        if (file.dir) {
+          totalDirectories++;
+        } else {
+          totalFiles++;
         }
-        
-        // Allow event loop to process other tasks
-        if (i + batchSize < entries.length) {
-          await new Promise(resolve => setTimeout(resolve, 0));
-        }
-      }
+      });
 
       return {
         totalFiles,
         totalDirectories,
         uncompressedSize,
         compressedSize: buffer.length,
-        entries: archiveEntries.slice(0, 1000), // Limit entries to prevent excessive memory usage
+        entries: archiveEntries,
         archiveType: 'zip',
       };
     } catch (error) {
@@ -107,16 +91,8 @@ export class ServerArchiveProcessor {
       let totalFiles = 0;
       let totalDirectories = 0;
       let uncompressedSize = 0;
-      let processedEntries = 0;
-      const maxEntries = 1000; // Limit entries to prevent excessive memory usage
 
       extract.on('entry', (header, stream, next) => {
-        if (processedEntries >= maxEntries) {
-          stream.resume();
-          next();
-          return;
-        }
-
         const entry: ArchiveEntry = {
           name: header.name,
           size: header.size || 0,
@@ -132,8 +108,6 @@ export class ServerArchiveProcessor {
           totalFiles++;
           uncompressedSize += entry.size;
         }
-
-        processedEntries++;
 
         stream.on('end', next);
         stream.resume();

@@ -4,41 +4,28 @@ import sharp from 'sharp';
 import type { FileSettings } from '@/types/file-settings';
 
 let ffmpeg: FFmpeg | null = null;
-let isInitializing = false;
 
 async function initFFmpeg() {
   if (ffmpeg) return ffmpeg;
-  
-  // Prevent multiple simultaneous initialization attempts
-  if (isInitializing) {
-    // Wait for existing initialization to complete
-    while (isInitializing) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    if (ffmpeg) return ffmpeg;
-  }
 
-  isInitializing = true;
-  
-  try {
-    ffmpeg = new FFmpeg();
+  ffmpeg = new FFmpeg();
 
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`/ffmpeg/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`/ffmpeg/ffmpeg-core.wasm`, 'application/wasm'),
-    });
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`/ffmpeg/ffmpeg-core.js`, 'text/javascript'),
+    wasmURL: await toBlobURL(`/ffmpeg/ffmpeg-core.wasm`, 'application/wasm'),
+  });
 
-    return ffmpeg;
-  } finally {
-    isInitializing = false;
-  }
+  return ffmpeg;
 }
 
 export async function processFile(
   file: Blob,
   settings: FileSettings
 ): Promise<Blob> {
-  // Early return if no processing is needed
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const fileType = file.type;
+  const fileName = (file as File).name || 'file';
+
   if (
     !settings.compression.enabled &&
     !settings.conversion.enabled &&
@@ -47,12 +34,7 @@ export async function processFile(
     return file;
   }
 
-  const fileType = file.type;
-  const fileName = (file as File).name || 'file';
-
   if (fileType.startsWith('image/')) {
-    // Process images using Sharp with streaming to reduce memory usage
-    const buffer = Buffer.from(await file.arrayBuffer());
     let image = sharp(buffer);
 
     if (settings.resize.enabled) {
@@ -133,8 +115,7 @@ export async function processFile(
         : extension;
     const outputFileName = `output.${outputFormat}`;
 
-    // Use fetchFile directly to avoid additional buffer conversion
-    await ffmpeg.writeFile(inputFileName, await fetchFile(file));
+    ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
     const args = ['-i', inputFileName];
 
@@ -168,15 +149,6 @@ export async function processFile(
     await ffmpeg.exec(args);
 
     const data = await ffmpeg.readFile(outputFileName);
-    
-    // Clean up temporary files to free memory
-    try {
-      await ffmpeg.deleteFile(inputFileName);
-      await ffmpeg.deleteFile(outputFileName);
-    } catch (error) {
-      console.warn('Failed to clean up temporary files:', error);
-    }
-
     return new Blob([data], {
       type: `video/${outputFormat}`,
     });

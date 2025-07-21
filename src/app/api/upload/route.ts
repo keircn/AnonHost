@@ -15,12 +15,6 @@ import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { FileSettings } from '@/types/file-settings';
 import { nanoid } from 'nanoid';
-import { 
-  getCachedStorageUsage, 
-  setCachedStorageUsage, 
-  updateCachedStorageUsage 
-} from '@/lib/storage-cache';
-import { timeAsync } from '@/lib/performance';
 
 function isErrorWithCause(error: unknown): error is { cause: unknown } {
   return typeof error === 'object' && error !== null && 'cause' in error;
@@ -130,18 +124,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isPremium) {
-      // Try to get storage usage from cache first
-      let currentUsage = getCachedStorageUsage(userId);
-      
-      if (currentUsage === null) {
-        // Cache miss - fetch from database
-        const totalUsed = await prisma.media.aggregate({
-          where: { userId },
-          _sum: { size: true },
-        });
-        currentUsage = Number(totalUsed._sum?.size || 0);
-        setCachedStorageUsage(userId, currentUsage);
-      }
+      const totalUsed = await prisma.media.aggregate({
+        where: { userId },
+        _sum: { size: true },
+      });
+      const currentUsage = Number(totalUsed._sum?.size || 0);
 
       if (currentUsage + file.size > STORAGE_LIMITS.FREE) {
         return NextResponse.json(
@@ -163,14 +150,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const processedFile = await timeAsync('file-processing', () => 
-      processFile(file, settings), 
-      { fileSize: file.size, fileType: file.type }
-    );
-    
-    const uploadResult = await timeAsync('file-upload', () =>
-      uploadFile(processedFile, userId.toString(), newFilename, fileId),
-      { fileSize: processedFile.size }
+    const processedFile = await processFile(file, settings);
+    const uploadResult = await uploadFile(
+      processedFile,
+      userId.toString(),
+      newFilename,
+      fileId
     );
 
     let archiveMetadata = null;
@@ -180,9 +165,9 @@ export async function POST(req: NextRequest) {
     if (ServerArchiveProcessor.isArchive(originalName)) {
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        archiveMetadata = await timeAsync('archive-processing', () =>
-          ServerArchiveProcessor.processArchive(buffer, originalName),
-          { fileSize: buffer.length, archiveType: ServerArchiveProcessor.getArchiveType(originalName) }
+        archiveMetadata = await ServerArchiveProcessor.processArchive(
+          buffer,
+          originalName
         );
         archiveType = archiveMetadata.archiveType;
         fileCount = archiveMetadata.totalFiles;
@@ -215,9 +200,6 @@ export async function POST(req: NextRequest) {
         select: { customDomain: true },
       }),
     ]);
-
-    // Update the cached storage usage
-    updateCachedStorageUsage(userId, uploadResult.size);
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`

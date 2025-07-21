@@ -80,12 +80,6 @@ model Media {
   archiveType  String?
   fileCount    Int?
   archiveMeta  Json?
-
-  @@index([userId]) // For user-specific queries like storage calculation
-  @@index([userId, createdAt]) // For user's media ordered by creation date
-  @@index([type]) // For filtering by media type
-  @@index([public]) // For public media queries
-  @@index([domain]) // For custom domain lookups
 }
 
 model ApiKey {
@@ -97,9 +91,6 @@ model ApiKey {
   lastUsed  DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
-  @@index([userId]) // For user's API keys
-  @@index([key]) // Already covered by @unique but explicit for clarity
 }
 
 model Settings {
@@ -140,8 +131,5 @@ model Shortlink {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([originalUrl])
-  @@index([userId]) // For user's shortlinks
-  @@index([public]) // For public shortlinks
-  @@index([createdAt]) // For recent shortlinks
 }
 

@@ -38,7 +38,6 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "@types/mime-types": "^3.0.1",
     "@types/tar-stream": "^3.1.4",
-    "@types/yauzl": "^2.10.3",
     "bytes": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -64,8 +63,7 @@
     "sonner": "^2.0.6",
     "swr": "^2.3.4",
     "tailwind-merge": "^3.3.1",
-    "tar-stream": "^3.1.7",
-    "yauzl": "^3.2.0"
+    "tar-stream": "^3.1.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",

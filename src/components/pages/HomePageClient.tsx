@@ -258,8 +258,8 @@ export function HomePageClient() {
                             </div>
 
                             <p className="text-muted-foreground text-sm">
-                                Requires `curl` + `bash`, installs `anonhost` into
-                                `~/.local/bin`, and verifies dependencies automatically.
+                                Requires cURL and bash, installs anonhost into
+                                $HOME/.local/bin
                             </p>
                         </CardContent>
                     </Card>

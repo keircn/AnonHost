@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Download, Link as LinkIcon } from 'lucide-react';
+import { Download, Eye, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaActionsProps {
@@ -10,12 +10,22 @@ interface MediaActionsProps {
 }
 
 export function MediaActions({ url, filename }: MediaActionsProps) {
-  const handleCopyLink = () => {
+  const handleCopyPreviewLink = () => {
     navigator.clipboard.writeText(window.location.href);
     toast(
       <div>
-        <strong>Link copied</strong>
-        <div>The link has been copied to your clipboard</div>
+        <strong>Preview link copied</strong>
+        <div>The preview page link has been copied</div>
+      </div>
+    );
+  };
+
+  const handleCopyRawLink = () => {
+    navigator.clipboard.writeText(url);
+    toast(
+      <div>
+        <strong>Raw URL copied</strong>
+        <div>The direct media URL has been copied</div>
       </div>
     );
   };
@@ -30,11 +40,32 @@ export function MediaActions({ url, filename }: MediaActionsProps) {
   };
 
   return (
-    <div className="flex space-x-2">
-      <Button variant="outline" size="icon" onClick={handleCopyLink}>
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleCopyPreviewLink}
+        aria-label="Copy preview link"
+        title="Copy preview link"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleCopyRawLink}
+        aria-label="Copy raw URL"
+        title="Copy raw URL"
+      >
         <LinkIcon className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="icon" onClick={handleDownload}>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleDownload}
+        aria-label="Download file"
+        title="Download file"
+      >
         <Download className="h-4 w-4" />
       </Button>
     </div>

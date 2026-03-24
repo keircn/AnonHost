@@ -5,6 +5,19 @@ import type { FileSettings } from '@/types/file-settings';
 
 let ffmpeg: FFmpeg | null = null;
 
+function toSafeBlobPart(data: unknown): BlobPart {
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  if (data instanceof Uint8Array || Buffer.isBuffer(data)) {
+    const bytes = Uint8Array.from(data);
+    return bytes.buffer;
+  }
+
+  throw new Error('Unsupported processed file data type');
+}
+
 async function initFFmpeg() {
   if (ffmpeg) return ffmpeg;
 
@@ -27,6 +40,8 @@ export async function processFile(
   const fileName = (file as File).name || 'file';
 
   if (
+    !settings.stripMetadata &&
+    !settings.optimizeForWeb &&
     !settings.compression.enabled &&
     !settings.conversion.enabled &&
     !settings.resize.enabled
@@ -35,13 +50,28 @@ export async function processFile(
   }
 
   if (fileType.startsWith('image/')) {
-    let image = sharp(buffer);
+    let image = sharp(buffer, {
+      failOnError: false,
+      limitInputPixels: false,
+    });
+
+    if (settings.stripMetadata) {
+      image = image.withMetadata({
+        orientation: 1,
+      });
+    }
+
+    if (settings.optimizeForWeb) {
+      image = image.rotate().pipelineColorspace('srgb');
+    }
 
     if (settings.resize.enabled) {
       image = image.resize({
         width: settings.resize.width,
         height: settings.resize.height,
-        fit: settings.resize.maintainAspectRatio ? 'inside' : 'fill',
+        fit: settings.resize.maintainAspectRatio
+          ? (settings.resize.fit ?? 'inside')
+          : 'fill',
       });
     }
 
@@ -62,6 +92,7 @@ export async function processFile(
             quality: settings.compression.quality,
             mozjpeg: true,
             chromaSubsampling: '4:4:4',
+            progressive: settings.optimizeForWeb,
           };
           break;
         case 'webp':
@@ -69,6 +100,7 @@ export async function processFile(
             quality: settings.compression.quality,
             lossless: false,
             effort: 6,
+            smartSubsample: settings.optimizeForWeb,
           };
           break;
         case 'png':
@@ -78,6 +110,7 @@ export async function processFile(
               Math.max(0, Math.round((100 - settings.compression.quality) / 11))
             ),
             palette: true,
+            progressive: settings.optimizeForWeb,
           };
           break;
         case 'gif':
@@ -97,7 +130,7 @@ export async function processFile(
     image = image.toFormat(format, formatOptions);
 
     const processedBuffer = await image.toBuffer();
-    return new Blob([processedBuffer], {
+    return new Blob([toSafeBlobPart(processedBuffer)], {
       type:
         settings.conversion.enabled && settings.conversion.format
           ? `image/${settings.conversion.format}`
@@ -119,11 +152,11 @@ export async function processFile(
 
     const args = ['-i', inputFileName];
 
-    if (settings.compression.enabled) {
-      args.push(
-        '-crf',
-        `${Math.round((100 - settings.compression.quality) / 2)}`
-      );
+    if (settings.compression.enabled || settings.optimizeForWeb) {
+      const quality = settings.compression.enabled
+        ? settings.compression.quality
+        : 80;
+      args.push('-crf', `${Math.round((100 - quality) / 2)}`);
     }
 
     if (settings.resize.enabled) {
@@ -144,12 +177,16 @@ export async function processFile(
       }
     }
 
+    if (settings.optimizeForWeb) {
+      args.push('-movflags', '+faststart');
+    }
+
     args.push(outputFileName);
 
     await ffmpeg.exec(args);
 
     const data = await ffmpeg.readFile(outputFileName);
-    return new Blob([data], {
+    return new Blob([toSafeBlobPart(data)], {
       type: `video/${outputFormat}`,
     });
   }

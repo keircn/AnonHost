@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       title: shortlink.title,
       shortUrl: new URL(
         `/s/${shortlink.id}`,
-        process.env.NEXTAUTH_URL || 'https://anon.love'
+        process.env.NEXTAUTH_URL || 'https://roxyproxy.de'
       ).toString(),
       public: shortlink.public,
       createdAt: shortlink.createdAt,

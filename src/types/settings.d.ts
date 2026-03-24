@@ -10,7 +10,7 @@ export interface Settings {
   enableNotifications: boolean;
   enableDirectLinks: boolean;
   customDomain: string;
-  makeImagesPublic?: boolean;
+  makeImagesPublic: boolean;
 }
 
 export interface ShareXConfig {

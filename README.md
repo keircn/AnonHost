@@ -4,7 +4,7 @@
 
 ## Live instance
 
-[Coming soon](https://anon.love) to a browser near you
+[Coming soon](https://roxyproxy.de) to a browser near you
 
 ## Installation
 

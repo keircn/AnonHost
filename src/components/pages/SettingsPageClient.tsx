@@ -17,9 +17,14 @@ const fadeIn = {
 };
 
 const slideAnimation = {
-  initial: { opacity: 0, x: -20 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: 20 },
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -16 },
+};
+
+const contentTransition = {
+  duration: 0.2,
+  ease: 'easeOut' as const,
 };
 
 export function SettingsPageClient() {
@@ -50,9 +55,9 @@ export function SettingsPageClient() {
   return (
     <motion.div
       className="container py-8"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      variants={fadeIn}
+      initial="initial"
+      animate="animate"
     >
       <motion.h1
         className="mb-6 text-3xl font-bold"
@@ -82,7 +87,7 @@ export function SettingsPageClient() {
             initial="initial"
             animate="animate"
             exit="exit"
-            transition={{ duration: 0.2 }}
+            transition={contentTransition}
           >
             <TabsContent value="general" forceMount>
               {activeTab === 'general' && <GeneralSettingsTab />}

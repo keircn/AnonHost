@@ -38,13 +38,6 @@ const staggerContainer = {
   },
 };
 
-const cardHover = {
-  hover: {
-    scale: 1.02,
-    transition: { duration: 0.2 },
-  },
-};
-
 const dropZoneVariants = {
   initial: {
     opacity: 0,
@@ -65,6 +58,8 @@ const dropZoneVariants = {
 
 const defaultFileSettings: FileSettings = {
   public: false,
+  stripMetadata: true,
+  optimizeForWeb: true,
   compression: {
     enabled: false,
     quality: 80,
@@ -75,6 +70,7 @@ const defaultFileSettings: FileSettings = {
   resize: {
     enabled: false,
     maintainAspectRatio: true,
+    fit: 'inside',
   },
 };
 
@@ -342,7 +338,7 @@ export function UploadPageClient() {
           totalSize: file.size,
           settings: JSON.stringify(settings),
           customDomain:
-            settings.domain && settings.domain !== 'anon.love'
+            settings.domain && settings.domain !== 'roxyproxy.de'
               ? settings.domain
               : null,
         }),
@@ -396,7 +392,7 @@ export function UploadPageClient() {
     formData.append('filename', file.name);
     formData.append('settings', JSON.stringify(settings));
 
-    if (settings.domain && settings.domain !== 'anon.love') {
+    if (settings.domain && settings.domain !== 'roxyproxy.de') {
       formData.append('domain', settings.domain);
     }
 
@@ -571,10 +567,7 @@ export function UploadPageClient() {
                 initial="initial"
                 animate="animate"
               >
-                <motion.div
-                  className="bg-primary/10 rounded-full p-4 lg:p-6"
-                  whileHover={{ scale: 1.1 }}
-                >
+                <motion.div className="bg-primary/10 rounded-full p-4 lg:p-6">
                   <Upload className="text-primary h-8 w-8 lg:h-12 lg:w-12" />
                 </motion.div>
                 <motion.div
@@ -596,7 +589,7 @@ export function UploadPageClient() {
                   multiple
                   onChange={handleFileChange}
                 />
-                <motion.div whileHover={{ scale: 1.02 }}>
+                <motion.div>
                   <Button asChild variant="outline" disabled={isUploading}>
                     <label htmlFor="file-upload" className="cursor-pointer">
                       Browse Files
@@ -632,7 +625,6 @@ export function UploadPageClient() {
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                          whileHover={cardHover}
                           className="group relative"
                           layout
                         >
@@ -762,7 +754,7 @@ export function UploadPageClient() {
                     className="mt-6 flex justify-end"
                     variants={fadeIn}
                   >
-                    <motion.div whileHover={{ scale: 1.02 }}>
+                    <motion.div>
                       <Button onClick={handleUpload} disabled={isUploading}>
                         {isUploading ? 'Uploading...' : 'Upload All Files'}
                       </Button>

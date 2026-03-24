@@ -3,15 +3,20 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { isR2Configured } from '@/lib/r2';
 
-const s3Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
+function getR2Client() {
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
+}
 
 export async function DELETE(
   req: NextRequest,
@@ -52,15 +57,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const key = media.url.replace(`${process.env.R2_PUBLIC_URL}/`, '');
+    const shouldDeleteFromR2 =
+      isR2Configured() &&
+      Boolean(process.env.R2_PUBLIC_URL) &&
+      media.url.startsWith(process.env.R2_PUBLIC_URL!);
+
+    const storageDeleteTask = shouldDeleteFromR2
+      ? deleteFromR2(media.url)
+      : deleteFromLocalStorage(media.url);
 
     await Promise.all([
-      s3Client.send(
-        new DeleteObjectCommand({
-          Bucket: process.env.R2_BUCKET_NAME!,
-          Key: key,
-        })
-      ),
+      storageDeleteTask,
       prisma.media.delete({ where: { id } }),
       prisma.user.update({
         where: { id: userId.toString() },
@@ -75,5 +82,60 @@ export async function DELETE(
       { error: 'Failed to delete media' },
       { status: 500 }
     );
+  }
+}
+
+async function deleteFromR2(mediaUrl: string) {
+  const publicUrl = process.env.R2_PUBLIC_URL!;
+  const key = mediaUrl.replace(`${publicUrl}/`, '');
+  const s3Client = getR2Client();
+
+  await s3Client.send(
+    new DeleteObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    })
+  );
+}
+
+async function deleteFromLocalStorage(mediaUrl: string) {
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const pathname = new URL(mediaUrl, baseUrl).pathname;
+
+  let relativePath: string | null = null;
+  if (pathname.startsWith('/api/upload/storage/')) {
+    relativePath = pathname.replace('/api/upload/storage/', '');
+  } else if (pathname.startsWith('/uploads/')) {
+    relativePath = pathname.replace('/uploads/', '');
+  }
+
+  if (!relativePath) {
+    return;
+  }
+
+  const fullPath = path.join(
+    process.cwd(),
+    'uploads',
+    ...relativePath.split('/')
+  );
+  const normalizedPath = path.normalize(fullPath);
+  const uploadDir = path.join(process.cwd(), 'uploads');
+
+  if (!normalizedPath.startsWith(uploadDir)) {
+    throw new Error('Invalid local media path');
+  }
+
+  try {
+    await fs.unlink(normalizedPath);
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      (error as { code: string }).code === 'ENOENT'
+    ) {
+      return;
+    }
+    throw error;
   }
 }

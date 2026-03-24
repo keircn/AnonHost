@@ -8,6 +8,7 @@ export function useSettings() {
     enableNotifications: true,
     enableDirectLinks: true,
     customDomain: '',
+    makeImagesPublic: false,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

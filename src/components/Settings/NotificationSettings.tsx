@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useSettings } from '@/hooks/use-settings';
+import type { Settings } from '@/lib/settings';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -11,9 +11,18 @@ const fadeIn = {
   exit: { opacity: 0, y: -20 },
 };
 
-export function NotificationSettings() {
-  const { settings, updateSettingsField } = useSettings();
+interface NotificationSettingsProps {
+  settings: Settings;
+  onFieldChange: (
+    field: keyof Settings,
+    value: Settings[keyof Settings]
+  ) => void;
+}
 
+export function NotificationSettings({
+  settings,
+  onFieldChange,
+}: NotificationSettingsProps) {
   return (
     <motion.div className="flex items-center justify-between" variants={fadeIn}>
       <div className="space-y-0.5">
@@ -26,7 +35,7 @@ export function NotificationSettings() {
         id="notifications"
         checked={settings.enableNotifications}
         onCheckedChange={(checked) =>
-          updateSettingsField('enableNotifications', checked)
+          onFieldChange('enableNotifications', checked)
         }
       />
     </motion.div>

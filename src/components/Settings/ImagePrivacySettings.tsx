@@ -11,7 +11,7 @@ const fadeIn = {
   exit: { opacity: 0, y: -20 },
 };
 
-interface DirectLinksSettingsProps {
+interface ImagePrivacySettingsProps {
   settings: Settings;
   onFieldChange: (
     field: keyof Settings,
@@ -19,23 +19,23 @@ interface DirectLinksSettingsProps {
   ) => void;
 }
 
-export function DirectLinksSettings({
+export function ImagePrivacySettings({
   settings,
   onFieldChange,
-}: DirectLinksSettingsProps) {
+}: ImagePrivacySettingsProps) {
   return (
     <motion.div className="flex items-center justify-between" variants={fadeIn}>
       <div className="space-y-0.5">
-        <Label htmlFor="direct-links">Direct Links</Label>
+        <Label htmlFor="make-images-public">Default Upload Visibility</Label>
         <p className="text-muted-foreground text-sm">
-          Enable direct links to your images
+          Make new uploads public by default
         </p>
       </div>
       <Switch
-        id="direct-links"
-        checked={settings.enableDirectLinks}
+        id="make-images-public"
+        checked={settings.makeImagesPublic}
         onCheckedChange={(checked) =>
-          onFieldChange('enableDirectLinks', checked)
+          onFieldChange('makeImagesPublic', checked)
         }
       />
     </motion.div>

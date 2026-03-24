@@ -56,7 +56,7 @@ export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
                 )}
               </div>
               <div className="flex gap-2">
-                <motion.div whileHover={{ scale: 1.1 }}>
+                <motion.div>
                   <Button
                     variant="outline"
                     size="icon"
@@ -66,10 +66,10 @@ export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.1 }}>
+                <motion.div>
                   <ShareXConfigDialog apiKey={apiKey} />
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.1 }}>
+                <motion.div>
                   <DeleteApiKeyDialog apiKey={apiKey} onDeleted={onDeleted} />
                 </motion.div>
               </div>

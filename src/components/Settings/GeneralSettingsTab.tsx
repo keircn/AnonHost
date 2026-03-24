@@ -15,7 +15,8 @@ import { useSettings } from '@/hooks/use-settings';
 import { NotificationSettings } from '@/components/Settings/NotificationSettings';
 import { DirectLinksSettings } from '@/components/Settings/DirectLinksSettings';
 import { EmailChangeSection } from '@/components/Settings/EmailChangeSection';
-// import { CustomDomainSettings } from "@/components/CustomDomainSettings";
+import { CustomDomainSettings } from '@/components/Settings/CustomDomainSettings';
+import { ImagePrivacySettings } from '@/components/Settings/ImagePrivacySettings';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -30,7 +31,8 @@ const staggerContainer = {
 };
 
 export function GeneralSettingsTab() {
-  const { updateSettings, isLoading } = useSettings();
+  const { settings, updateSettings, updateSettingsField, isLoading } =
+    useSettings();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveSettings = async () => {
@@ -63,8 +65,22 @@ export function GeneralSettingsTab() {
         </CardHeader>
         <CardContent className="space-y-6">
           <motion.div className="space-y-4" variants={staggerContainer}>
-            <NotificationSettings />
-            <DirectLinksSettings />
+            <NotificationSettings
+              settings={settings}
+              onFieldChange={updateSettingsField}
+            />
+            <DirectLinksSettings
+              settings={settings}
+              onFieldChange={updateSettingsField}
+            />
+            <ImagePrivacySettings
+              settings={settings}
+              onFieldChange={updateSettingsField}
+            />
+            <CustomDomainSettings
+              settings={settings}
+              onFieldChange={updateSettingsField}
+            />
             <EmailChangeSection />
           </motion.div>
 

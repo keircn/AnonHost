@@ -6,12 +6,12 @@ export const metadata = {
     shortcut: '/favicon.svg',
   },
   openGraph: {
-    url: 'https://anon.love',
+    url: 'https://roxyproxy.de',
     siteName: 'AnonHost',
     type: 'website',
     locale: 'en_US',
   },
-  metadataBase: new URL('https://anon.love'),
+  metadataBase: new URL('https://roxyproxy.de'),
 };
 
 export default function RootLayout({

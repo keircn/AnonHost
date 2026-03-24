@@ -53,12 +53,18 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File | Blob;
     const settingsStr = formData.get('settings') as string | null;
+    const userSettings = await prisma.settings.findUnique({
+      where: { userId },
+      select: { makeImagesPublic: true, customDomain: true },
+    });
     let settings: FileSettings = {
       conversion: {
         enabled: false,
         format: undefined,
       },
-      public: true,
+      public: userSettings?.makeImagesPublic ?? false,
+      stripMetadata: true,
+      optimizeForWeb: true,
       compression: {
         enabled: false,
         quality: 80,
@@ -68,6 +74,7 @@ export async function POST(req: NextRequest) {
         width: undefined,
         height: undefined,
         maintainAspectRatio: true,
+        fit: 'inside',
       },
     };
     if (settingsStr) {
@@ -78,7 +85,10 @@ export async function POST(req: NextRequest) {
             enabled: parsedSettings?.conversion?.enabled ?? false,
             format: parsedSettings?.conversion?.format ?? null,
           },
-          public: parsedSettings?.public ?? true,
+          public:
+            parsedSettings?.public ?? userSettings?.makeImagesPublic ?? false,
+          stripMetadata: parsedSettings?.stripMetadata ?? true,
+          optimizeForWeb: parsedSettings?.optimizeForWeb ?? true,
           compression: {
             enabled: parsedSettings?.compression?.enabled ?? false,
             quality: parsedSettings?.compression?.quality ?? 80,
@@ -89,6 +99,7 @@ export async function POST(req: NextRequest) {
             height: parsedSettings?.resize?.height ?? undefined,
             maintainAspectRatio:
               parsedSettings?.resize?.maintainAspectRatio ?? true,
+            fit: parsedSettings?.resize?.fit ?? 'inside',
           },
         };
       } catch (e) {
@@ -186,20 +197,14 @@ export async function POST(req: NextRequest) {
       duration: uploadResult.duration || null,
       type: uploadResult.type.toUpperCase() as MediaType,
       userId,
-      public: true,
+      public: Boolean(settings.public),
       domain: customDomain || null,
       archiveType,
       fileCount,
       archiveMeta: archiveMetadata ? (archiveMetadata as any) : null,
     };
 
-    const [media, userSettings] = await Promise.all([
-      prisma.media.create({ data: dbData }),
-      prisma.settings.findUnique({
-        where: { userId },
-        select: { customDomain: true },
-      }),
-    ]);
+    const media = await prisma.media.create({ data: dbData });
 
     const displayUrl = media.domain
       ? `https://${media.domain}/${media.id}`

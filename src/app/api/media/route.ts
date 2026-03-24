@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     userId = session!.user.id.toString();
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'https://anon.love';
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://roxyproxy.de';
   const url = new URL(req.url);
   const page = Number.parseInt(url.searchParams.get('page') || '1');
   const limit = Math.min(
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
 
       prisma.settings.findUnique({
         where: { userId: userId.toString() },
-        select: { customDomain: true },
+        select: { customDomain: true, enableDirectLinks: true },
       }),
     ]);
 
@@ -135,15 +135,19 @@ export async function GET(req: NextRequest) {
       ? STORAGE_LIMITS.PREMIUM
       : STORAGE_LIMITS.FREE;
 
+  const directLinksEnabled = settings?.enableDirectLinks ?? true;
+
   return NextResponse.json<ApiResponse>({
     media: mediaItems.map(
       (item: { id: string; domain: string | null }): MediaItemResponse => ({
         ...item,
-        displayUrl: item.domain
-          ? `https://${item.domain}/${item.id}`
-          : settings?.customDomain
-            ? `https://${settings.customDomain}/${item.id}`
-            : `${baseUrl}/${item.id}`,
+        displayUrl: directLinksEnabled
+          ? item.domain
+            ? `https://${item.domain}/${item.id}`
+            : settings?.customDomain
+              ? `https://${settings.customDomain}/${item.id}`
+              : `${baseUrl}/${item.id}`
+          : `${baseUrl}/${item.id}`,
       })
     ),
     pagination: {

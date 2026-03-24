@@ -67,7 +67,6 @@ export function PrivacyPageClient() {
             <motion.div
               key={section.title}
               variants={fadeIn}
-              whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
               <Card className="h-full transition-shadow hover:shadow-lg">
@@ -116,7 +115,7 @@ export function PrivacyPageClient() {
           <p>
             To exercise your privacy rights or ask questions about our privacy
             practices, please contact us at{' '}
-            <span className="text-primary">support@anon.love</span>
+            <span className="text-primary">support@roxyproxy.de</span>
           </p>
           <p className="text-xs">
             Last updated: April 2, 2025. AnonHost is committed to protecting

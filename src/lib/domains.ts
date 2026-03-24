@@ -1,6 +1,6 @@
 export const publicDomains: string[] = [
   'slop.lat',
-  'anon.love',
+  'roxyproxy.de',
   'kdev.pw',
   'slopr.tech',
   'kuuichi.xyz',

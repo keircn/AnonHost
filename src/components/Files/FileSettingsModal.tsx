@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,8 @@ export function FileSettingsModal({
 }: FileSettingsModalProps) {
   const [localSettings, setLocalSettings] = useState<FileSettings>({
     ...settings,
+    stripMetadata: settings.stripMetadata ?? true,
+    optimizeForWeb: settings.optimizeForWeb ?? true,
     compression: {
       ...settings.compression,
     },
@@ -49,9 +51,40 @@ export function FileSettingsModal({
       ...settings.conversion,
     },
     resize: {
+      fit: settings.resize.fit ?? 'inside',
       ...settings.resize,
     },
   });
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setLocalSettings({
+      ...settings,
+      stripMetadata: settings.stripMetadata ?? true,
+      optimizeForWeb: settings.optimizeForWeb ?? true,
+      compression: {
+        ...settings.compression,
+      },
+      conversion: {
+        ...settings.conversion,
+      },
+      resize: {
+        fit: settings.resize.fit ?? 'inside',
+        ...settings.resize,
+      },
+    });
+  }, [isOpen, settings]);
+
+  const effectiveConversionEnabled =
+    localSettings.conversion.enabled &&
+    Boolean(localSettings.conversion.format);
+  const effectiveResizeEnabled =
+    localSettings.resize.enabled &&
+    (Boolean(localSettings.resize.width) ||
+      Boolean(localSettings.resize.height));
 
   const fileType = useMemo(() => {
     const extension = fileName.split('.').pop()?.toLowerCase();
@@ -96,7 +129,32 @@ export function FileSettingsModal({
   };
 
   const handleSave = () => {
-    onSettingsChange(localSettings);
+    const normalized = {
+      ...localSettings,
+      compression: {
+        ...localSettings.compression,
+        quality: Math.min(100, Math.max(1, localSettings.compression.quality)),
+        enabled: localSettings.compression.enabled,
+      },
+      resize: {
+        ...localSettings.resize,
+        enabled: effectiveResizeEnabled,
+        width:
+          localSettings.resize.width && localSettings.resize.width > 0
+            ? localSettings.resize.width
+            : undefined,
+        height:
+          localSettings.resize.height && localSettings.resize.height > 0
+            ? localSettings.resize.height
+            : undefined,
+      },
+      conversion: {
+        ...localSettings.conversion,
+        enabled: effectiveConversionEnabled,
+      },
+    };
+
+    onSettingsChange(normalized);
     onClose();
   };
 
@@ -111,6 +169,60 @@ export function FileSettingsModal({
         </DialogHeader>
 
         <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="privacy">
+            <AccordionTrigger>Privacy</AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="public-toggle">Public Upload</Label>
+                <Switch
+                  id="public-toggle"
+                  checked={localSettings.public}
+                  onCheckedChange={(checked) =>
+                    setLocalSettings((prev) => ({ ...prev, public: checked }))
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="strip-metadata">Strip Metadata</Label>
+                <Switch
+                  id="strip-metadata"
+                  checked={localSettings.stripMetadata}
+                  onCheckedChange={(checked) =>
+                    setLocalSettings((prev) => ({
+                      ...prev,
+                      stripMetadata: checked,
+                    }))
+                  }
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {(fileType.isImage || fileType.isVideo) && (
+            <AccordionItem value="optimization">
+              <AccordionTrigger>Optimization</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="optimize-web">Optimize for Web</Label>
+                  <Switch
+                    id="optimize-web"
+                    checked={Boolean(localSettings.optimizeForWeb)}
+                    onCheckedChange={(checked) =>
+                      setLocalSettings((prev) => ({
+                        ...prev,
+                        optimizeForWeb: checked,
+                      }))
+                    }
+                  />
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  Prioritizes smaller file size and faster loading while keeping
+                  visual quality.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
           {/* <AccordionItem value="domain">
             <AccordionTrigger>Custom Domain</AccordionTrigger>
             <AccordionContent>
@@ -207,6 +319,8 @@ export function FileSettingsModal({
                       {fileType.isImage && (
                         <>
                           <SelectItem value="webp">WebP</SelectItem>
+                          <SelectItem value="jpeg">JPEG</SelectItem>
+                          <SelectItem value="png">PNG</SelectItem>
                           <SelectItem value="gif">GIF</SelectItem>
                         </>
                       )}
@@ -280,6 +394,27 @@ export function FileSettingsModal({
                           updateResize({ maintainAspectRatio: checked })
                         }
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="resize-fit">Resize fit mode</Label>
+                      <Select
+                        value={localSettings.resize.fit}
+                        onValueChange={(value) =>
+                          updateResize({
+                            fit: value as typeof localSettings.resize.fit,
+                          })
+                        }
+                      >
+                        <SelectTrigger id="resize-fit">
+                          <SelectValue placeholder="Select fit mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inside">Inside</SelectItem>
+                          <SelectItem value="cover">Cover</SelectItem>
+                          <SelectItem value="contain">Contain</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 )}

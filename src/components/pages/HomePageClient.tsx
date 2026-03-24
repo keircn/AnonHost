@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
@@ -22,7 +23,6 @@ import {
     LuImage,
     LuLink2,
     LuShield,
-    LuSparkles,
     LuTerminal,
     LuUsers,
 } from 'react-icons/lu';
@@ -57,13 +57,18 @@ const features = [
     },
 ];
 
+const fadeUp = {
+    initial: { opacity: 0, y: 18 },
+    animate: { opacity: 1, y: 0 },
+};
+
 function formatNumber(value: number): string {
     return new Intl.NumberFormat('en-US').format(Math.max(0, value));
 }
 
 export function HomePageClient() {
     const [isCopied, setIsCopied] = useState(false);
-    const installCommand = 'curl https://anon.love/install | bash';
+    const installCommand = 'curl https://roxyproxy.de/install | bash';
 
     const fetcher = (url: string) => fetch(url).then((r) => r.json());
     const { data: stats, isLoading } = useSWR<Stats>('/api/stats', fetcher, {
@@ -83,56 +88,55 @@ export function HomePageClient() {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-background py-8 text-foreground">
+        <div className="bg-background text-foreground relative flex min-h-screen w-full flex-col overflow-hidden">
             <main className="relative z-10 flex-1 pt-20 sm:pt-24">
                 <section className="container mx-auto max-w-7xl px-4 pb-16 md:px-6 md:pb-24">
                     <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
-                        <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-4 py-1.5 text-sm font-medium text-zinc-300">
-                                Open source and community funded
-                            </div>
-
-                            <h1 className="text-4xl leading-tight font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                        <motion.div
+                            variants={fadeUp}
+                            initial="initial"
+                            animate="animate"
+                            transition={{ duration: 0.35, ease: 'easeOut' }}
+                            className="space-y-6"
+                        >
+                            <h1 className="text-foreground text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-6xl">
                                 Upload, shorten, and share files in seconds.
                             </h1>
 
-                            <p className="max-w-2xl text-lg leading-relaxed text-zinc-300 sm:text-xl">
+                            <p className="text-muted-foreground max-w-2xl text-lg leading-relaxed sm:text-xl">
                                 AnonHost is a fast, practical platform for image hosting and URL
                                 shortening with a clean API and terminal-first workflow.
                             </p>
 
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    className="group bg-zinc-100 text-zinc-900 hover:bg-zinc-300"
-                                >
+                                <Button asChild size="lg" className="group">
                                     <Link href="/dashboard">
                                         Open Dashboard
                                         <LuArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                                     </Link>
                                 </Button>
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    variant="outline"
-                                    className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800"
-                                >
+                                <Button asChild size="lg" variant="outline">
                                     <Link href="/api">
                                         API Docs
                                         <LuExternalLink className="ml-2 h-4 w-4" />
                                     </Link>
                                 </Button>
                             </div>
-                        </div>
+                        </motion.div>
 
-                        <div className="relative">
-                            <Card className="relative overflow-hidden border-zinc-800 bg-zinc-900/90 shadow-2xl">
+                        <motion.div
+                            variants={fadeUp}
+                            initial="initial"
+                            animate="animate"
+                            transition={{ delay: 0.08, duration: 0.35, ease: 'easeOut' }}
+                            className="relative"
+                        >
+                            <Card className="bg-card/90 relative overflow-hidden shadow-2xl">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        Dead platform
+                                    <CardTitle className="text-foreground flex items-center gap-2 text-lg">
+                                        Instance Stats
                                     </CardTitle>
-                                    <CardDescription className="text-zinc-400">
+                                    <CardDescription>
                                         Current scale across uploads, users, and total storage.
                                     </CardDescription>
                                 </CardHeader>
@@ -165,53 +169,72 @@ export function HomePageClient() {
                                 </CardContent>
                             </Card>
 
-                            <div className="absolute -top-7 -right-4 hidden rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-300 shadow-lg md:block">
+                            <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2, duration: 0.3, ease: 'easeOut' }}
+                                className="bg-card text-muted-foreground absolute -top-7 -right-4 hidden rounded-xl border px-4 py-2 text-sm font-medium shadow-lg md:block"
+                            >
                                 Fast uploads. Clean links.
-                            </div>
-                        </div>
+                            </motion.div>
+                        </motion.div>
                     </div>
                 </section>
 
                 <section className="container mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10">
                     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-                        {features.map((feature) => {
+                        {features.map((feature, index) => {
                             const Icon = feature.icon;
                             return (
-                                <div key={feature.title}>
-                                    <Card className="h-full border-zinc-800 bg-zinc-900/85 shadow-md transition-colors hover:bg-zinc-900">
+                                <motion.div
+                                    key={feature.title}
+                                    variants={fadeUp}
+                                    initial="initial"
+                                    whileInView="animate"
+                                    viewport={{ once: true, margin: '-60px' }}
+                                    transition={{ delay: index * 0.05, duration: 0.28 }}
+                                >
+                                    <Card className="bg-card/85 card h-full shadow-md transition-colors">
                                         <CardHeader className="pb-3">
-                                            <div className="mb-2 w-fit rounded-lg bg-zinc-800 p-2 text-zinc-300">
+                                            <div className="bg-muted text-muted-foreground mb-2 w-fit rounded-lg p-2">
                                                 <Icon className="h-5 w-5" />
                                             </div>
                                             <CardTitle className="text-xl">{feature.title}</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-sm leading-relaxed text-zinc-400">
+                                            <p className="text-muted-foreground text-sm leading-relaxed">
                                                 {feature.description}
                                             </p>
                                         </CardContent>
                                     </Card>
-                                </div>
+                                </motion.div>
                             );
                         })}
                     </div>
                 </section>
 
-                <section className="container mx-auto max-w-7xl px-4 py-14 md:px-6">
-                    <Card className="overflow-hidden border-zinc-800 bg-zinc-900/85 shadow-xl">
-                        <CardHeader className="border-b border-zinc-800 bg-zinc-900">
-                            <CardTitle className="flex items-center gap-2 text-2xl">
-                                <LuTerminal className="h-6 w-6 text-zinc-300" />
+                <motion.section
+                    variants={fadeUp}
+                    initial="initial"
+                    whileInView="animate"
+                    viewport={{ once: true, margin: '-70px' }}
+                    transition={{ duration: 0.32 }}
+                    className="container mx-auto max-w-7xl px-4 py-14 md:px-6"
+                >
+                    <Card className="bg-card/90 overflow-hidden shadow-xl">
+                        <CardHeader className="border-b">
+                            <CardTitle className="text-foreground flex items-center gap-2 text-2xl">
+                                <LuTerminal className="text-muted-foreground h-6 w-6" />
                                 CLI in one command
                             </CardTitle>
-                            <CardDescription className="text-zinc-400">
+                            <CardDescription>
                                 Install AnonHost CLI and start uploading from your terminal.
                             </CardDescription>
                         </CardHeader>
 
                         <CardContent className="space-y-5 p-6">
-                            <div className="flex flex-col items-stretch gap-2 rounded-lg border border-zinc-800 bg-zinc-950 p-3 sm:flex-row sm:items-center sm:gap-3">
-                                <code className="flex-1 font-mono text-sm text-zinc-200 sm:text-base">
+                            <div className="bg-muted flex flex-col items-stretch gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:gap-3">
+                                <code className="text-foreground flex-1 font-mono text-sm sm:text-base">
                                     {installCommand}
                                 </code>
                                 <Button
@@ -222,58 +245,55 @@ export function HomePageClient() {
                                     className="shrink-0"
                                 >
                                     {isCopied ? (
-                                        <LuCircleCheck className="h-4 w-4 text-zinc-900" />
+                                        <LuCircleCheck className="h-4 w-4" />
                                     ) : (
                                         <LuCopy className="h-4 w-4" />
                                     )}
                                 </Button>
                             </div>
 
-                            <p className="text-sm text-zinc-400">
+                            <p className="text-muted-foreground text-sm">
                                 Requires `curl` + `bash`, installs `anonhost` into
                                 `~/.local/bin`, and verifies dependencies automatically.
                             </p>
                         </CardContent>
                     </Card>
-                </section>
+                </motion.section>
 
-                <section className="container mx-auto max-w-7xl px-4 pb-16 md:px-6 md:pb-24">
-                    <Card className="relative overflow-hidden border-zinc-800 bg-zinc-900 shadow-2xl">
-                        <div className="absolute -right-16 -bottom-14 h-56 w-56 rounded-full bg-zinc-800/70 blur-3xl" />
+                <motion.section
+                    variants={fadeUp}
+                    initial="initial"
+                    whileInView="animate"
+                    viewport={{ once: true, margin: '-70px' }}
+                    transition={{ duration: 0.32 }}
+                    className="container mx-auto max-w-7xl px-4 pb-16 md:px-6 md:pb-24"
+                >
+                    <Card className="bg-card relative overflow-hidden shadow-2xl">
                         <CardContent className="relative flex flex-col items-start gap-6 p-7 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
                             <div className="max-w-2xl space-y-3">
-                                <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                                <h2 className="text-foreground text-3xl font-semibold tracking-tight sm:text-4xl">
                                     Ready to ship your first link?
                                 </h2>
-                                <p className="text-base text-zinc-400">
+                                <p className="text-muted-foreground text-base">
                                     Create an account in under a minute and start uploading,
                                     shortening, and sharing right away.
                                 </p>
                             </div>
 
                             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    className="bg-zinc-100 text-zinc-900 hover:bg-zinc-300"
-                                >
+                                <Button asChild size="lg">
                                     <Link href="/register">
                                         Create Free Account
                                         <LuArrowRight className="ml-2 h-4 w-4" />
                                     </Link>
                                 </Button>
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    variant="outline"
-                                    className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800"
-                                >
+                                <Button asChild size="lg" variant="outline">
                                     <Link href="/pricing">View Pricing</Link>
                                 </Button>
                             </div>
                         </CardContent>
                     </Card>
-                </section>
+                </motion.section>
             </main>
         </div>
     );
@@ -289,14 +309,14 @@ function StatRow({
     value: string;
 }) {
     return (
-        <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
+        <div className="bg-muted/45 flex items-center justify-between rounded-lg border px-4 py-3">
             <div className="flex items-center gap-3">
-                <span className="rounded-md bg-zinc-800 p-2 text-zinc-300">
+                <span className="bg-muted text-muted-foreground rounded-md p-2">
                     <Icon className="h-4 w-4" />
                 </span>
-                <span className="text-sm text-zinc-400">{label}</span>
+                <span className="text-muted-foreground text-sm">{label}</span>
             </div>
-            <span className="text-lg font-semibold text-white">{value}</span>
+            <span className="text-foreground text-lg font-semibold">{value}</span>
         </div>
     );
 }

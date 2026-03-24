@@ -38,7 +38,7 @@ export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
                 )}
               </div>
               <div className="flex gap-2">
-                <motion.div whileHover={{ scale: 1.1 }}>
+                <motion.div>
                   <Button
                     variant="outline"
                     size="icon"

@@ -1,0 +1,47 @@
+name: anonhost
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: anonhost-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-anonhost}
+      POSTGRES_USER: ${POSTGRES_USER:-anonhost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-anonhost} -d ${POSTGRES_DB:-anonhost}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anonhost-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 1984
+      DATABASE_URL: postgresql://${POSTGRES_USER:-anonhost}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-anonhost}
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - '${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984'
+    command: ['sh', '-c', 'bun run db:migrate && bun run start']
+
+volumes:
+  postgres_data:
+  uploads_data:

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { sendEmail } from '@/lib/mailgun';
+import { sendEmail } from '@/lib/email';
 import { welcomeEmailTemplate } from '@/lib/email-templates';
 
 export async function POST(req: NextRequest) {

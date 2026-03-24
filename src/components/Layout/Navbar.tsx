@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/Layout/ModeToggle';
-import { ChatBot } from '@/components/Layout/ChatBot';
 import { signOut, useSession } from 'next-auth/react';
 import { UserMenuProps } from '@/types/user-menu-props';
 import {
@@ -93,7 +92,6 @@ export function Navbar() {
               <ExternalLink className="h-4 w-4" />
             </Button>
           </a>
-          <ChatBot />
           <ModeToggle />
 
           <div className="hidden md:block">

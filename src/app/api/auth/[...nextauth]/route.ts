@@ -3,7 +3,7 @@ import DiscordProvider from 'next-auth/providers/discord';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { CustomPrismaAdapter } from '@/lib/prisma-adapter';
 import prisma from '@/lib/prisma';
-import { sendEmail } from '@/lib/mailgun';
+import { sendEmail } from '@/lib/email';
 import {
   welcomeEmailTemplate,
   verificationEmailTemplate,

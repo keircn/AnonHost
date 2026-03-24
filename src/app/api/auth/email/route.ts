@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { sendEmail } from '@/lib/mailgun';
+import { sendEmail } from '@/lib/email';
 import { generateOTP } from '@/lib/utils';
 import { verificationEmailTemplate } from '@/lib/email-templates';
 

@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/db';
+import { otps, users } from '@/lib/db/schema';
+import { and, eq, gt } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -13,20 +15,19 @@ export async function POST(req: NextRequest) {
   try {
     const { otp } = await req.json();
 
-    const otpRecord = await prisma.oTP.findFirst({
-      where: {
-        userId: session.user.id,
-        code: otp,
-        type: 'email-change',
-        used: false,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        user: true,
-      },
-    });
+    const [otpRecord] = await db
+      .select()
+      .from(otps)
+      .where(
+        and(
+          eq(otps.userId, session.user.id),
+          eq(otps.code, otp),
+          eq(otps.type, 'email-change'),
+          eq(otps.used, false),
+          gt(otps.expiresAt, new Date())
+        )
+      )
+      .limit(1);
 
     if (!otpRecord) {
       return NextResponse.json(
@@ -35,19 +36,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: session.user.id.toString() },
-        data: {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
           email: otpRecord.email,
           emailVerified: new Date(),
-        },
-      }),
-      prisma.oTP.update({
-        where: { id: otpRecord.id },
-        data: { used: true },
-      }),
-    ]);
+        })
+        .where(eq(users.id, session.user.id.toString()));
+
+      await tx
+        .update(otps)
+        .set({ used: true })
+        .where(eq(otps.id, otpRecord.id));
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

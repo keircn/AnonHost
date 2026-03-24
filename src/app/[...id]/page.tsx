@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { MediaActions } from '@/components/Files/MediaActions';
 import { ArchivePreview } from '@/components/Archive/ArchivePreview';
-import Image from 'next/image';
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -237,7 +236,7 @@ export default async function MediaPage(props: Props) {
     <div className="container flex min-h-[calc(100vh-4rem)] items-center py-8 md:py-10">
       <HideNavbar />
       <Card className="bg-card mx-auto w-full max-w-5xl overflow-hidden border shadow-2xl">
-        <div className="bg-muted/30 relative flex aspect-video items-center justify-center border-b">
+        <div className="relative flex aspect-video items-center justify-center border-b leading-none">
           {(() => {
             switch ((media as any).type) {
               case 'VIDEO':
@@ -281,12 +280,11 @@ export default async function MediaPage(props: Props) {
               case 'IMAGE':
               default:
                 return (
-                  <Image
+                  <img
                     src={media.url}
                     alt={media.filename}
-                    fill
-                    className="object-contain"
-                    priority
+                    className="block h-full w-full object-contain align-middle"
+                    loading="eager"
                   />
                 );
             }
@@ -316,7 +314,11 @@ export default async function MediaPage(props: Props) {
               </div>
             </div>
 
-            <MediaActions url={media.url} filename={media.filename} />
+            <MediaActions
+              url={media.url}
+              filename={media.filename}
+              previewPath={`/${media.id}`}
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">

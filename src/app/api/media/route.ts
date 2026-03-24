@@ -4,7 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 import { verifyApiKey } from '@/lib/auth';
 import { uploadFile, STORAGE_LIMITS } from '@/lib/upload';
-import { MediaType } from '@prisma/client';
+import { MediaType } from '@/lib/db/schema';
 
 interface MediaItem {
   id: string;

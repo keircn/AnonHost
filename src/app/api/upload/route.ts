@@ -9,7 +9,7 @@ import {
   STORAGE_LIMITS,
 } from '@/lib/upload';
 import { verifyApiKey } from '@/lib/auth';
-import { MediaType } from '@prisma/client';
+import { MediaType } from '@/lib/db/schema';
 import { sendDiscordWebhook } from '@/lib/discord';
 import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';

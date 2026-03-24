@@ -40,9 +40,9 @@ async function ensureUploadDirectory() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const parts = await params.path;
+  const { path: parts } = await params;
   const ip =
     request.headers.get('x-real-ip') ||
     request.headers.get('x-forwarded-for') ||

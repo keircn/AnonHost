@@ -1,14 +1,16 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
 import { verifyApiKey } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { media } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
@@ -30,10 +32,11 @@ export async function DELETE(
   }
 
   try {
-    const image = await prisma.media.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
+    const [image] = await db
+      .select({ userId: media.userId })
+      .from(media)
+      .where(eq(media.id, id))
+      .limit(1);
 
     if (!image) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
@@ -43,9 +46,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await prisma.media.delete({
-      where: { id },
-    });
+    await db.delete(media).where(eq(media.id, id));
 
     return NextResponse.json({
       success: true,

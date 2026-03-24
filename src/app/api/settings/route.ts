@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/db';
+import { settings } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -12,22 +14,27 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  let settings = await prisma.settings.findUnique({
-    where: { userId },
-  });
+  const [existing] = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.userId, userId))
+    .limit(1);
 
-  if (!settings) {
-    settings = await prisma.settings.create({
-      data: {
+  let result = existing;
+
+  if (!result) {
+    [result] = await db
+      .insert(settings)
+      .values({
         userId,
         enableNotifications: true,
         makeImagesPublic: false,
         enableDirectLinks: true,
-      },
-    });
+      })
+      .returning();
   }
 
-  return NextResponse.json(settings);
+  return NextResponse.json(result);
 }
 
 export async function PUT(req: NextRequest) {
@@ -49,16 +56,27 @@ export async function PUT(req: NextRequest) {
       customDomain: data.customDomain || null,
     };
 
-    const settings = await prisma.settings.upsert({
-      where: { userId },
-      update: validSettings,
-      create: {
-        userId,
-        ...validSettings,
-      },
-    });
+    const [existing] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.userId, userId))
+      .limit(1);
 
-    return NextResponse.json(settings);
+    let result;
+    if (existing) {
+      [result] = await db
+        .update(settings)
+        .set(validSettings)
+        .where(eq(settings.userId, userId))
+        .returning();
+    } else {
+      [result] = await db
+        .insert(settings)
+        .values({ userId, ...validSettings })
+        .returning();
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Failed to update settings:', error);
     return NextResponse.json(

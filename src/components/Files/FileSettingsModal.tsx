@@ -51,8 +51,8 @@ export function FileSettingsModal({
       ...settings.conversion,
     },
     resize: {
-      fit: settings.resize.fit ?? 'inside',
       ...settings.resize,
+      fit: settings.resize.fit ?? 'inside',
     },
   });
 
@@ -72,8 +72,8 @@ export function FileSettingsModal({
         ...settings.conversion,
       },
       resize: {
-        fit: settings.resize.fit ?? 'inside',
         ...settings.resize,
+        fit: settings.resize.fit ?? 'inside',
       },
     });
   }, [isOpen, settings]);

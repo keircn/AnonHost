@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
 import { sendEmail } from '@/lib/email';
 import { generateOTP } from '@/lib/utils';
 import { verificationEmailTemplate } from '@/lib/email-templates';
+import { db } from '@/lib/db';
+import { otps, users } from '@/lib/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,13 +14,11 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    await prisma.oTP.create({
-      data: {
-        email,
-        code: otp,
-        expiresAt,
-        type: 'login',
-      },
+    await db.insert(otps).values({
+      email,
+      code: otp,
+      expiresAt,
+      type: 'login',
     });
 
     const { subject, text, html } = verificationEmailTemplate(
@@ -56,9 +56,11 @@ export async function PUT(req: NextRequest) {
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     const otpType = 'email-change' as const;
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
 
     if (
       existingUser &&
@@ -70,22 +72,22 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    await prisma.oTP.deleteMany({
-      where: {
-        userId: session.user.id,
-        type: otpType,
-        used: false,
-      },
-    });
+    await db
+      .delete(otps)
+      .where(
+        and(
+          eq(otps.userId, session.user.id),
+          eq(otps.type, otpType),
+          eq(otps.used, false)
+        )
+      );
 
-    await prisma.oTP.create({
-      data: {
-        userId: session.user.id,
-        email,
-        code: otp,
-        expiresAt,
-        type: otpType,
-      },
+    await db.insert(otps).values({
+      userId: session.user.id,
+      email,
+      code: otp,
+      expiresAt,
+      type: otpType,
     });
 
     const { subject, text, html } = verificationEmailTemplate(

@@ -1,7 +1,8 @@
 import NextAuth, { AuthOptions, User } from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { CustomPrismaAdapter } from '@/lib/prisma-adapter';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import { db, schema } from '@/lib/db';
 import prisma from '@/lib/prisma';
 import { sendEmail } from '@/lib/email';
 import {
@@ -21,7 +22,12 @@ BigInt.prototype.toJSON = function (): string {
 };
 
 export const authOptions: AuthOptions = {
-  adapter: CustomPrismaAdapter(prisma),
+  adapter: DrizzleAdapter(db, {
+    usersTable: schema.users,
+    accountsTable: schema.accounts,
+    sessionsTable: schema.sessions,
+    verificationTokensTable: schema.verificationTokens,
+  } as any) as any,
   providers: [
     CredentialsProvider({
       id: 'email-login',
@@ -33,7 +39,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.otp) return null;
 
-        const dbUser = await prisma.user.findUnique({
+        const dbUser = (await prisma.user.findUnique({
           where: { email: credentials.email },
           select: {
             id: true,
@@ -46,7 +52,7 @@ export const authOptions: AuthOptions = {
             uid: true,
             createdAt: true,
           },
-        });
+        })) as any;
 
         if (!dbUser) return null;
 

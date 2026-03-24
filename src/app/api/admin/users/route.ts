@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import prisma from '@/lib/prisma';
 
 export async function GET() {
@@ -10,7 +13,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
-  const users = await prisma.user.findMany({
+  const usersData = await prisma.user.findMany({
     include: {
       _count: {
         select: {
@@ -26,7 +29,7 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(users);
+  return NextResponse.json(usersData);
 }
 
 export async function PUT(request: Request) {
@@ -46,13 +49,15 @@ export async function PUT(request: Request) {
       );
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: {
-        ...(premium !== undefined && { premium }),
-        ...(admin !== undefined && { admin }),
-      },
-    });
+    const values: { premium?: boolean; admin?: boolean } = {};
+    if (premium !== undefined) values.premium = premium;
+    if (admin !== undefined) values.admin = admin;
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(values)
+      .where(eq(users.id, id))
+      .returning();
 
     return NextResponse.json(updatedUser);
   } catch (error) {

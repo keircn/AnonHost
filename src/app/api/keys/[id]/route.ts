@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/db';
+import { apiKeys } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function DELETE(
   req: NextRequest,
@@ -17,9 +19,11 @@ export async function DELETE(
   const userId = session.user.id;
   const { id } = params;
 
-  const apiKey = await prisma.apiKey.findUnique({
-    where: { id },
-  });
+  const [apiKey] = await db
+    .select()
+    .from(apiKeys)
+    .where(eq(apiKeys.id, id))
+    .limit(1);
 
   if (!apiKey) {
     return NextResponse.json({ error: 'API key not found' }, { status: 404 });
@@ -29,9 +33,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  await prisma.apiKey.delete({
-    where: { id },
-  });
+  await db.delete(apiKeys).where(eq(apiKeys.id, id));
 
   return NextResponse.json({
     success: true,

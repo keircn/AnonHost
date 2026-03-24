@@ -1,9 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
 import { verifyApiKey } from '@/lib/auth';
 import type { Session } from 'next-auth';
+import { db } from '@/lib/db';
+import { apiKeys, shortlinks } from '@/lib/db/schema';
+import { desc, eq } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
 
 export async function GET(req: NextRequest) {
   const session = (await getServerSession(authOptions)) as Session | null;
@@ -22,27 +25,24 @@ export async function GET(req: NextRequest) {
     }
     userId = user.id;
 
-    await prisma.apiKey.update({
-      where: { key: apiKey },
-      data: { lastUsed: new Date() },
-    });
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = session!.user.id;
   }
 
   try {
-    const shortlinks = await prisma.shortlink.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const links = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.userId, userId))
+      .orderBy(desc(shortlinks.createdAt));
 
     return NextResponse.json({
-      shortlinks,
-      count: shortlinks.length,
+      shortlinks: links,
+      count: links.length,
     });
   } catch (error) {
     console.error('Error fetching shortlinks:', error);
@@ -87,10 +87,10 @@ export async function POST(req: NextRequest) {
     }
     userId = user.id;
 
-    await prisma.apiKey.update({
-      where: { key: apiKey },
-      data: { lastUsed: new Date() },
-    });
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = session!.user.id;
   }
@@ -128,8 +128,10 @@ export async function POST(req: NextRequest) {
       expireAt.setDate(expireAt.getDate() + parseInt(expiresIn as string));
     }
 
-    const shortlink = await prisma.shortlink.create({
-      data: {
+    const [shortlink] = await db
+      .insert(shortlinks)
+      .values({
+        id: nanoid(6),
         originalUrl: originalUrl.toString(),
         title: title?.toString() || null,
         userId,
@@ -137,8 +139,8 @@ export async function POST(req: NextRequest) {
         expireAt: expiresIn
           ? new Date(Date.now() + parseInt(expiresIn as string) * 86400000)
           : null,
-      },
-    });
+      })
+      .returning();
 
     return NextResponse.json({
       id: shortlink.id,

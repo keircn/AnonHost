@@ -1,8 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
 import { randomBytes } from 'node:crypto';
+import { db } from '@/lib/db';
+import { apiKeys } from '@/lib/db/schema';
+import { count, desc, eq } from 'drizzle-orm';
 
 function generateApiKey(username: string) {
   const prefix = username?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'anon';
@@ -18,12 +20,13 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  const apiKeys = await prisma.apiKey.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-  });
+  const keys = await db
+    .select()
+    .from(apiKeys)
+    .where(eq(apiKeys.userId, userId))
+    .orderBy(desc(apiKeys.createdAt));
 
-  return NextResponse.json(apiKeys);
+  return NextResponse.json(keys);
 }
 
 export async function POST(req: NextRequest) {
@@ -36,9 +39,10 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id;
 
   try {
-    const keyCount = await prisma.apiKey.count({
-      where: { userId },
-    });
+    const [{ value: keyCount }] = await db
+      .select({ value: count() })
+      .from(apiKeys)
+      .where(eq(apiKeys.userId, userId));
 
     if (keyCount >= 10) {
       return NextResponse.json(
@@ -55,13 +59,14 @@ export async function POST(req: NextRequest) {
 
     const key = generateApiKey(session.user.name || '');
 
-    const apiKey = await prisma.apiKey.create({
-      data: {
+    const [apiKey] = await db
+      .insert(apiKeys)
+      .values({
         name,
         key,
         userId,
-      },
-    });
+      })
+      .returning();
 
     return NextResponse.json(apiKey);
   } catch (error) {

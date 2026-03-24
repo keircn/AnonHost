@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { Stats } from '@/types/stats';
+import { db } from '@/lib/db';
+import { media, users } from '@/lib/db/schema';
+import { sql } from 'drizzle-orm';
 
 const cache = {
   data: null as Stats | null,
@@ -16,19 +18,22 @@ export async function GET() {
       return NextResponse.json(cache.data);
     }
 
-    const [userCount, totalUploads, storageUsed] = await Promise.all([
-      prisma.user.count(),
-      prisma.media.count(),
-      prisma.$queryRaw<[{ total: bigint }]>`
-        SELECT COALESCE(SUM("size"), 0) as total 
-        FROM "Media"
-      `,
+    const [userCountRow, totalUploadsRow, storageUsedRow] = await Promise.all([
+      db.select({ value: sql<number>`count(*)::int` }).from(users),
+      db.select({ value: sql<number>`count(*)::int` }).from(media),
+      db
+        .select({ total: sql<number>`coalesce(sum(${media.size}), 0)::int` })
+        .from(media),
     ]);
+
+    const userCount = userCountRow[0]?.value ?? 0;
+    const totalUploads = totalUploadsRow[0]?.value ?? 0;
+    const storageUsed = storageUsedRow[0]?.total ?? 0;
 
     const stats: Stats = {
       users: userCount || 0,
       uploads: totalUploads || 0,
-      storage: Number(storageUsed[0]?.total || 0),
+      storage: Number(storageUsed || 0),
     };
 
     cache.data = stats;

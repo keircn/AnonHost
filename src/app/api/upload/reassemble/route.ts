@@ -12,7 +12,7 @@ import {
   FILE_SIZE_LIMITS,
   STORAGE_LIMITS,
 } from '@/lib/upload';
-import { MediaType } from '@prisma/client';
+import { MediaType } from '@/lib/db/schema';
 import { sendDiscordWebhook } from '@/lib/discord';
 import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';

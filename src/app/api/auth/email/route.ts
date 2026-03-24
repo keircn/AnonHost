@@ -1,8 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { sendEmail } from '@/lib/email';
 import { generateOTP } from '@/lib/utils';
 import { verificationEmailTemplate } from '@/lib/email-templates';
+import { db } from '@/lib/db';
+import { otps } from '@/lib/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,21 +12,21 @@ export async function POST(req: NextRequest) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    await prisma.oTP.deleteMany({
-      where: {
-        email,
-        type: 'registration',
-        used: false,
-      },
-    });
+    await db
+      .delete(otps)
+      .where(
+        and(
+          eq(otps.email, email),
+          eq(otps.type, 'registration'),
+          eq(otps.used, false)
+        )
+      );
 
-    await prisma.oTP.create({
-      data: {
-        email,
-        code: otp,
-        expiresAt,
-        type: 'registration',
-      },
+    await db.insert(otps).values({
+      email,
+      code: otp,
+      expiresAt,
+      type: 'registration',
     });
 
     const { subject, text, html } = verificationEmailTemplate(

@@ -1,20 +1,23 @@
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { User } from '@prisma/client';
+import { DbUser } from '@/lib/db/schema';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { apiKeys, users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
-export async function verifyApiKey(apiKey: string): Promise<User | null> {
+export async function verifyApiKey(apiKey: string): Promise<DbUser | null> {
   if (!apiKey) return null;
 
-  const key = await prisma.apiKey.findFirst({
-    where: { key: apiKey },
-    include: { user: true },
-  });
+  const [row] = await db
+    .select({ user: users })
+    .from(apiKeys)
+    .innerJoin(users, eq(apiKeys.userId, users.id))
+    .where(eq(apiKeys.key, apiKey))
+    .limit(1);
 
-  if (!key) return null;
-
-  return key.user;
+  return row?.user ?? null;
 }
 
 export async function adminMiddleware() {
@@ -23,4 +26,6 @@ export async function adminMiddleware() {
   if (!session?.user || !session.user.admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
+
+  return null;
 }

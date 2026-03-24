@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { db } from '@/lib/db';
+import { shortlinks } from '@/lib/db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await params;
 
   try {
-    const shortlink = await prisma.shortlink.findUnique({
-      where: { id },
-    });
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
       return new Response('Shortlink not found', { status: 404 });
@@ -20,10 +24,10 @@ export async function GET(
       return new Response('This link has expired', { status: 410 });
     }
 
-    await prisma.shortlink.update({
-      where: { id },
-      data: { clicks: shortlink.clicks + 1 },
-    });
+    await db
+      .update(shortlinks)
+      .set({ clicks: sql`${shortlinks.clicks} + 1` })
+      .where(eq(shortlinks.id, id));
 
     return NextResponse.redirect(shortlink.originalUrl);
   } catch (error) {

@@ -1,14 +1,16 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
 import { verifyApiKey } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { apiKeys, shortlinks } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
   const baseUrl = process.env.NEXTAUTH_URL || 'https://roxyproxy.de';
@@ -26,20 +28,20 @@ export async function GET(
     }
     userId = user.id.toString();
 
-    await prisma.apiKey.update({
-      where: { key: apiKey },
-      data: { lastUsed: new Date() },
-    });
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = session!.user.id.toString();
   }
 
   try {
-    const shortlink = await prisma.shortlink.findUnique({
-      where: {
-        id,
-      },
-    });
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
       return NextResponse.json(
@@ -73,9 +75,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
   const baseUrl = process.env.NEXTAUTH_URL || 'https://roxyproxy.de';
@@ -93,20 +95,20 @@ export async function PUT(
     }
     userId = BigInt(user.id);
 
-    await prisma.apiKey.update({
-      where: { key: apiKey },
-      data: { lastUsed: new Date() },
-    });
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = BigInt(session!.user.id);
   }
 
   try {
-    const shortlink = await prisma.shortlink.findUnique({
-      where: {
-        id,
-      },
-    });
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
       return NextResponse.json(
@@ -139,17 +141,16 @@ export async function PUT(
       }
     }
 
-    const updatedShortlink = await prisma.shortlink.update({
-      where: {
-        id,
-      },
-      data: {
+    const [updatedShortlink] = await db
+      .update(shortlinks)
+      .set({
         title: title !== undefined ? title : shortlink.title,
         originalUrl: originalUrl || shortlink.originalUrl,
         public: isPublic !== undefined ? isPublic : shortlink.public,
         expireAt: expiresIn !== undefined ? expireAt : shortlink.expireAt,
-      },
-    });
+      })
+      .where(eq(shortlinks.id, id))
+      .returning();
 
     return NextResponse.json({
       id: updatedShortlink.id,
@@ -172,9 +173,9 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
 
@@ -191,20 +192,20 @@ export async function DELETE(
     }
     userId = user.id;
 
-    await prisma.apiKey.update({
-      where: { key: apiKey },
-      data: { lastUsed: new Date() },
-    });
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = session!.user.id;
   }
 
   try {
-    const shortlink = await prisma.shortlink.findUnique({
-      where: {
-        id,
-      },
-    });
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
       return NextResponse.json(
@@ -217,11 +218,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    await prisma.shortlink.delete({
-      where: {
-        id,
-      },
-    });
+    await db.delete(shortlinks).where(eq(shortlinks.id, id));
 
     return NextResponse.json({ message: 'Shortlink deleted successfully' });
   } catch (error) {

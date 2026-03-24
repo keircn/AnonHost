@@ -5,10 +5,11 @@ import mime from 'mime-types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const filePath = path.join(process.cwd(), 'uploads', ...params.path);
+    const { path: parts } = await params;
+    const filePath = path.join(process.cwd(), 'uploads', ...parts);
 
     const normalizedPath = path.normalize(filePath);
     if (!normalizedPath.startsWith(path.join(process.cwd(), 'uploads'))) {

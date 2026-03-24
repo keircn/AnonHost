@@ -7,11 +7,24 @@ import { toast } from 'sonner';
 interface MediaActionsProps {
   url: string;
   filename: string;
+  previewPath?: string;
 }
 
-export function MediaActions({ url, filename }: MediaActionsProps) {
+export function MediaActions({
+  url,
+  filename,
+  previewPath,
+}: MediaActionsProps) {
   const handleCopyPreviewLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const baseOrigin = window.location.origin.replace(/\/$/, '');
+    const cleanPath = previewPath
+      ? previewPath.startsWith('/')
+        ? previewPath
+        : `/${previewPath}`
+      : window.location.pathname;
+    const previewUrl = `${baseOrigin}${cleanPath}`;
+
+    navigator.clipboard.writeText(previewUrl);
     toast(
       <div>
         <strong>Preview link copied</strong>

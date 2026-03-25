@@ -74,6 +74,8 @@ const defaultFileSettings: FileSettings = {
   },
 };
 
+const CHUNKED_UPLOADS_ENABLED = false;
+
 interface UploadProgress {
   progress: number;
   status: 'pending' | 'uploading' | 'completed' | 'error';
@@ -263,7 +265,8 @@ export function UploadPageClient() {
   const uploadFileWithChunks = async (file: File, index: number) => {
     const settings = fileSettings[index] || defaultFileSettings;
     const fileId = nanoid(6);
-    const needsChunking = file.size > 80 * 1024 * 1024;
+    const needsChunking =
+      CHUNKED_UPLOADS_ENABLED && file.size > 80 * 1024 * 1024;
 
     if (!needsChunking) {
       return uploadFileDirect(file, index, fileId, settings);
@@ -633,11 +636,12 @@ export function UploadPageClient() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
-                              {file.size > 80 * 1024 * 1024 && (
-                                <div className="absolute top-2 left-2 rounded-md bg-blue-600/80 px-2 py-1 text-xs text-white backdrop-blur-sm">
-                                  Chunked
-                                </div>
-                              )}
+                              {CHUNKED_UPLOADS_ENABLED &&
+                                file.size > 80 * 1024 * 1024 && (
+                                  <div className="absolute top-2 left-2 rounded-md bg-blue-600/80 px-2 py-1 text-xs text-white backdrop-blur-sm">
+                                    Chunked
+                                  </div>
+                                )}
                               {fileSettings[index]?.compression.enabled && (
                                 <div className="bg-background/50 absolute bottom-2 left-2 rounded-md px-2 py-1 text-xs backdrop-blur-sm">
                                   {fileSettings[index].compression.quality}%

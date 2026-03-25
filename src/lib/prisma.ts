@@ -227,14 +227,36 @@ const prisma = {
         .limit(1);
       if (!row) return null;
       if (args?.include?.user) {
+        const userSelect = args.include.user.select ?? {};
         const [u] = await db
           .select()
           .from(users)
           .where(eq(users.id, row.userId))
           .limit(1);
+
+        let userWithRelations: any = u ? pickSelected(u, userSelect) : null;
+
+        if (u && userSelect.settings) {
+          const settingsSelect =
+            typeof userSelect.settings === 'object'
+              ? userSelect.settings.select
+              : undefined;
+
+          const [s] = await db
+            .select()
+            .from(settings)
+            .where(eq(settings.userId, u.id))
+            .limit(1);
+
+          userWithRelations = {
+            ...userWithRelations,
+            settings: s ? pickSelected(s, settingsSelect) : null,
+          };
+        }
+
         return {
           ...row,
-          user: u ? pickSelected(u, args.include.user.select) : null,
+          user: userWithRelations,
         };
       }
       return pickSelected(row, args?.select);

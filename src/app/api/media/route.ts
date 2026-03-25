@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 import { verifyApiKey } from '@/lib/auth';
 import { uploadFile, STORAGE_LIMITS } from '@/lib/upload';
 import { apiKeys, MediaType, media, settings, users } from '@/lib/db/schema';
-import { and, asc, count, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 
 interface MediaItem {
@@ -98,7 +98,10 @@ export async function GET(req: NextRequest) {
       userRow,
       settingsRow,
     ] = await Promise.all([
-      db.select({ value: count() }).from(media).where(eq(media.userId, userId)),
+      db
+        .select({ value: sql<number>`count(*)::int` })
+        .from(media)
+        .where(eq(media.userId, userId)),
 
       db
         .select()
@@ -114,7 +117,7 @@ export async function GET(req: NextRequest) {
         .where(eq(media.userId, userId)),
 
       db
-        .select({ value: count() })
+        .select({ value: sql<number>`count(*)::int` })
         .from(apiKeys)
         .where(
           and(
@@ -190,7 +193,11 @@ export async function GET(req: NextRequest) {
       baseUrl,
     });
   } catch (error) {
-    console.error('GET /api/media failed:', error);
+    console.error('GET /api/media failed:', {
+      error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       { error: 'Failed to load media' },
       { status: 500 }

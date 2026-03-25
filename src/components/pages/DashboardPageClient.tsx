@@ -23,7 +23,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Upload, ImageIcon, Trash2, Copy } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getStorageStats } from '@/lib/upload';
 import { toast } from 'sonner';
@@ -291,12 +290,11 @@ export function DashboardPageClient() {
                                       );
                                     default:
                                       return (
-                                        <Image
+                                        <img
                                           src={item.url || '/placeholder.svg'}
                                           alt={item.filename}
-                                          fill
-                                          className="object-cover"
-                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          className="absolute inset-0 h-full w-full object-cover"
+                                          loading="lazy"
                                         />
                                       );
                                   }

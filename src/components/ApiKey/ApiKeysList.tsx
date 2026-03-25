@@ -18,6 +18,7 @@ const staggerContainer = {
 
 interface ApiKeysListProps {
   apiKeys: ApiKey[];
+  customDomain?: string;
   isLoading: boolean;
   onDelete: (id: string) => Promise<void>;
   onKeyDeleted: () => Promise<void>;
@@ -25,6 +26,7 @@ interface ApiKeysListProps {
 
 export function ApiKeysList({
   apiKeys,
+  customDomain,
   isLoading,
   onDelete,
   onKeyDeleted,
@@ -62,6 +64,7 @@ export function ApiKeysList({
               <ApiKeyItem
                 key={apiKey.id}
                 apiKey={apiKey}
+                customDomain={customDomain}
                 onDelete={onDelete}
                 onDeleted={onKeyDeleted}
               />

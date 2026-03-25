@@ -1,10 +1,25 @@
-export function generateShareXConfig(apiKey: string, baseUrl: string) {
+function normalizeDomain(domain: string) {
+  return domain
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/, '');
+}
+
+export function generateShareXConfig(
+  apiKey: string,
+  apiBaseUrl: string,
+  customDomain?: string
+) {
+  const normalizedCustomDomain = customDomain
+    ? normalizeDomain(customDomain)
+    : null;
+
   return {
     Version: '17.0.0',
     Name: 'AnonHost',
     DestinationType: 'ImageUploader',
     RequestMethod: 'POST',
-    RequestURL: `${baseUrl}/api/media`,
+    RequestURL: `${apiBaseUrl}/api/media`,
     Headers: {
       Authorization: `Bearer ${apiKey}`,
     },
@@ -13,10 +28,15 @@ export function generateShareXConfig(apiKey: string, baseUrl: string) {
     Arguments: {
       conversionEnabled: 'false',
       conversionFormat: '',
+      ...(normalizedCustomDomain ? { domain: normalizedCustomDomain } : {}),
     },
-    URL: '{json:displayUrl}',
-    ThumbnailURL: '{json:displayUrl}',
-    DeletionURL: `${baseUrl}/api/media/{json:id}`,
+    URL: normalizedCustomDomain
+      ? `https://${normalizedCustomDomain}/{json:id}`
+      : '{json:url}',
+    ThumbnailURL: normalizedCustomDomain
+      ? `https://${normalizedCustomDomain}/{json:id}`
+      : '{json:url}',
+    DeletionURL: `${apiBaseUrl}/api/media/{json:id}`,
     ErrorMessage: '{json:error}',
   };
 }

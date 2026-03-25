@@ -17,11 +17,17 @@ const fadeIn = {
 
 interface ApiKeyItemProps {
   apiKey: ApiKey;
+  customDomain?: string;
   onDelete: (id: string) => Promise<void>;
   onDeleted: () => Promise<void>;
 }
 
-export function ApiKeyItem({ apiKey, onDelete, onDeleted }: ApiKeyItemProps) {
+export function ApiKeyItem({
+  apiKey,
+  customDomain,
+  onDelete,
+  onDeleted,
+}: ApiKeyItemProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast(
@@ -68,7 +74,10 @@ export function ApiKeyItem({ apiKey, onDelete, onDeleted }: ApiKeyItemProps) {
                   </Button>
                 </motion.div>
                 <motion.div>
-                  <ShareXConfigDialog apiKey={apiKey} />
+                  <ShareXConfigDialog
+                    apiKey={apiKey}
+                    customDomain={customDomain}
+                  />
                 </motion.div>
                 <motion.div>
                   <DeleteApiKeyDialog

@@ -28,9 +28,13 @@ import {
 
 interface ShareXConfigDialogProps {
   apiKey: ApiKey;
+  customDomain?: string;
 }
 
-export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
+export function ShareXConfigDialog({
+  apiKey,
+  customDomain,
+}: ShareXConfigDialogProps) {
   interface ShareXConfig {
     [key: string]: unknown;
   }
@@ -67,14 +71,16 @@ export function ShareXConfigDialog({ apiKey }: ShareXConfigDialogProps) {
               onDownload={() => {
                 const config = generateShareXConfig(
                   apiKey.key,
-                  window.location.origin
+                  window.location.origin,
+                  customDomain
                 );
                 downloadShareXConfig(config, `${apiKey.name}-uploader`);
               }}
               onCopy={() => {
                 const config = generateShareXConfig(
                   apiKey.key,
-                  window.location.origin
+                  window.location.origin,
+                  customDomain
                 );
                 handleCopyConfig(config, 'Image uploader');
               }}

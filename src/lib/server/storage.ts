@@ -34,7 +34,7 @@ export async function saveFile(
 export async function getFile(
   filePath: string
 ): Promise<{ buffer: Buffer; contentType: string }> {
-  const fullPath = path.join(process.cwd(), filePath);
+  const fullPath = path.join(process.cwd(), 'uploads', ...filePath.split('/'));
   const buffer = await fs.readFile(fullPath);
   const contentType = mime.lookup(fullPath) || 'application/octet-stream';
   return { buffer, contentType };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFile } from '@/lib/server/storage';
+import path from 'path';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { path } = await params;
-    const filePath = `uploads/${path.join('/')}`;
+    const filePath = path.join('/' + path.join('/'));
     const { buffer, contentType } = await getFile(filePath);
 
     return new NextResponse(new Uint8Array(buffer), {

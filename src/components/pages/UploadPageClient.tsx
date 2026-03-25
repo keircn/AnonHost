@@ -58,6 +58,7 @@ const dropZoneVariants = {
 
 const defaultFileSettings: FileSettings = {
   public: false,
+  disableEmbed: false,
   stripMetadata: true,
   optimizeForWeb: true,
   compression: {

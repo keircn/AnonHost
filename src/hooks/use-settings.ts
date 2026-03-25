@@ -9,6 +9,11 @@ export function useSettings() {
     enableDirectLinks: true,
     customDomain: '',
     makeImagesPublic: false,
+    disableEmbedByDefault: false,
+    embedTitleTemplate: '{{filename}}',
+    embedDescriptionTemplate: 'Uploaded by {{uploader}}',
+    embedSiteName: 'AnonHost',
+    embedAccentColor: '#0ea5e9',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

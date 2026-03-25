@@ -17,6 +17,7 @@ import { DirectLinksSettings } from '@/components/Settings/DirectLinksSettings';
 import { EmailChangeSection } from '@/components/Settings/EmailChangeSection';
 import { CustomDomainSettings } from '@/components/Settings/CustomDomainSettings';
 import { ImagePrivacySettings } from '@/components/Settings/ImagePrivacySettings';
+import { EmbedSettingsSection } from '@/components/Settings/EmbedSettingsSection';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -78,6 +79,10 @@ export function GeneralSettingsTab() {
               onFieldChange={updateSettingsField}
             />
             <CustomDomainSettings
+              settings={settings}
+              onFieldChange={updateSettingsField}
+            />
+            <EmbedSettingsSection
               settings={settings}
               onFieldChange={updateSettingsField}
             />

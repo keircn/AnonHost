@@ -96,6 +96,7 @@ export const media = pgTable('Media', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   public: boolean('public').notNull().default(false),
+  disableEmbed: boolean('disableEmbed').notNull().default(false),
   domain: varchar('domain', { length: 253 }),
   createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
   archiveType: text('archiveType'),
@@ -124,6 +125,13 @@ export const settings = pgTable('Settings', {
   enableNotifications: boolean('enableNotifications').notNull().default(true),
   makeImagesPublic: boolean('makeImagesPublic').notNull().default(false),
   enableDirectLinks: boolean('enableDirectLinks').notNull().default(true),
+  disableEmbedByDefault: boolean('disableEmbedByDefault')
+    .notNull()
+    .default(false),
+  embedTitleTemplate: text('embedTitleTemplate'),
+  embedDescriptionTemplate: text('embedDescriptionTemplate'),
+  embedSiteName: varchar('embedSiteName', { length: 120 }),
+  embedAccentColor: varchar('embedAccentColor', { length: 7 }),
   customDomain: varchar('customDomain', { length: 253 }),
 });
 

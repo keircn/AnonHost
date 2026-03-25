@@ -38,6 +38,16 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
+function applyTemplate(
+  template: string,
+  context: Record<string, string | number>
+): string {
+  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => {
+    const value = context[key];
+    return value === undefined || value === null ? '' : String(value);
+  });
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const { id } = params;
@@ -58,6 +68,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
           id: true,
           name: true,
           premium: true,
+          settings: {
+            select: {
+              disableEmbedByDefault: true,
+              embedTitleTemplate: true,
+              embedDescriptionTemplate: true,
+              embedSiteName: true,
+            },
+          },
         },
       },
     },
@@ -77,26 +95,83 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       }
     : {};
 
-  const description = `${media.user?.premium ? '⭐ ' : ''}Uploaded by ${
-    media.user?.name || 'Anonymous'
-  }\n📁 ${formatBytes(media.size)}\n📅 ${formatDate(media.createdAt)}`;
+  const context = {
+    filename: media.filename || 'Untitled',
+    uploader: media.user?.name || 'Anonymous',
+    size: formatBytes(media.size),
+    uploadedAt: formatDate(media.createdAt),
+  };
+
+  const embedTitle =
+    applyTemplate(
+      media.user?.settings?.embedTitleTemplate || '{{filename}}',
+      context
+    ).trim() ||
+    media.filename ||
+    'Untitled';
+  const description =
+    applyTemplate(
+      media.user?.settings?.embedDescriptionTemplate ||
+        'Uploaded by {{uploader}}\nSize: {{size}}\nUploaded: {{uploadedAt}}',
+      context
+    ).trim() || `Uploaded by ${context.uploader}`;
+  const embedSiteName =
+    media.user?.settings?.embedSiteName ||
+    (media.user?.premium ? 'AnonHost Premium' : 'AnonHost');
 
   const dimensions = {
     width: typeof media.width === 'number' ? media.width : 1280,
     height: typeof media.height === 'number' ? media.height : 720,
   };
 
-  if (media.type === 'VIDEO') {
+  if (
+    (media as any).disableEmbed ||
+    media.user?.settings?.disableEmbedByDefault
+  ) {
     return {
-      title: media.filename || 'Untitled',
+      title: embedTitle,
       description,
       ...premiumTheme,
       openGraph: {
-        title: media.filename || 'Untitled',
+        title: embedTitle,
+        description,
+        type: 'website',
+        url: media.url,
+        siteName: embedSiteName,
+        ...(media.type === 'IMAGE' && {
+          images: [
+            {
+              url: media.url,
+              width: dimensions.width,
+              height: dimensions.height,
+              alt: media.filename || 'Image',
+            },
+          ],
+        }),
+      },
+      twitter: {
+        card: media.type === 'IMAGE' ? 'summary_large_image' : 'summary',
+        title: embedTitle,
+        description,
+        ...(media.type === 'IMAGE' && { images: [media.url] }),
+      },
+      alternates: {
+        canonical: media.url,
+      },
+    };
+  }
+
+  if (media.type === 'VIDEO') {
+    return {
+      title: embedTitle,
+      description,
+      ...premiumTheme,
+      openGraph: {
+        title: embedTitle,
         description,
         type: 'video.other',
         url: media.url,
-        siteName: media.user?.premium ? 'AnonHost Premium' : 'AnonHost',
+        siteName: embedSiteName,
         videos: [
           {
             url: media.url,
@@ -116,7 +191,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       },
       twitter: {
         card: 'player',
-        title: media.filename || 'Untitled',
+        title: embedTitle,
         description,
         images: [`${media.url}?thumb=1`],
         players: [
@@ -132,15 +207,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   return {
-    title: media.filename || 'Untitled',
+    title: embedTitle,
     description,
     ...premiumTheme,
     openGraph: {
-      title: `${media.filename || 'Untitled'}`,
+      title: embedTitle,
       description,
       type: 'website',
       url: media.url,
-      siteName: media.user?.premium ? 'AnonHost Premium' : 'AnonHost',
+      siteName: embedSiteName,
       ...(media.type === 'IMAGE' && {
         images: [
           {
@@ -154,7 +229,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     },
     twitter: {
       card: media.type === 'IMAGE' ? 'summary_large_image' : 'summary',
-      title: `${media.user?.premium ? '⭐ ' : ''}${media.filename || 'Untitled'}`,
+      title: `${media.user?.premium ? '⭐ ' : ''}${embedTitle}`,
       description,
       ...(media.type === 'IMAGE' && { images: [media.url] }),
       creator: media.user?.premium ? (media.user.name ?? undefined) : undefined,
@@ -183,10 +258,28 @@ export async function generateViewport(props: Props): Promise<Viewport> {
         select: {
           id: true,
           premium: true,
+          settings: {
+            select: {
+              disableEmbedByDefault: true,
+            },
+          },
         },
       },
     },
   });
+
+  if (
+    (media as any)?.disableEmbed ||
+    media?.user?.settings?.disableEmbedByDefault
+  ) {
+    return {
+      width: 'device-width',
+      initialScale: 1,
+      maximumScale: 1,
+      userScalable: false,
+      themeColor: '#000000',
+    };
+  }
 
   if (!media?.user?.premium) {
     return {

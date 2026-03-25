@@ -55,7 +55,11 @@ export async function POST(req: NextRequest) {
     const settingsStr = formData.get('settings') as string | null;
     const userSettings = await prisma.settings.findUnique({
       where: { userId },
-      select: { makeImagesPublic: true, customDomain: true },
+      select: {
+        makeImagesPublic: true,
+        customDomain: true,
+        disableEmbedByDefault: true,
+      },
     });
     let settings: FileSettings = {
       conversion: {
@@ -63,6 +67,7 @@ export async function POST(req: NextRequest) {
         format: undefined,
       },
       public: userSettings?.makeImagesPublic ?? false,
+      disableEmbed: userSettings?.disableEmbedByDefault ?? false,
       stripMetadata: true,
       optimizeForWeb: true,
       compression: {
@@ -87,6 +92,10 @@ export async function POST(req: NextRequest) {
           },
           public:
             parsedSettings?.public ?? userSettings?.makeImagesPublic ?? false,
+          disableEmbed:
+            parsedSettings?.disableEmbed ??
+            userSettings?.disableEmbedByDefault ??
+            false,
           stripMetadata: parsedSettings?.stripMetadata ?? true,
           optimizeForWeb: parsedSettings?.optimizeForWeb ?? true,
           compression: {
@@ -198,6 +207,7 @@ export async function POST(req: NextRequest) {
       type: uploadResult.type.toUpperCase() as MediaType,
       userId,
       public: Boolean(settings.public),
+      disableEmbed: Boolean(settings.disableEmbed),
       domain: customDomain || null,
       archiveType,
       fileCount,

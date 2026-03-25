@@ -3,6 +3,11 @@ export interface Settings {
   enableDirectLinks: boolean;
   customDomain: string;
   makeImagesPublic: boolean;
+  disableEmbedByDefault: boolean;
+  embedTitleTemplate: string;
+  embedDescriptionTemplate: string;
+  embedSiteName: string;
+  embedAccentColor: string;
 }
 
 export async function fetchSettings(): Promise<Settings> {

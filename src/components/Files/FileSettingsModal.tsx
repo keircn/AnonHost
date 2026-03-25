@@ -183,6 +183,19 @@ export function FileSettingsModal({
                 />
               </div>
               <div className="flex items-center justify-between">
+                <Label htmlFor="disable-embed">Disable Embed</Label>
+                <Switch
+                  id="disable-embed"
+                  checked={Boolean(localSettings.disableEmbed)}
+                  onCheckedChange={(checked) =>
+                    setLocalSettings((prev) => ({
+                      ...prev,
+                      disableEmbed: checked,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
                 <Label htmlFor="strip-metadata">Strip Metadata</Label>
                 <Switch
                   id="strip-metadata"

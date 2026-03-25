@@ -30,6 +30,11 @@ export async function GET() {
         enableNotifications: true,
         makeImagesPublic: false,
         enableDirectLinks: true,
+        disableEmbedByDefault: false,
+        embedTitleTemplate: '{{filename}}',
+        embedDescriptionTemplate: 'Uploaded by {{uploader}}',
+        embedSiteName: 'AnonHost',
+        embedAccentColor: '#0ea5e9',
       })
       .returning();
   }
@@ -53,6 +58,19 @@ export async function PUT(req: NextRequest) {
       enableNotifications: Boolean(data.enableNotifications),
       makeImagesPublic: Boolean(data.makeImagesPublic),
       enableDirectLinks: Boolean(data.enableDirectLinks),
+      disableEmbedByDefault: Boolean(data.disableEmbedByDefault),
+      embedTitleTemplate: String(
+        data.embedTitleTemplate || '{{filename}}'
+      ).slice(0, 150),
+      embedDescriptionTemplate: String(
+        data.embedDescriptionTemplate || 'Uploaded by {{uploader}}'
+      ).slice(0, 300),
+      embedSiteName: String(data.embedSiteName || 'AnonHost').slice(0, 120),
+      embedAccentColor: /^#[0-9a-fA-F]{6}$/.test(
+        String(data.embedAccentColor || '')
+      )
+        ? String(data.embedAccentColor)
+        : '#0ea5e9',
       customDomain: data.customDomain || null,
     };
 

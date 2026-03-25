@@ -1,5 +1,6 @@
 export interface FileSettings {
   public: boolean;
+  disableEmbed: boolean;
   domain?: string | null;
   stripMetadata: boolean;
   optimizeForWeb: boolean;

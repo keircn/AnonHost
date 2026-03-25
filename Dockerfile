@@ -22,6 +22,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/db ./src/lib/db
+COPY --from=builder /app/src/lib/install.sh ./src/lib/install.sh
 
 RUN mkdir -p /app/uploads
 

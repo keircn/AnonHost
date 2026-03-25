@@ -5,12 +5,27 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*',
+        hostname: 'r2.roxyproxy.de',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'roxyproxy.de',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.roxyproxy.de',
         pathname: '/**',
       },
       {
         protocol: 'http',
-        hostname: '*',
+        hostname: 'localhost',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
         pathname: '/**',
       },
     ],

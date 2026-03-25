@@ -9,6 +9,14 @@ import { and, eq } from 'drizzle-orm';
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
+    const normalizedEmail = String(email || '')
+      .trim()
+      .toLowerCase();
+
+    if (!normalizedEmail) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -16,14 +24,14 @@ export async function POST(req: NextRequest) {
       .delete(otps)
       .where(
         and(
-          eq(otps.email, email),
+          eq(otps.email, normalizedEmail),
           eq(otps.type, 'registration'),
           eq(otps.used, false)
         )
       );
 
     await db.insert(otps).values({
-      email,
+      email: normalizedEmail,
       code: otp,
       expiresAt,
       type: 'registration',
@@ -31,12 +39,12 @@ export async function POST(req: NextRequest) {
 
     const { subject, text, html } = verificationEmailTemplate(
       otp,
-      email,
+      normalizedEmail,
       'login'
     );
 
     await sendEmail({
-      to: email,
+      to: normalizedEmail,
       subject,
       text,
       html,

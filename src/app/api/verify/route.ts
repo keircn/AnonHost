@@ -3,27 +3,40 @@ import { sendEmail } from '@/lib/email';
 import { welcomeEmailTemplate } from '@/lib/email-templates';
 import { db } from '@/lib/db';
 import { otps, users } from '@/lib/db/schema';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
     const { email, otp } = await req.json();
+    const normalizedEmail = String(email || '')
+      .trim()
+      .toLowerCase();
+    const normalizedOtp = String(otp || '')
+      .trim()
+      .replace(/\s+/g, '');
+
+    if (!normalizedEmail || !normalizedOtp) {
+      return NextResponse.json(
+        { error: 'Email and verification code are required' },
+        { status: 400 }
+      );
+    }
 
     const [otpRecord] = await db
       .select()
       .from(otps)
       .where(
         and(
-          eq(otps.email, email),
-          eq(otps.code, otp),
-          eq(otps.type, 'registration'),
+          eq(otps.email, normalizedEmail),
           eq(otps.used, false),
+          inArray(otps.type, ['registration', 'login']),
           gt(otps.expiresAt, new Date())
         )
       )
+      .orderBy(desc(otps.createdAt))
       .limit(1);
 
-    if (!otpRecord) {
+    if (!otpRecord || otpRecord.code !== normalizedOtp) {
       return NextResponse.json(
         { error: 'Invalid or expired code' },
         { status: 400 }
@@ -33,7 +46,7 @@ export async function POST(req: NextRequest) {
     const existing = await db
       .select()
       .from(users)
-      .where(eq(users.email, email))
+      .where(eq(users.email, normalizedEmail))
       .limit(1);
 
     let user = existing[0] ?? null;
@@ -42,7 +55,7 @@ export async function POST(req: NextRequest) {
       const inserted = await db
         .insert(users)
         .values({
-          email,
+          email: normalizedEmail,
           emailVerified: new Date(),
         })
         .returning();
@@ -50,7 +63,7 @@ export async function POST(req: NextRequest) {
 
       const template = welcomeEmailTemplate('there');
       await sendEmail({
-        to: email,
+        to: normalizedEmail,
         ...template,
       }).catch((error) => {
         console.error('Failed to send welcome email:', error);
@@ -59,8 +72,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      email,
-      otp,
+      email: normalizedEmail,
+      otp: normalizedOtp,
     });
   } catch (error) {
     console.error('Failed to verify OTP:', error);

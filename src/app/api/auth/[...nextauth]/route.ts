@@ -56,7 +56,7 @@ export const authOptions: AuthOptions = {
 
         if (!dbUser) return null;
 
-        const otpRecord = await prisma.oTP.findFirst({
+        let otpRecord = await prisma.oTP.findFirst({
           where: {
             email: credentials.email,
             code: credentials.otp,
@@ -65,6 +65,18 @@ export const authOptions: AuthOptions = {
             expiresAt: { gt: new Date() },
           },
         });
+
+        if (!otpRecord) {
+          otpRecord = await prisma.oTP.findFirst({
+            where: {
+              email: credentials.email,
+              code: credentials.otp,
+              type: 'login',
+              used: false,
+              expiresAt: { gt: new Date() },
+            },
+          });
+        }
 
         if (!otpRecord) return null;
 

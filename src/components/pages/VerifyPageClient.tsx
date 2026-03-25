@@ -121,7 +121,9 @@ function VerifyForm() {
               type="text"
               placeholder="Enter verification code"
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\s+/g, '').replace(/\D+/g, ''))
+              }
               required
               maxLength={6}
               className="text-center text-2xl tracking-widest"

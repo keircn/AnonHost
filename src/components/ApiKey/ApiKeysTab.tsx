@@ -25,7 +25,8 @@ const staggerContainer = {
 };
 
 export function ApiKeysTab() {
-  const { apiKeys, isLoading, refreshApiKeys, createApiKey } = useApiKeys();
+  const { apiKeys, isLoading, refreshApiKeys, createApiKey, deleteApiKey } =
+    useApiKeys();
 
   const handleChange = async () => {
     await refreshApiKeys();
@@ -47,6 +48,7 @@ export function ApiKeysTab() {
           <ApiKeysList
             apiKeys={apiKeys}
             isLoading={isLoading}
+            onDelete={deleteApiKey}
             onKeyDeleted={handleChange}
           />
         </CardContent>

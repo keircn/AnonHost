@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import type { ApiKey } from '@/types/settings';
-import { useApiKeys } from '@/hooks/use-api-keys';
 import {
   Dialog,
   DialogContent,
@@ -17,21 +16,22 @@ import {
 
 interface DeleteApiKeyDialogProps {
   apiKey: ApiKey;
+  onDelete: (id: string) => Promise<void>;
   onDeleted: () => Promise<void>;
 }
 
 export function DeleteApiKeyDialog({
   apiKey,
+  onDelete,
   onDeleted,
 }: DeleteApiKeyDialogProps) {
-  const { deleteApiKey } = useApiKeys();
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteApiKey(apiKey.id);
+      await onDelete(apiKey.id);
       await onDeleted();
       setOpen(false);
     } finally {

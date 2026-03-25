@@ -17,10 +17,11 @@ const fadeIn = {
 
 interface ApiKeyItemProps {
   apiKey: ApiKey;
+  onDelete: (id: string) => Promise<void>;
   onDeleted: () => Promise<void>;
 }
 
-export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
+export function ApiKeyItem({ apiKey, onDelete, onDeleted }: ApiKeyItemProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast(
@@ -40,7 +41,7 @@ export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
       layout
       layoutId={apiKey.id}
     >
-      <Card>
+      <Card className="bg-card/80 border-border/70">
         <CardContent className="p-4">
           <div className="flex flex-col space-y-4">
             <div className="flex items-start justify-between">
@@ -70,11 +71,15 @@ export function ApiKeyItem({ apiKey, onDeleted }: ApiKeyItemProps) {
                   <ShareXConfigDialog apiKey={apiKey} />
                 </motion.div>
                 <motion.div>
-                  <DeleteApiKeyDialog apiKey={apiKey} onDeleted={onDeleted} />
+                  <DeleteApiKeyDialog
+                    apiKey={apiKey}
+                    onDelete={onDelete}
+                    onDeleted={onDeleted}
+                  />
                 </motion.div>
               </div>
             </div>
-            <div className="bg-muted overflow-x-auto rounded-md p-2 font-mono text-sm">
+            <div className="bg-muted/60 overflow-x-auto rounded-md border p-2 font-mono text-sm">
               {apiKey.key}
             </div>
           </div>

@@ -19,12 +19,14 @@ const staggerContainer = {
 interface ApiKeysListProps {
   apiKeys: ApiKey[];
   isLoading: boolean;
+  onDelete: (id: string) => Promise<void>;
   onKeyDeleted: () => Promise<void>;
 }
 
 export function ApiKeysList({
   apiKeys,
   isLoading,
+  onDelete,
   onKeyDeleted,
 }: ApiKeysListProps) {
   return (
@@ -60,6 +62,7 @@ export function ApiKeysList({
               <ApiKeyItem
                 key={apiKey.id}
                 apiKey={apiKey}
+                onDelete={onDelete}
                 onDeleted={onKeyDeleted}
               />
             ))}

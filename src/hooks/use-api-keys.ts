@@ -8,7 +8,6 @@ import {
   deleteApiKey as deleteKey,
 } from '@/lib/api-keys';
 import { toast } from 'sonner';
-import React from 'react';
 
 export function useApiKeys() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
@@ -26,18 +25,11 @@ export function useApiKeys() {
         err instanceof Error ? err : new Error('Failed to load API keys')
       );
       console.error('Failed to load API keys:', err);
-      toast(
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement('strong', null, 'Error'),
-          React.createElement('div', null, 'Failed to fetch API keys')
-        )
-      );
+      toast.error('Failed to fetch API keys');
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     loadApiKeys();
@@ -48,18 +40,10 @@ export function useApiKeys() {
       setIsLoading(true);
       const newKey = await createKey(name);
       setApiKeys((currentKeys) => [...currentKeys, newKey]);
-      await loadApiKeys();
       return newKey;
     } catch (err) {
       console.error('Failed to create API key:', err);
-      toast(
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement('strong', null, 'Error'),
-          React.createElement('div', null, 'Failed to create API key')
-        )
-      );
+      toast.error('Failed to create API key');
       throw err;
     } finally {
       setIsLoading(false);
@@ -71,25 +55,10 @@ export function useApiKeys() {
       setIsLoading(true);
       await deleteKey(id);
       setApiKeys((currentKeys) => currentKeys.filter((key) => key.id !== id));
-      await loadApiKeys();
-      toast(
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement('strong', null, 'API key deleted'),
-          React.createElement('div', null, 'API key deleted successfully')
-        )
-      );
+      toast.success('API key deleted successfully');
     } catch (err) {
       console.error('Failed to delete API key:', err);
-      toast(
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement('strong', null, 'Failed to delete API key'),
-          React.createElement('div', null, 'Failed to delete API key')
-        )
-      );
+      toast.error('Failed to delete API key');
       throw err;
     } finally {
       setIsLoading(false);

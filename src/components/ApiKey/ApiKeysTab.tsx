@@ -25,7 +25,7 @@ const staggerContainer = {
 };
 
 export function ApiKeysTab() {
-  const { apiKeys, isLoading, refreshApiKeys } = useApiKeys();
+  const { apiKeys, isLoading, refreshApiKeys, createApiKey } = useApiKeys();
 
   const handleChange = async () => {
     await refreshApiKeys();
@@ -43,7 +43,7 @@ export function ApiKeysTab() {
           </motion.div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <ApiKeyCreator onKeyCreated={handleChange} />
+          <ApiKeyCreator onCreate={createApiKey} onKeyCreated={handleChange} />
           <ApiKeysList
             apiKeys={apiKeys}
             isLoading={isLoading}

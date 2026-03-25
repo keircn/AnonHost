@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import type { ApiKey } from '@/types/settings';
 import { toast } from 'sonner';
-import { useApiKeys } from '@/hooks/use-api-keys';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -15,11 +15,11 @@ const fadeIn = {
 };
 
 interface ApiKeyCreatorProps {
+  onCreate: (name: string) => Promise<ApiKey>;
   onKeyCreated: () => Promise<void>;
 }
 
-export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
-  const { createApiKey } = useApiKeys();
+export function ApiKeyCreator({ onCreate, onKeyCreated }: ApiKeyCreatorProps) {
   const [newKeyName, setNewKeyName] = useState('');
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
 
@@ -32,7 +32,7 @@ export function ApiKeyCreator({ onKeyCreated }: ApiKeyCreatorProps) {
     setIsGeneratingKey(true);
 
     try {
-      await createApiKey(newKeyName);
+      await onCreate(newKeyName);
       setNewKeyName('');
       await onKeyCreated();
       toast.success('API key created successfully');

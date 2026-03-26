@@ -93,5 +93,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/auth|_next|favicon.ico|sitemap.xml).*)'],
+  matcher: [
+    '/((?!api/auth|api/upload|api/media|_next|favicon.ico|sitemap.xml).*)',
+  ],
 };

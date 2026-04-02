@@ -4,11 +4,11 @@
 
 ## Live instance
 
-[Coming soon](https://roxyproxy.de) to a browser near you
+[Roxyproxy](https://roxyproxy.de)
 
 ## Installation (Docker Compose)
 
-1. Copy env template and fill required values:
+Copy env template and fill required values:
 
 ```bash
 cp .env.example .env
@@ -22,7 +22,7 @@ Required at minimum:
 - `DISCORD_CLIENT_SECRET`
 - `SMTP_*`
 
-2. Start stack:
+Start containers:
 
 ```bash
 docker compose up -d --build
@@ -41,19 +41,3 @@ You can change bind/port via `.env`:
 
 - `ANONHOST_BIND_IP`
 - `ANONHOST_PORT`
-
-## Reverse Proxy (System Caddy)
-
-Example Caddyfile block:
-
-```caddy
-anon.example.com {
-    reverse_proxy 127.0.0.1:1984
-}
-```
-
-## Notes
-
-- On container start, app runs `bun run db:migrate` automatically before `bun run start`.
-- Uploaded local files are persisted in Docker volume `uploads_data`.
-- Postgres data is persisted in Docker volume `postgres_data`.

@@ -16,7 +16,8 @@
     "db:studio": "drizzle-kit studio",
     "db:reset": "drizzle-kit drop",
     "db:deploy": "drizzle-kit migrate",
-    "clear-bucket": "scripts/clear-r2-bucket.ts"
+    "clear-bucket": "scripts/clear-r2-bucket.ts",
+    "go:build:chunkworker": "mkdir -p bin && go build -C go/chunkworker -o ../../bin/chunkworker ."
   },
   "dependencies": {
     "@auth/core": "^0.34.3",

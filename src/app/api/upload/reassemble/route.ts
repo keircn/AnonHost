@@ -3,8 +3,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { verifyApiKey } from '@/lib/auth';
 import { promises as fs } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
 import prisma from '@/lib/prisma';
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from '@/lib/upload';
 import { uploadFile } from '@/lib/server/upload-file';
@@ -13,11 +11,14 @@ import { sendDiscordWebhook } from '@/lib/discord';
 import { processFile } from '@/lib/process-file';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { FileSettings } from '@/types/file-settings';
+import {
+  assembleFileWithWorker,
+  cleanupAssembledFile,
+  cleanupChunksWithWorker,
+} from '@/lib/server/chunk-worker';
 
 export const maxDuration = 600;
 export const dynamic = 'force-dynamic';
-
-const TEMP_DIR = join(tmpdir(), 'anon-chunks');
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -48,6 +49,10 @@ export async function POST(req: NextRequest) {
     isPremium = session!.user.premium || false;
   }
 
+  let assembledPath: string | null = null;
+  let cleanupFileId: string | null = null;
+  let cleanupTotalChunks: number | null = null;
+
   try {
     const {
       fileId,
@@ -64,6 +69,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    cleanupFileId = fileId;
+    cleanupTotalChunks = totalChunks;
 
     const userSettings = await prisma.settings.findUnique({
       where: { userId },
@@ -162,30 +170,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const chunks = await Promise.all(
-      Array.from({ length: totalChunks }, async (_, i) => {
-        const chunkPath = join(TEMP_DIR, `${fileId}_${i}`);
-        try {
-          return await fs.readFile(chunkPath);
-        } catch (error) {
-          console.error(`Failed to read chunk ${i}:`, error);
-          throw new Error(`Missing chunk ${i}`);
-        }
-      })
-    );
-
-    const fileBuffer = Buffer.concat(chunks);
+    const assembled = await assembleFileWithWorker({
+      fileId,
+      totalChunks,
+      fileName,
+    });
+    assembledPath = assembled.outputPath;
+    const fileBuffer = await fs.readFile(assembled.outputPath);
     const mimeType = await getMimeType(fileName);
 
     if (BLOCKED_TYPES.includes(mimeType)) {
-      for (let i = 0; i < totalChunks; i++) {
-        const chunkPath = join(TEMP_DIR, `${fileId}_${i}`);
-        try {
-          await fs.unlink(chunkPath);
-        } catch (e) {
-          console.warn(`Failed to delete chunk ${chunkPath}:`, e);
-        }
-      }
+      await cleanupChunksWithWorker({ fileId, totalChunks });
+      await cleanupAssembledFile(assembled.outputPath);
       return NextResponse.json(
         {
           error: 'This file type is not allowed for security reasons.',
@@ -255,14 +251,8 @@ export async function POST(req: NextRequest) {
 
     await sendDiscordWebhook({ content: displayUrl });
 
-    for (let i = 0; i < totalChunks; i++) {
-      const chunkPath = join(TEMP_DIR, `${fileId}_${i}`);
-      try {
-        await fs.unlink(chunkPath);
-      } catch (e) {
-        console.warn(`Failed to delete chunk ${chunkPath}:`, e);
-      }
-    }
+    await cleanupChunksWithWorker({ fileId, totalChunks });
+    await cleanupAssembledFile(assembled.outputPath);
 
     return NextResponse.json({
       id: media.id,
@@ -281,6 +271,15 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error reassembling file:', error);
+    if (cleanupFileId && cleanupTotalChunks) {
+      await cleanupChunksWithWorker({
+        fileId: cleanupFileId,
+        totalChunks: cleanupTotalChunks,
+      }).catch(() => {});
+    }
+    if (assembledPath) {
+      await cleanupAssembledFile(assembledPath).catch(() => {});
+    }
     return NextResponse.json(
       { error: 'Failed to reassemble file' },
       { status: 500 }

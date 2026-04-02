@@ -2,22 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { verifyApiKey } from '@/lib/auth';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import { writeChunkWithWorker } from '@/lib/server/chunk-worker';
 
 export const maxDuration = 600;
 export const dynamic = 'force-dynamic';
-
-const TEMP_DIR = join(tmpdir(), 'anon-chunks');
-
-async function ensureTempDir() {
-  try {
-    await fs.access(TEMP_DIR);
-  } catch {
-    await fs.mkdir(TEMP_DIR, { recursive: true });
-  }
-}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -35,11 +23,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await ensureTempDir();
-
-    // Add timeout wrapper for formData parsing
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), 120000); // 2 min timeout
+      setTimeout(() => reject(new Error('Request timeout')), 120000);
     });
 
     const formDataPromise = req.formData();
@@ -66,54 +51,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const chunkPath = join(TEMP_DIR, `${fileId}_${chunkIndex}`);
-    try {
-      const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
-
-      // Validate chunk size
-      if (chunkBuffer.length === 0) {
-        throw new Error('Empty chunk received');
-      }
-
-      await fs.writeFile(chunkPath, chunkBuffer);
-
-      // Verify chunk was written correctly
-      const stat = await fs.stat(chunkPath);
-      if (stat.size !== chunkBuffer.length) {
-        throw new Error('Chunk size mismatch after write');
-      }
-    } catch (error) {
-      console.error(`Failed to write chunk ${chunkIndex}:`, error);
-
-      // Cleanup failed chunk
-      try {
-        await fs.unlink(chunkPath);
-      } catch {}
-
-      throw error;
-    }
-    const uploadedChunks = [];
-    for (let i = 0; i < totalChunks; i++) {
-      const chunkFile = join(TEMP_DIR, `${fileId}_${i}`);
-      try {
-        await fs.access(chunkFile);
-        uploadedChunks.push(i);
-      } catch {}
+    const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
+    if (chunkBuffer.length === 0) {
+      return NextResponse.json(
+        { error: 'Empty chunk received' },
+        { status: 400 }
+      );
     }
 
-    if (uploadedChunks.length === totalChunks) {
-      return NextResponse.json({
-        message: 'Chunk uploaded',
-        allChunksUploaded: true,
-        uploadedChunks: uploadedChunks.length,
-        totalChunks,
-      });
-    }
+    const result = await writeChunkWithWorker({
+      fileId,
+      chunkIndex,
+      totalChunks,
+      chunkBuffer,
+    });
 
     return NextResponse.json({
       message: 'Chunk uploaded',
-      allChunksUploaded: false,
-      uploadedChunks: uploadedChunks.length,
+      allChunksUploaded: result.allChunksUploaded,
+      uploadedChunks: result.uploadedChunks,
       totalChunks,
     });
   } catch (error) {

@@ -89,8 +89,7 @@ export const endpoints: Endpoint[] = [
         {
           name: 'file',
           type: 'File',
-          description:
-            'The image file to upload (max: 100MB premium, 50MB free)',
+          description: 'The image file to upload (max: 100MB)',
         },
         {
           name: 'public',

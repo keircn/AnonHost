@@ -25,7 +25,7 @@ const features = {
   ],
   premium: [
     'Everything in Free, plus:',
-    'Up to 500MB per file',
+    'Up to 100MB per file',
     'Unlimited storage',
     'Priority storage allocation',
     'Custom domains',

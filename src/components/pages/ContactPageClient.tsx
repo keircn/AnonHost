@@ -40,7 +40,7 @@ const faqs = [
   {
     question: 'What file types are supported?',
     answer:
-      'We support most image formats (PNG, JPEG, GIF, WebP), videos, audio files, and documents. Each file must be under 50MB for free users and 100MB for premium users.',
+      'We support most image formats (PNG, JPEG, GIF, WebP), videos, audio files, and documents. Each file must be under 100MB.',
   },
   {
     question: 'How long are files stored?',
@@ -55,7 +55,7 @@ const faqs = [
   {
     question: 'What are the upload limits?',
     answer:
-      'Free users can upload up to 50MB per file and 500MB total storage. Premium users get increased limits of 100MB per file and 1GB storage.',
+      'All users can upload up to 100MB per file. Free users have 1GB total storage, while premium users have unlimited storage.',
   },
   {
     question: 'How do I get premium?',

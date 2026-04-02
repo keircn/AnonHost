@@ -33,4 +33,3 @@ prisma/migrations
 .venv
 **/__pycache__
 uploads/
-bin/

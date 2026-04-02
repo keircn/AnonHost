@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
       const limitInMb = sizeLimit / (1024 * 1024);
       return NextResponse.json(
         {
-          error: `File too large. Maximum file size is ${limitInMb}MB for ${isPremium ? 'premium' : 'free'} users`,
+          error: `File too large. Maximum file size is ${limitInMb}MB for all users`,
         },
         { status: 400 }
       );

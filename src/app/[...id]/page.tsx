@@ -402,7 +402,6 @@ export default async function MediaPage(props: Props) {
                             <MediaActions
                                 url={media.url}
                                 filename={media.filename}
-                                previewPath={`/${media.id}`}
                             />
                         </div>
 

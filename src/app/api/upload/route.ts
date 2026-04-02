@@ -2,12 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
-import {
-  BLOCKED_TYPES,
-  uploadFile,
-  FILE_SIZE_LIMITS,
-  STORAGE_LIMITS,
-} from '@/lib/upload';
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from '@/lib/upload';
+import { uploadFile } from '@/lib/server/upload-file';
 import { verifyApiKey } from '@/lib/auth';
 import { MediaType } from '@/lib/db/schema';
 import { sendDiscordWebhook } from '@/lib/discord';

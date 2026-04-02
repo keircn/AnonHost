@@ -1,7 +1,12 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import mime from 'mime-types';
-import { uploadToR2, generateR2Key } from '@/lib/r2';
+import {
+  uploadToR2,
+  generateR2Key,
+  checkR2Connection,
+  isR2Configured,
+} from '@/lib/r2';
 
 export async function saveFile(
   buffer: Buffer,
@@ -21,14 +26,23 @@ export async function saveFile(
   else if (ext === '.webp') contentType = 'image/webp';
   else if (ext === '.svg') contentType = 'image/svg+xml';
 
-  const url = await uploadToR2({
-    file: buffer,
-    key: r2Key,
-    contentType,
-    userId,
-  });
+  if (isR2Configured() && (await checkR2Connection())) {
+    return uploadToR2({
+      file: buffer,
+      key: r2Key,
+      contentType,
+      userId,
+    });
+  }
 
-  return url;
+  const localPath = path.join(process.cwd(), 'uploads', ...r2Key.split('/'));
+  const localDir = path.dirname(localPath);
+
+  await fs.mkdir(localDir, { recursive: true });
+  await fs.writeFile(localPath, buffer);
+
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return `${baseUrl}/api/upload/storage/${r2Key}`;
 }
 
 export async function getFile(

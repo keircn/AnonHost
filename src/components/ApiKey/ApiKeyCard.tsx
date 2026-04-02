@@ -51,6 +51,7 @@ export const ApiKeyCard = ({ apiKey, onCopy }: ApiKeyCardProps) => {
                 <ShareXConfigDialog apiKey={apiKey} />
                 <DeleteApiKeyDialog
                   apiKey={apiKey}
+                  onDelete={async () => {}}
                   onDeleted={async () => {}}
                 />
               </div>

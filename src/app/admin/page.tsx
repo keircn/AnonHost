@@ -164,27 +164,35 @@ export default function AdminPage() {
                     <TableHead>User</TableHead>
                     <TableHead>Images</TableHead>
                     <TableHead>API Keys</TableHead>
+                    <TableHead>Domain</TableHead>
                     <TableHead>Premium</TableHead>
                     <TableHead>Admin</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell>
-                        <div>
+                      <TableCell className="min-w-[280px] align-top">
+                        <div className="space-y-1">
                           <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-muted-foreground max-w-[320px] truncate text-sm">
                             {user.email}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{user._count.Media}</TableCell>
-                      <TableCell>{user._count.apiKeys}</TableCell>
-                      <TableCell>
-                        {user.settings?.customDomain || '—'}
+                      <TableCell className="w-[96px]">
+                        {user._count.Media}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[96px]">
+                        {user._count.apiKeys}
+                      </TableCell>
+                      <TableCell className="max-w-[260px]">
+                        <div className="text-muted-foreground truncate">
+                          {user.settings?.customDomain || '—'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="w-[100px]">
                         <Switch
                           checked={user.premium}
                           onCheckedChange={(checked) =>
@@ -192,7 +200,7 @@ export default function AdminPage() {
                           }
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[100px]">
                         <Switch
                           checked={user.admin}
                           onCheckedChange={(checked) =>
@@ -200,7 +208,7 @@ export default function AdminPage() {
                           }
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[120px] text-right">
                         <Dialog
                           open={isDialogOpen}
                           onOpenChange={setIsDialogOpen}

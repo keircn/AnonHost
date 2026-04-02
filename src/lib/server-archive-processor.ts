@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import tar from 'tar-stream';
 import { Readable } from 'stream';
+import { gunzipSync } from 'zlib';
 
 export interface ArchiveEntry {
   name: string;
@@ -21,28 +22,47 @@ export interface ArchiveMetadata {
   hasPassword?: boolean;
 }
 
+export type ArchiveType =
+  | 'zip'
+  | 'tar'
+  | 'tar.gz'
+  | 'tgz'
+  | 'tar.bz2'
+  | 'tbz2'
+  | '7z'
+  | 'rar'
+  | 'gz'
+  | 'bz2';
+
+const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>([
+  'zip',
+  'tar',
+  'tar.gz',
+  'tgz',
+]);
+
 export class ServerArchiveProcessor {
   static async processArchive(
     buffer: Buffer,
     filename: string
   ): Promise<ArchiveMetadata> {
-    const extension = filename.toLowerCase().split('.').pop();
+    const archiveType = this.getArchiveType(filename);
 
-    switch (extension) {
+    if (!archiveType) {
+      throw new Error('Unsupported archive format');
+    }
+
+    switch (archiveType) {
       case 'zip':
         return this.processZip(buffer);
       case 'tar':
       case 'tar.gz':
       case 'tgz':
-      case 'tar.bz2':
-      case 'tbz2':
-        return this.processTar(buffer);
-      case '7z':
-        return this.process7z(buffer);
-      case 'rar':
-        return this.processRar(buffer);
+        return this.processTar(buffer, archiveType);
       default:
-        throw new Error(`Unsupported archive format: ${extension}`);
+        throw new Error(
+          `Archive preview is not supported for ${archiveType} files`
+        );
     }
   }
 
@@ -55,10 +75,20 @@ export class ServerArchiveProcessor {
       let uncompressedSize = 0;
 
       zip.forEach((relativePath, file) => {
+        const zipData = (file as unknown as { _data?: unknown })._data as
+          | {
+              uncompressedSize?: number;
+              compressedSize?: number;
+              crc32?: number;
+            }
+          | undefined;
+
         const entry: ArchiveEntry = {
           name: relativePath,
-          size: 0,
+          size: file.dir ? 0 : (zipData?.uncompressedSize ?? 0),
           isDirectory: file.dir,
+          compressedSize: file.dir ? undefined : zipData?.compressedSize,
+          crc32: file.dir ? undefined : zipData?.crc32,
           lastModified: file.date || undefined,
         };
 
@@ -68,6 +98,7 @@ export class ServerArchiveProcessor {
           totalDirectories++;
         } else {
           totalFiles++;
+          uncompressedSize += entry.size;
         }
       });
 
@@ -84,7 +115,13 @@ export class ServerArchiveProcessor {
     }
   }
 
-  private static async processTar(buffer: Buffer): Promise<ArchiveMetadata> {
+  private static async processTar(
+    buffer: Buffer,
+    archiveType: 'tar' | 'tar.gz' | 'tgz'
+  ): Promise<ArchiveMetadata> {
+    const tarBuffer =
+      archiveType === 'tar' ? buffer : Buffer.from(gunzipSync(buffer));
+
     return new Promise((resolve, reject) => {
       const extract = tar.extract();
       const entries: ArchiveEntry[] = [];
@@ -120,93 +157,27 @@ export class ServerArchiveProcessor {
           uncompressedSize,
           compressedSize: buffer.length,
           entries,
-          archiveType: 'tar',
+          archiveType,
         });
       });
 
       extract.on('error', reject);
 
       const readable = new Readable();
-      readable.push(buffer);
+      readable.push(tarBuffer);
       readable.push(null);
       readable.pipe(extract);
     });
   }
 
-  private static async process7z(buffer: Buffer): Promise<ArchiveMetadata> {
-    let estimatedFiles = 0;
-    let estimatedDirectories = 0;
+  static getArchiveType(filename: string): ArchiveType | null {
+    const lower = filename.toLowerCase();
 
-    if (
-      buffer.length > 6 &&
-      buffer[0] === 0x37 &&
-      buffer[1] === 0x7a &&
-      buffer[2] === 0xbc &&
-      buffer[3] === 0xaf &&
-      buffer[4] === 0x27 &&
-      buffer[5] === 0x1c
-    ) {
-      estimatedFiles = 1;
-    }
+    if (lower.endsWith('.tar.gz')) return 'tar.gz';
+    if (lower.endsWith('.tar.bz2')) return 'tar.bz2';
 
-    return {
-      totalFiles: estimatedFiles,
-      totalDirectories: estimatedDirectories,
-      uncompressedSize: 0,
-      compressedSize: buffer.length,
-      entries:
-        estimatedFiles > 0
-          ? [
-              {
-                name: '(7z archive contents - detailed listing not available)',
-                size: 0,
-                isDirectory: false,
-                lastModified: undefined,
-              },
-            ]
-          : [],
-      archiveType: '7z',
-      hasPassword: undefined,
-    };
-  }
-
-  private static async processRar(buffer: Buffer): Promise<ArchiveMetadata> {
-    let estimatedFiles = 0;
-
-    if (
-      buffer.length > 4 &&
-      buffer[0] === 0x52 &&
-      buffer[1] === 0x61 &&
-      buffer[2] === 0x72 &&
-      buffer[3] === 0x21
-    ) {
-      estimatedFiles = 1;
-    }
-
-    return {
-      totalFiles: estimatedFiles,
-      totalDirectories: 0,
-      uncompressedSize: 0,
-      compressedSize: buffer.length,
-      entries:
-        estimatedFiles > 0
-          ? [
-              {
-                name: '(RAR archive contents - detailed listing not available)',
-                size: 0,
-                isDirectory: false,
-                lastModified: undefined,
-              },
-            ]
-          : [],
-      archiveType: 'rar',
-      hasPassword: undefined,
-    };
-  }
-
-  static getArchiveType(filename: string): string | null {
-    const extension = filename.toLowerCase().split('.').pop();
-    const supportedTypes = [
+    const extension = lower.split('.').pop() as ArchiveType | undefined;
+    const supportedTypes: ArchiveType[] = [
       'zip',
       'tar',
       '7z',
@@ -217,13 +188,11 @@ export class ServerArchiveProcessor {
       'tbz2',
     ];
 
-    if (filename.toLowerCase().endsWith('.tar.gz')) return 'tar.gz';
-    if (filename.toLowerCase().endsWith('.tar.bz2')) return 'tar.bz2';
-
-    return supportedTypes.includes(extension || '') ? extension || null : null;
+    return extension && supportedTypes.includes(extension) ? extension : null;
   }
 
-  static isArchive(filename: string): boolean {
-    return this.getArchiveType(filename) !== null;
+  static supportsPreview(filename: string): boolean {
+    const archiveType = this.getArchiveType(filename);
+    return archiveType ? PREVIEWABLE_ARCHIVE_TYPES.has(archiveType) : false;
   }
 }

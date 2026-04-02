@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
     let archiveType = null;
     let fileCount = null;
 
-    if (ServerArchiveProcessor.isArchive(originalName)) {
+    if (ServerArchiveProcessor.supportsPreview(originalName)) {
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
         archiveMetadata = await ServerArchiveProcessor.processArchive(

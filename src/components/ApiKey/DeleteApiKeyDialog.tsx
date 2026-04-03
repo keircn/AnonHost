@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
-import type { ApiKey } from '@/types/settings';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import type { ApiKey } from "@/types/settings";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 interface DeleteApiKeyDialogProps {
   apiKey: ApiKey;
@@ -20,11 +20,7 @@ interface DeleteApiKeyDialogProps {
   onDeleted: () => Promise<void>;
 }
 
-export function DeleteApiKeyDialog({
-  apiKey,
-  onDelete,
-  onDeleted,
-}: DeleteApiKeyDialogProps) {
+export function DeleteApiKeyDialog({ apiKey, onDelete, onDeleted }: DeleteApiKeyDialogProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -50,17 +46,12 @@ export function DeleteApiKeyDialog({
         <DialogHeader>
           <DialogTitle>Delete API Key</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this API key? This action cannot be
-            undone.
+            Are you sure you want to delete this API key? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,17 +1,11 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import {
-  ArchiveIcon,
-  ChevronRightIcon,
-  DownloadIcon,
-  FileIcon,
-  FolderIcon,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatFileSize } from '@/lib/upload';
+import { useMemo, useState } from "react";
+import { ArchiveIcon, ChevronRightIcon, DownloadIcon, FileIcon, FolderIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatFileSize } from "@/lib/upload";
 
 interface ArchiveEntry {
   name: string;
@@ -51,12 +45,12 @@ interface TreeNode {
 const ITEMS_PER_PAGE = 50;
 
 function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+  return path.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 }
 
 function splitPath(path: string): string[] {
   const normalized = normalizePath(path);
-  return normalized ? normalized.split('/').filter(Boolean) : [];
+  return normalized ? normalized.split("/").filter(Boolean) : [];
 }
 
 function createNode(params: {
@@ -77,8 +71,8 @@ function createNode(params: {
 
 function buildTree(entries: ArchiveEntry[]): TreeNode {
   const root = createNode({
-    name: '',
-    path: '',
+    name: "",
+    path: "",
     parentPath: null,
     isDirectory: true,
   });
@@ -91,7 +85,7 @@ function buildTree(entries: ArchiveEntry[]): TreeNode {
     }
 
     let current = root;
-    let currentPath = '';
+    let currentPath = "";
 
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
@@ -152,12 +146,12 @@ function sortNodes(nodes: TreeNode[]): TreeNode[] {
 
 function formatDate(value?: Date): string {
   if (!value || Number.isNaN(value.getTime())) {
-    return '-';
+    return "-";
   }
 
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
     hour12: false,
   }).format(value);
 }
@@ -171,7 +165,7 @@ export function ArchivePreview({
   fileId,
   fileSize,
 }: ArchivePreviewProps) {
-  const [currentPath, setCurrentPath] = useState('');
+  const [currentPath, setCurrentPath] = useState("");
   const [page, setPage] = useState(1);
 
   const tree = useMemo(() => buildTree(metadata.entries), [metadata.entries]);
@@ -193,10 +187,8 @@ export function ArchivePreview({
 
   const breadcrumbs = useMemo(() => {
     const parts = splitPath(currentNode.path);
-    const crumbs: { label: string; path: string }[] = [
-      { label: '/', path: '' },
-    ];
-    let pathAcc = '';
+    const crumbs: { label: string; path: string }[] = [{ label: "/", path: "" }];
+    let pathAcc = "";
 
     for (const part of parts) {
       pathAcc = pathAcc ? `${pathAcc}/${part}` : part;
@@ -208,13 +200,10 @@ export function ArchivePreview({
 
   const visibleItems = useMemo(
     () => sortNodes(Array.from(currentNode.children.values())),
-    [currentNode]
+    [currentNode],
   );
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(visibleItems.length / ITEMS_PER_PAGE)
-  );
+  const totalPages = Math.max(1, Math.ceil(visibleItems.length / ITEMS_PER_PAGE));
   const currentPage = Math.min(page, totalPages);
   const pageStart = (currentPage - 1) * ITEMS_PER_PAGE;
   const pageItems = visibleItems.slice(pageStart, pageStart + ITEMS_PER_PAGE);
@@ -238,9 +227,7 @@ export function ArchivePreview({
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <div className="text-muted-foreground">Files</div>
-            <div className="font-semibold">
-              {metadata.totalFiles.toLocaleString()}
-            </div>
+            <div className="font-semibold">{metadata.totalFiles.toLocaleString()}</div>
           </div>
           <div>
             <div className="text-muted-foreground">Archive Size</div>
@@ -269,15 +256,11 @@ export function ArchivePreview({
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-muted-foreground text-sm">
-            Showing {pageItems.length.toLocaleString()} of{' '}
-            {visibleItems.length.toLocaleString()} items in this directory
+            Showing {pageItems.length.toLocaleString()} of {visibleItems.length.toLocaleString()}{" "}
+            items in this directory
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open(downloadUrl, '_blank')}
-          >
+          <Button variant="outline" size="sm" onClick={() => window.open(downloadUrl, "_blank")}>
             <DownloadIcon className="mr-2 h-4 w-4" />
             Download
           </Button>
@@ -285,10 +268,8 @@ export function ArchivePreview({
 
         <div className="flex flex-wrap items-center gap-1 rounded-md border p-2 text-sm">
           {breadcrumbs.map((crumb, index) => (
-            <div key={crumb.path || 'root'} className="flex items-center gap-1">
-              {index > 0 && (
-                <ChevronRightIcon className="text-muted-foreground h-3 w-3" />
-              )}
+            <div key={crumb.path || "root"} className="flex items-center gap-1">
+              {index > 0 && <ChevronRightIcon className="text-muted-foreground h-3 w-3" />}
               <button
                 type="button"
                 className="hover:bg-muted rounded px-2 py-1"
@@ -309,9 +290,7 @@ export function ArchivePreview({
 
           <div className="max-h-96 overflow-y-auto">
             {pageItems.length === 0 ? (
-              <div className="text-muted-foreground p-4 text-sm">
-                This directory is empty.
-              </div>
+              <div className="text-muted-foreground p-4 text-sm">This directory is empty.</div>
             ) : (
               pageItems.map((item) => (
                 <div
@@ -371,9 +350,7 @@ export function ArchivePreview({
                 variant="outline"
                 size="sm"
                 disabled={currentPage === totalPages}
-                onClick={() =>
-                  setPage((value) => Math.min(totalPages, value + 1))
-                }
+                onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
                 Next
               </Button>

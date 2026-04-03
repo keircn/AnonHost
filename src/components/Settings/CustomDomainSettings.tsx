@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import type { Settings } from '@/lib/settings';
+import { motion } from "framer-motion";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import type { Settings } from "@/lib/settings";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -13,16 +13,10 @@ const fadeIn = {
 
 interface CustomDomainSettingsProps {
   settings: Settings;
-  onFieldChange: (
-    field: keyof Settings,
-    value: Settings[keyof Settings]
-  ) => void;
+  onFieldChange: (field: keyof Settings, value: Settings[keyof Settings]) => void;
 }
 
-export function CustomDomainSettings({
-  settings,
-  onFieldChange,
-}: CustomDomainSettingsProps) {
+export function CustomDomainSettings({ settings, onFieldChange }: CustomDomainSettingsProps) {
   return (
     <motion.div className="space-y-2" variants={fadeIn}>
       <Label htmlFor="custom-domain">Custom Domain</Label>
@@ -32,8 +26,8 @@ export function CustomDomainSettings({
       <Input
         id="custom-domain"
         placeholder="images.yourdomain.com"
-        value={settings.customDomain || ''}
-        onChange={(e) => onFieldChange('customDomain', e.target.value)}
+        value={settings.customDomain || ""}
+        onChange={(e) => onFieldChange("customDomain", e.target.value)}
       />
     </motion.div>
   );

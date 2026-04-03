@@ -10,13 +10,13 @@ export interface FileSettings {
   };
   conversion: {
     enabled: boolean;
-    format?: 'gif' | 'mp4' | 'webp' | 'webm' | 'png' | 'jpeg';
+    format?: "gif" | "mp4" | "webp" | "webm" | "png" | "jpeg";
   };
   resize: {
     enabled: boolean;
     width?: number;
     height?: number;
     maintainAspectRatio: boolean;
-    fit: 'inside' | 'cover' | 'contain';
+    fit: "inside" | "cover" | "contain";
   };
 }

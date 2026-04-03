@@ -1,17 +1,11 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import Link from "next/link";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LuArrowRight,
   LuCircleCheck,
@@ -24,34 +18,31 @@ import {
   LuShield,
   LuTerminal,
   LuUsers,
-} from 'react-icons/lu';
-import bytes from 'bytes';
-import useSWR from 'swr';
-import { Stats } from '@/types/stats';
+} from "react-icons/lu";
+import bytes from "bytes";
+import useSWR from "swr";
+import { Stats } from "@/types/stats";
 
 const features = [
   {
-    title: 'Image Hosting',
+    title: "Image Hosting",
     description:
-      'Instant uploads with direct links, automatic previews, and excellent reliability.',
+      "Instant uploads with direct links, automatic previews, and excellent reliability.",
     icon: LuImage,
   },
   {
-    title: 'URL Shortener',
-    description:
-      'Create branded, readable short links with fast redirects and clean analytics.',
+    title: "URL Shortener",
+    description: "Create branded, readable short links with fast redirects and clean analytics.",
     icon: LuLink2,
   },
   {
-    title: 'CLI + API',
-    description:
-      'Automate uploads and link creation from scripts, terminals, and internal tools.',
+    title: "CLI + API",
+    description: "Automate uploads and link creation from scripts, terminals, and internal tools.",
     icon: LuCode,
   },
   {
-    title: 'Privacy First',
-    description:
-      'European hosting with straightforward policies and practical data protection.',
+    title: "Privacy First",
+    description: "European hosting with straightforward policies and practical data protection.",
     icon: LuShield,
   },
 ];
@@ -62,14 +53,14 @@ const fadeUp = {
 };
 
 function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en-US').format(Math.max(0, value));
+  return new Intl.NumberFormat("en-US").format(Math.max(0, value));
 }
 
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
-  const installCommand = 'curl https://roxyproxy.de/install | bash';
+  const installCommand = "curl https://roxyproxy.de/install | bash";
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
-  const { data: stats, isLoading } = useSWR<Stats>('/api/stats', fetcher, {
+  const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
     refreshInterval: 300000,
   });
 
@@ -77,11 +68,11 @@ export function HomePageClient() {
     try {
       await navigator.clipboard.writeText(installCommand);
       setIsCopied(true);
-      toast.success('Install command copied to clipboard');
+      toast.success("Install command copied to clipboard");
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text:', err);
-      toast.error('Failed to copy install command');
+      console.error("Failed to copy text:", err);
+      toast.error("Failed to copy install command");
     }
   };
 
@@ -94,7 +85,7 @@ export function HomePageClient() {
               variants={fadeUp}
               initial="initial"
               animate="animate"
-              transition={{ duration: 0.35, ease: 'easeOut' }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
               className="space-y-6"
             >
               <div className="bg-card/80 text-muted-foreground inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-sm">
@@ -106,8 +97,8 @@ export function HomePageClient() {
               </h1>
 
               <p className="text-muted-foreground max-w-2xl text-lg leading-relaxed sm:text-xl">
-                AnonHost is a fast, practical platform for image hosting and URL
-                shortening with a clean API and terminal-first workflow.
+                AnonHost is a fast, practical platform for image hosting and URL shortening with a
+                clean API and terminal-first workflow.
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -130,7 +121,7 @@ export function HomePageClient() {
               variants={fadeUp}
               initial="initial"
               animate="animate"
-              transition={{ delay: 0.08, duration: 0.35, ease: 'easeOut' }}
+              transition={{ delay: 0.08, duration: 0.35, ease: "easeOut" }}
               className="relative"
             >
               <Card className="bg-card/85 border-border/70 relative overflow-hidden shadow-2xl backdrop-blur-sm">
@@ -149,26 +140,24 @@ export function HomePageClient() {
                   <StatRow
                     icon={LuUsers}
                     label="Registered users"
-                    value={isLoading ? '...' : formatNumber(stats?.users ?? 0)}
+                    value={isLoading ? "..." : formatNumber(stats?.users ?? 0)}
                   />
                   <StatRow
                     icon={LuImage}
                     label="Total uploads"
-                    value={
-                      isLoading ? '...' : formatNumber(stats?.uploads ?? 0)
-                    }
+                    value={isLoading ? "..." : formatNumber(stats?.uploads ?? 0)}
                   />
                   <StatRow
                     icon={LuHardDrive}
                     label="Storage used"
                     value={
                       isLoading
-                        ? '...'
+                        ? "..."
                         : bytes(Math.max(0, stats?.storage ?? 0), {
-                            unitSeparator: ' ',
+                            unitSeparator: " ",
                             decimalPlaces: 1,
                             fixedDecimals: true,
-                          }) || '0 B'
+                          }) || "0 B"
                     }
                   />
                 </CardContent>
@@ -177,7 +166,7 @@ export function HomePageClient() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.3, ease: 'easeOut' }}
+                transition={{ delay: 0.2, duration: 0.3, ease: "easeOut" }}
                 className="bg-card/90 text-muted-foreground border-border/70 absolute -top-7 -right-4 hidden rounded-xl border px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm md:block"
               >
                 Fast uploads. Clean links.
@@ -196,7 +185,7 @@ export function HomePageClient() {
                   variants={fadeUp}
                   initial="initial"
                   whileInView="animate"
-                  viewport={{ once: true, margin: '-60px' }}
+                  viewport={{ once: true, margin: "-60px" }}
                   transition={{ delay: index * 0.05, duration: 0.28 }}
                 >
                   <Card className="bg-card/85 card border-border/70 hover:border-primary/40 hover:bg-card h-full shadow-md transition-colors">
@@ -222,7 +211,7 @@ export function HomePageClient() {
           variants={fadeUp}
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, margin: '-70px' }}
+          viewport={{ once: true, margin: "-70px" }}
           transition={{ duration: 0.32 }}
           className="container mx-auto max-w-7xl px-4 py-14 md:px-6"
         >
@@ -268,7 +257,7 @@ export function HomePageClient() {
           variants={fadeUp}
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, margin: '-70px' }}
+          viewport={{ once: true, margin: "-70px" }}
           transition={{ duration: 0.32 }}
           className="container mx-auto max-w-7xl px-4 pb-16 md:px-6 md:pb-24"
         >
@@ -279,8 +268,8 @@ export function HomePageClient() {
                   Ready to ship your first link?
                 </h2>
                 <p className="text-muted-foreground text-base">
-                  Create an account in under a minute and start uploading,
-                  shortening, and sharing right away.
+                  Create an account in under a minute and start uploading, shortening, and sharing
+                  right away.
                 </p>
               </div>
 

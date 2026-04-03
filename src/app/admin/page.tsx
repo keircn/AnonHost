@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -23,14 +23,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface User {
   id: string;
@@ -64,48 +58,43 @@ export default function AdminPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
+      const response = await fetch("/api/admin/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
       setUsers(data);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
-      toast.error('Failed to fetch users');
+      console.error("Failed to fetch users:", error);
+      toast.error("Failed to fetch users");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const updateUser = async (
-    id: string,
-    data: { premium?: boolean; admin?: boolean }
-  ) => {
+  const updateUser = async (id: string, data: { premium?: boolean; admin?: boolean }) => {
     try {
-      const response = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...data }),
       });
 
-      if (!response.ok) throw new Error('Failed to update user');
+      if (!response.ok) throw new Error("Failed to update user");
 
-      setUsers(
-        users.map((user) => (user.id === id ? { ...user, ...data } : user))
-      );
+      setUsers(users.map((user) => (user.id === id ? { ...user, ...data } : user)));
 
-      toast.success('User updated successfully');
+      toast.success("User updated successfully");
     } catch (error) {
-      console.error('Failed to update user:', error);
-      toast.error('Failed to update user');
+      console.error("Failed to update user:", error);
+      toast.error("Failed to update user");
     }
   };
 
   const sendEmail = async (formData: EmailFormData) => {
     setIsEmailSending(true);
     try {
-      const response = await fetch('/api/admin/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           to: selectedUser?.email,
           ...formData,
@@ -114,14 +103,13 @@ export default function AdminPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to send email');
+        throw new Error(error.error || "Failed to send email");
       }
 
-      toast.success('Email sent successfully');
+      toast.success("Email sent successfully");
       setIsDialogOpen(false);
     } catch (error: Error | unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to send email';
+      const errorMessage = error instanceof Error ? error.message : "Failed to send email";
       toast.error(errorMessage);
     } finally {
       setIsEmailSending(false);
@@ -130,7 +118,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!session?.user?.admin) {
-      redirect('/');
+      redirect("/");
     }
     fetchUsers();
   }, [session]);
@@ -153,9 +141,7 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user permissions and view statistics
-              </CardDescription>
+              <CardDescription>Manage user permissions and view statistics</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -181,38 +167,27 @@ export default function AdminPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="w-[96px]">
-                        {user._count.Media}
-                      </TableCell>
-                      <TableCell className="w-[96px]">
-                        {user._count.apiKeys}
-                      </TableCell>
+                      <TableCell className="w-[96px]">{user._count.Media}</TableCell>
+                      <TableCell className="w-[96px]">{user._count.apiKeys}</TableCell>
                       <TableCell className="max-w-[260px]">
                         <div className="text-muted-foreground truncate">
-                          {user.settings?.customDomain || '—'}
+                          {user.settings?.customDomain || "—"}
                         </div>
                       </TableCell>
                       <TableCell className="w-[100px]">
                         <Switch
                           checked={user.premium}
-                          onCheckedChange={(checked) =>
-                            updateUser(user.id, { premium: checked })
-                          }
+                          onCheckedChange={(checked) => updateUser(user.id, { premium: checked })}
                         />
                       </TableCell>
                       <TableCell className="w-[100px]">
                         <Switch
                           checked={user.admin}
-                          onCheckedChange={(checked) =>
-                            updateUser(user.id, { admin: checked })
-                          }
+                          onCheckedChange={(checked) => updateUser(user.id, { admin: checked })}
                         />
                       </TableCell>
                       <TableCell className="w-[120px] text-right">
-                        <Dialog
-                          open={isDialogOpen}
-                          onOpenChange={setIsDialogOpen}
-                        >
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                           <DialogTrigger asChild>
                             <Button
                               variant="outline"
@@ -224,17 +199,15 @@ export default function AdminPage() {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>
-                                Send Email to {selectedUser?.email}
-                              </DialogTitle>
+                              <DialogTitle>Send Email to {selectedUser?.email}</DialogTitle>
                             </DialogHeader>
                             <form
                               onSubmit={(e) => {
                                 e.preventDefault();
                                 const formData = new FormData(e.currentTarget);
                                 sendEmail({
-                                  subject: formData.get('subject') as string,
-                                  message: formData.get('message') as string,
+                                  subject: formData.get("subject") as string,
+                                  message: formData.get("message") as string,
                                 });
                               }}
                               className="space-y-4"
@@ -253,7 +226,7 @@ export default function AdminPage() {
                                 disabled={isEmailSending}
                               />
                               <Button type="submit" disabled={isEmailSending}>
-                                {isEmailSending ? 'Sending...' : 'Send Email'}
+                                {isEmailSending ? "Sending..." : "Send Email"}
                               </Button>
                             </form>
                           </DialogContent>
@@ -282,9 +255,7 @@ export default function AdminPage() {
                 <CardTitle>Premium Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
-                  {users.filter((u) => u.premium).length}
-                </div>
+                <div className="text-3xl font-bold">{users.filter((u) => u.premium).length}</div>
               </CardContent>
             </Card>
             <Card>

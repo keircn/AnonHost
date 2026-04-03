@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { type Settings, fetchSettings, updateSettings } from '@/lib/settings';
+import { useState, useEffect } from "react";
+import { type Settings, fetchSettings, updateSettings } from "@/lib/settings";
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>({
     enableNotifications: true,
     enableDirectLinks: true,
-    customDomain: '',
+    customDomain: "",
     makeImagesPublic: false,
     disableEmbedByDefault: false,
-    embedTitleTemplate: '{{filename}}',
-    embedDescriptionTemplate: 'Uploaded by {{uploader}}',
-    embedSiteName: 'AnonHost',
-    embedAccentColor: '#0ea5e9',
+    embedTitleTemplate: "{{filename}}",
+    embedDescriptionTemplate: "Uploaded by {{uploader}}",
+    embedSiteName: "AnonHost",
+    embedAccentColor: "#0ea5e9",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -26,10 +26,8 @@ export function useSettings() {
         setSettings(data);
         setError(null);
       } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error('Failed to load settings')
-        );
-        console.error('Failed to load settings:', err);
+        setError(err instanceof Error ? err : new Error("Failed to load settings"));
+        console.error("Failed to load settings:", err);
       } finally {
         setIsLoading(false);
       }
@@ -57,10 +55,8 @@ export function useSettings() {
       setError(null);
       return updatedSettings;
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('Failed to save settings')
-      );
-      console.error('Failed to save settings:', err);
+      setError(err instanceof Error ? err : new Error("Failed to save settings"));
+      console.error("Failed to save settings:", err);
       throw err;
     } finally {
       setIsLoading(false);

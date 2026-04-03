@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
 
 function LoadingCard() {
   return (
@@ -38,8 +38,8 @@ export function VerifyPageClient() {
 
 function VerifyForm() {
   const searchParams = useSearchParams();
-  const email = searchParams.get('email');
-  const [otp, setOtp] = useState('');
+  const email = searchParams.get("email");
+  const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
 
   const handleVerify = async (e: React.FormEvent) => {
@@ -47,22 +47,22 @@ function VerifyForm() {
     setIsVerifying(true);
 
     try {
-      const verifyResponse = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const verifyResponse = await fetch("/api/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
       });
 
       if (!verifyResponse.ok) {
         const data = await verifyResponse.json();
-        throw new Error(data.error || 'Verification failed');
+        throw new Error(data.error || "Verification failed");
       }
 
-      const result = await signIn('email-login', {
+      const result = await signIn("email-login", {
         email,
         otp,
         redirect: false,
-        callbackUrl: '/dashboard',
+        callbackUrl: "/dashboard",
       });
 
       if (result?.error) {
@@ -74,13 +74,13 @@ function VerifyForm() {
       }
     } catch (error) {
       setIsVerifying(false);
-      let message = 'Verification failed';
+      let message = "Verification failed";
       if (error instanceof Error) message = error.message;
       toast(
         <div>
           <strong>Verification failed</strong>
           <div>{message}</div>
-        </div>
+        </div>,
       );
     } finally {
       setIsVerifying(false);
@@ -89,7 +89,7 @@ function VerifyForm() {
 
   useEffect(() => {
     if (!email) {
-      window.location.href = '/register';
+      window.location.href = "/register";
     }
   }, [email]);
 
@@ -102,12 +102,8 @@ function VerifyForm() {
           transition={{ delay: 0.2 }}
           className="space-y-2 text-center"
         >
-          <h1 className="text-2xl font-bold tracking-tight">
-            Verify Your Email
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            We sent a code to {email}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Verify Your Email</h1>
+          <p className="text-muted-foreground text-sm">We sent a code to {email}</p>
         </motion.div>
       </CardHeader>
       <CardContent>
@@ -121,19 +117,13 @@ function VerifyForm() {
               type="text"
               placeholder="Enter verification code"
               value={otp}
-              onChange={(e) =>
-                setOtp(e.target.value.replace(/\s+/g, '').replace(/\D+/g, ''))
-              }
+              onChange={(e) => setOtp(e.target.value.replace(/\s+/g, "").replace(/\D+/g, ""))}
               required
               maxLength={6}
               className="text-center text-2xl tracking-widest"
             />
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={isVerifying || otp.length !== 6}
-            >
-              {isVerifying ? 'Verifying...' : 'Verify'}
+            <Button className="w-full" type="submit" disabled={isVerifying || otp.length !== 6}>
+              {isVerifying ? "Verifying..." : "Verify"}
             </Button>
           </form>
         </motion.div>

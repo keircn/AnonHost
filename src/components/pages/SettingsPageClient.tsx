@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { motion, AnimatePresence } from 'framer-motion';
-import { GeneralSettingsTab } from '@/components/Settings/GeneralSettingsTab';
-import { ApiKeysTab } from '@/components/ApiKey/ApiKeysTab';
-import { useSettings } from '@/hooks/use-settings';
-import { useApiKeys } from '@/hooks/use-api-keys';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from "framer-motion";
+import { GeneralSettingsTab } from "@/components/Settings/GeneralSettingsTab";
+import { ApiKeysTab } from "@/components/ApiKey/ApiKeysTab";
+import { useSettings } from "@/hooks/use-settings";
+import { useApiKeys } from "@/hooks/use-api-keys";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -24,22 +24,22 @@ const slideAnimation = {
 
 const contentTransition = {
   duration: 0.2,
-  ease: 'easeOut' as const,
+  ease: "easeOut" as const,
 };
 
 export function SettingsPageClient() {
   const { status } = useSession();
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
   const { isLoading: isSettingsLoading } = useSettings();
   const { isLoading: isApiKeysLoading } = useApiKeys();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/');
+    if (status === "unauthenticated") {
+      redirect("/");
     }
   }, [status]);
 
-  if (status === 'loading' || isSettingsLoading || isApiKeysLoading) {
+  if (status === "loading" || isSettingsLoading || isApiKeysLoading) {
     return (
       <motion.div
         className="container flex min-h-[calc(100vh-4rem)] items-center justify-center"
@@ -53,12 +53,7 @@ export function SettingsPageClient() {
   }
 
   return (
-    <motion.div
-      className="container py-8"
-      variants={fadeIn}
-      initial="initial"
-      animate="animate"
-    >
+    <motion.div className="container py-8" variants={fadeIn} initial="initial" animate="animate">
       <motion.h1
         className="mb-6 text-3xl font-bold"
         variants={fadeIn}
@@ -68,11 +63,7 @@ export function SettingsPageClient() {
         Account Settings
       </motion.h1>
 
-      <Tabs
-        defaultValue="general"
-        className="w-full"
-        onValueChange={setActiveTab}
-      >
+      <Tabs defaultValue="general" className="w-full" onValueChange={setActiveTab}>
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="general">General</TabsTrigger>
@@ -90,11 +81,11 @@ export function SettingsPageClient() {
             transition={contentTransition}
           >
             <TabsContent value="general" forceMount>
-              {activeTab === 'general' && <GeneralSettingsTab />}
+              {activeTab === "general" && <GeneralSettingsTab />}
             </TabsContent>
 
             <TabsContent value="api-keys" forceMount>
-              {activeTab === 'api-keys' && <ApiKeysTab />}
+              {activeTab === "api-keys" && <ApiKeysTab />}
             </TabsContent>
           </motion.div>
         </AnimatePresence>

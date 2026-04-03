@@ -1,15 +1,9 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -18,16 +12,16 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Upload, ImageIcon, Trash2, Copy } from 'lucide-react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getStorageStats } from '@/lib/upload';
-import { toast } from 'sonner';
-import { LuMusic } from 'react-icons/lu';
-import { formatFileSize } from '@/lib/utils';
+} from "@/components/ui/pagination";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Upload, ImageIcon, Trash2, Copy } from "lucide-react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { getStorageStats } from "@/lib/upload";
+import { toast } from "sonner";
+import { LuMusic } from "react-icons/lu";
+import { formatFileSize } from "@/lib/utils";
 
 interface MediaItem {
   id: string;
@@ -36,7 +30,7 @@ interface MediaItem {
   filename: string;
   createdAt: string;
   size: number;
-  type: 'IMAGE' | 'VIDEO' | 'AUDIO';
+  type: "IMAGE" | "VIDEO" | "AUDIO";
   duration?: number;
 }
 
@@ -79,7 +73,7 @@ export function DashboardPageClient() {
   const { data: session, status } = useSession();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('media');
+  const [activeTab, setActiveTab] = useState("media");
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
     total: 0,
@@ -97,18 +91,16 @@ export function DashboardPageClient() {
   const fetchMedia = async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/media?page=${page}&limit=${paginationInfo.limit}`
-      );
-      if (!response.ok) throw new Error('Failed to fetch media');
+      const response = await fetch(`/api/media?page=${page}&limit=${paginationInfo.limit}`);
+      if (!response.ok) throw new Error("Failed to fetch media");
       const data = await response.json();
       setMediaItems(data.media || []);
       setStats(data.stats);
       setPaginationInfo(data.pagination);
     } catch (error) {
-      console.error('Failed to fetch media:', error);
+      console.error("Failed to fetch media:", error);
       setMediaItems([]);
-      toast.error('Failed to fetch media');
+      toast.error("Failed to fetch media");
     } finally {
       setIsLoading(false);
     }
@@ -116,22 +108,20 @@ export function DashboardPageClient() {
 
   const handleDeleteMedia = async (id: string) => {
     try {
-      const response = await fetch(`/api/media/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete media');
+      const response = await fetch(`/api/media/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete media");
 
       setMediaItems((prev) => prev.filter((item) => item.id !== id));
       setStats((prev) => ({
         ...prev,
         totalUploads: prev.totalUploads - 1,
-        storageUsed:
-          prev.storageUsed -
-          (mediaItems.find((item) => item.id === id)?.size || 0),
+        storageUsed: prev.storageUsed - (mediaItems.find((item) => item.id === id)?.size || 0),
       }));
 
-      toast.success('Media deleted successfully');
+      toast.success("Media deleted successfully");
     } catch (error) {
-      console.error('Failed to delete media:', error);
-      toast.error('Failed to delete media');
+      console.error("Failed to delete media:", error);
+      toast.error("Failed to delete media");
     }
   };
 
@@ -139,27 +129,27 @@ export function DashboardPageClient() {
     const image = mediaItems.find((img) => img.id === imageId);
     if (image) {
       navigator.clipboard.writeText(image.displayUrl);
-      toast.success('Image URL copied to clipboard');
+      toast.success("Image URL copied to clipboard");
     }
   };
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === "authenticated") {
       fetchMedia(currentPage);
     }
   }, [currentPage, status]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/register');
+    if (status === "unauthenticated") {
+      redirect("/register");
     }
 
-    if (status === 'authenticated') {
+    if (status === "authenticated") {
       Promise.resolve([fetchMedia()]);
     }
   }, [status]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <motion.div
         className="container flex min-h-[calc(100vh-4rem)] items-center justify-center"
@@ -188,11 +178,7 @@ export function DashboardPageClient() {
         Dashboard
       </motion.h1>
 
-      <Tabs
-        defaultValue="media"
-        className="w-full"
-        onValueChange={setActiveTab}
-      >
+      <Tabs defaultValue="media" className="w-full" onValueChange={setActiveTab}>
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="media">My Media</TabsTrigger>
@@ -210,16 +196,10 @@ export function DashboardPageClient() {
             transition={{ duration: 0.2 }}
           >
             <TabsContent value="media" forceMount>
-              {activeTab === 'media' && (
+              {activeTab === "media" && (
                 <>
-                  <motion.div
-                    className="grid gap-6 lg:gap-8"
-                    variants={staggerContainer}
-                  >
-                    <motion.div
-                      className="flex items-center justify-between"
-                      variants={fadeIn}
-                    >
+                  <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
+                    <motion.div className="flex items-center justify-between" variants={fadeIn}>
                       <h2 className="text-xl font-semibold">Your Files</h2>
                       <Link href="/upload">
                         <Button>
@@ -230,10 +210,7 @@ export function DashboardPageClient() {
                     </motion.div>
 
                     {isLoading ? (
-                      <motion.div
-                        className="py-8 text-center"
-                        variants={fadeIn}
-                      >
+                      <motion.div className="py-8 text-center" variants={fadeIn}>
                         Loading your files...
                       </motion.div>
                     ) : mediaItems.length === 0 ? (
@@ -259,16 +236,12 @@ export function DashboardPageClient() {
                         variants={staggerContainer}
                       >
                         {mediaItems.map((item) => (
-                          <motion.div
-                            key={item.id}
-                            variants={fadeIn}
-                            layoutId={item.id}
-                          >
+                          <motion.div key={item.id} variants={fadeIn} layoutId={item.id}>
                             <Card className="h-full">
                               <div className="relative aspect-square overflow-hidden">
                                 {(() => {
                                   switch (item.type) {
-                                    case 'VIDEO':
+                                    case "VIDEO":
                                       return (
                                         <video
                                           src={item.url}
@@ -276,22 +249,19 @@ export function DashboardPageClient() {
                                           className="absolute inset-0 h-full w-full object-cover"
                                         />
                                       );
-                                    case 'AUDIO':
+                                    case "AUDIO":
                                       return (
                                         <div className="bg-muted/20 absolute inset-0 flex flex-col items-center justify-center p-4">
                                           <LuMusic className="text-muted-foreground mb-4 h-16 w-16" />
                                           <audio controls className="w-full">
-                                            <source
-                                              src={item.url}
-                                              type="audio/mpeg"
-                                            />
+                                            <source src={item.url} type="audio/mpeg" />
                                           </audio>
                                         </div>
                                       );
                                     default:
                                       return (
                                         <img
-                                          src={item.url || '/placeholder.svg'}
+                                          src={item.url || "/placeholder.svg"}
                                           alt={item.filename}
                                           className="absolute inset-0 h-full w-full object-cover"
                                           loading="lazy"
@@ -303,33 +273,23 @@ export function DashboardPageClient() {
                               <CardContent className="p-4 lg:p-6">
                                 <div className="flex items-center justify-between">
                                   <div className="mr-2 truncate">
-                                    <p className="truncate font-medium">
-                                      {item.filename}
-                                    </p>
+                                    <p className="truncate font-medium">{item.filename}</p>
                                     <p className="text-muted-foreground text-xs">
-                                      {new Date(
-                                        item.createdAt
-                                      ).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: '2-digit',
+                                      {new Date(item.createdAt).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "2-digit",
                                       })}
-                                      {item.type === 'VIDEO' &&
-                                        item.duration && (
-                                          <span className="ml-2">
-                                            {Math.floor(item.duration / 60)}:
-                                            {(item.duration % 60)
-                                              .toString()
-                                              .padStart(2, '0')}
-                                          </span>
-                                        )}
+                                      {item.type === "VIDEO" && item.duration && (
+                                        <span className="ml-2">
+                                          {Math.floor(item.duration / 60)}:
+                                          {(item.duration % 60).toString().padStart(2, "0")}
+                                        </span>
+                                      )}
                                     </p>
                                   </div>
                                   <div className="flex items-center space-x-2">
-                                    <Button
-                                      size="icon"
-                                      onClick={() => handleCopyUrl(item.id)}
-                                    >
+                                    <Button size="icon" onClick={() => handleCopyUrl(item.id)}>
                                       <Copy className="h-4 w-4" />
                                     </Button>
                                     <Button
@@ -349,18 +309,13 @@ export function DashboardPageClient() {
                     )}
                   </motion.div>
                   {paginationInfo.pages > 1 && (
-                    <motion.div
-                      variants={fadeIn}
-                      className="mt-6 flex justify-center"
-                    >
+                    <motion.div variants={fadeIn} className="mt-6 flex justify-center">
                       <Pagination>
                         <PaginationContent>
                           <PaginationItem>
                             {currentPage > 1 && (
                               <PaginationPrevious
-                                onClick={() =>
-                                  setCurrentPage((p) => Math.max(1, p - 1))
-                                }
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                               />
                             )}
                           </PaginationItem>
@@ -370,8 +325,7 @@ export function DashboardPageClient() {
                             if (
                               pageNumber === 1 ||
                               pageNumber === paginationInfo.pages ||
-                              (pageNumber >= currentPage - 1 &&
-                                pageNumber <= currentPage + 1)
+                              (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
                             ) {
                               return (
                                 <PaginationItem key={pageNumber}>
@@ -400,9 +354,7 @@ export function DashboardPageClient() {
                             {currentPage < paginationInfo.pages && (
                               <PaginationNext
                                 onClick={() =>
-                                  setCurrentPage((p) =>
-                                    Math.min(paginationInfo.pages, p + 1)
-                                  )
+                                  setCurrentPage((p) => Math.min(paginationInfo.pages, p + 1))
                                 }
                               />
                             )}
@@ -416,58 +368,55 @@ export function DashboardPageClient() {
             </TabsContent>
 
             <TabsContent value="stats" forceMount>
-              {activeTab === 'stats' && (
+              {activeTab === "stats" && (
                 <>
                   {(() => {
                     const storageStats = getStorageStats(
                       stats.storageUsed,
                       session?.user?.premium ?? false,
-                      session?.user?.admin ?? false
+                      session?.user?.admin ?? false,
                     );
                     const statsData = [
                       {
-                        title: 'Total Uploads',
+                        title: "Total Uploads",
                         description: "Number of files you've uploaded",
                         value: stats.totalUploads,
                       },
                       {
-                        title: 'Storage Used',
+                        title: "Storage Used",
                         description: session?.user?.premium
-                          ? 'Unlimited storage available'
+                          ? "Unlimited storage available"
                           : `${storageStats.used} of ${storageStats.total} used`,
                         value: session?.user?.premium
                           ? formatFileSize(stats.storageUsed)
                           : storageStats.percentage,
                       },
                       {
-                        title: 'API Requests',
-                        description: 'API requests in the last 30 days',
+                        title: "API Requests",
+                        description: "API requests in the last 30 days",
                         value: stats.apiRequests,
                       },
                       {
-                        title: 'UID',
-                        description: 'Your user ID',
-                        value: stats.uid || 'N/A',
-                        prefix: '#',
+                        title: "UID",
+                        description: "Your user ID",
+                        value: stats.uid || "N/A",
+                        prefix: "#",
                       },
                       {
-                        title: 'Account Type',
-                        description: 'Your current subscription tier',
-                        value: session?.user?.premium ? 'Premium' : 'Free',
+                        title: "Account Type",
+                        description: "Your current subscription tier",
+                        value: session?.user?.premium ? "Premium" : "Free",
                       },
                       {
-                        title: 'Member Since',
-                        description: 'Account creation date',
+                        title: "Member Since",
+                        description: "Account creation date",
                         value: stats.createdAt
-                          ? new Date(stats.createdAt).toLocaleDateString(
-                              'en-GB',
-                              {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              }
-                            )
-                          : 'N/A',
+                          ? new Date(stats.createdAt).toLocaleDateString("en-GB", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "N/A",
                       },
                     ];
                     return (
@@ -481,9 +430,7 @@ export function DashboardPageClient() {
                           <motion.div key={stat.title} variants={fadeIn}>
                             <Card className="h-full">
                               <CardHeader>
-                                <CardTitle className="text-xl">
-                                  {stat.title}
-                                </CardTitle>
+                                <CardTitle className="text-xl">{stat.title}</CardTitle>
                                 <CardDescription className="text-sm">
                                   {stat.description}
                                 </CardDescription>

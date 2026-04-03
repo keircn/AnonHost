@@ -1,15 +1,11 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  HeadBucketCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 
 const REQUIRED_R2_ENV_VARS = [
-  'R2_ACCOUNT_ID',
-  'R2_ACCESS_KEY_ID',
-  'R2_SECRET_ACCESS_KEY',
-  'R2_BUCKET_NAME',
-  'R2_PUBLIC_URL',
+  "R2_ACCOUNT_ID",
+  "R2_ACCESS_KEY_ID",
+  "R2_SECRET_ACCESS_KEY",
+  "R2_BUCKET_NAME",
+  "R2_PUBLIC_URL",
 ] as const;
 
 export function isR2Configured(): boolean {
@@ -18,11 +14,11 @@ export function isR2Configured(): boolean {
 
 function getR2Client() {
   if (!isR2Configured()) {
-    throw new Error('R2 is not fully configured');
+    throw new Error("R2 is not fully configured");
   }
 
   return new S3Client({
-    region: 'auto',
+    region: "auto",
     endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -61,8 +57,8 @@ export async function uploadToR2({
 
     return `${process.env.R2_PUBLIC_URL}/${key}`;
   } catch (error) {
-    console.error('R2 upload error:', error);
-    throw new Error('Failed to upload to R2');
+    console.error("R2 upload error:", error);
+    throw new Error("Failed to upload to R2");
   }
 }
 
@@ -76,7 +72,7 @@ export async function checkR2Connection(): Promise<boolean> {
     await r2Client.send(command);
     return true;
   } catch (error) {
-    console.error('R2 connection error:', error);
+    console.error("R2 connection error:", error);
     return false;
   }
 }
@@ -85,7 +81,7 @@ export function generateR2Key(
   userId: string,
   fileId: string,
   fileExt: string,
-  type?: string
+  type?: string,
 ): string {
   if (type) {
     return `${userId}/${type}s/${fileId}${fileExt}`;

@@ -1,39 +1,33 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { LuCheck } from 'react-icons/lu';
-import Link from 'next/link';
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { LuCheck } from "react-icons/lu";
+import Link from "next/link";
 
 const features = {
   free: [
-    'Up to 100MB per file',
-    '1GB total storage',
-    'Image optimization & conversion',
-    'Video compression',
-    'URL shortening',
-    'Basic API access',
-    'Community support',
+    "Up to 100MB per file",
+    "1GB total storage",
+    "Image optimization & conversion",
+    "Video compression",
+    "URL shortening",
+    "Basic API access",
+    "Community support",
   ],
   premium: [
-    'Everything in Free, plus:',
-    'Up to 100MB per file',
-    'Unlimited storage',
-    'Priority storage allocation',
-    'Custom domains',
-    'Advanced file processing',
-    'Premium API features',
-    'Priority support',
-    'Early access to new features',
-    'Support development',
+    "Everything in Free, plus:",
+    "Up to 100MB per file",
+    "Unlimited storage",
+    "Priority storage allocation",
+    "Custom domains",
+    "Advanced file processing",
+    "Premium API features",
+    "Priority support",
+    "Early access to new features",
+    "Support development",
   ],
 };
 
@@ -47,9 +41,7 @@ export function PricingPageClient() {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-4xl font-bold">Simple, Transparent Pricing</h1>
-        <p className="text-muted-foreground text-lg">
-          Choose the plan that works for you
-        </p>
+        <p className="text-muted-foreground text-lg">Choose the plan that works for you</p>
       </motion.div>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -106,9 +98,7 @@ export function PricingPageClient() {
                   <span className="text-3xl font-bold">$5</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  or $50/year (save $10)
-                </div>
+                <div className="text-muted-foreground text-sm">or $50/year (save $10)</div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -133,7 +123,7 @@ export function PricingPageClient() {
                 </Button>
               </Link>
               <p className="text-muted-foreground text-center text-sm">
-                Join our{' '}
+                Join our{" "}
                 <a
                   href="https://discord.gg/WZJksYs8"
                   target="_blank"
@@ -141,7 +131,7 @@ export function PricingPageClient() {
                   className="text-primary underline"
                 >
                   Discord
-                </a>{' '}
+                </a>{" "}
                 for more info
               </p>
             </CardFooter>
@@ -156,8 +146,7 @@ export function PricingPageClient() {
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         <p>
-          All plans include GDPR compliance, EU hosting, and 99.9% uptime
-          guarantee.
+          All plans include GDPR compliance, EU hosting, and 99.9% uptime guarantee.
           <br />
           Currently in open beta - some features may be limited or unavailable.
         </p>

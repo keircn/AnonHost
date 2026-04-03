@@ -1,66 +1,66 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Mail, MessageSquare, HelpCircle, ArrowRight } from 'lucide-react';
+} from "@/components/ui/accordion";
+import { Mail, MessageSquare, HelpCircle, ArrowRight } from "lucide-react";
 
 const contactMethods = [
   {
-    title: 'Email Support',
-    description: 'Get in touch with our support team',
+    title: "Email Support",
+    description: "Get in touch with our support team",
     icon: <Mail className="h-6 w-6" />,
-    href: 'mailto:support@mg.roxyproxy.de',
+    href: "mailto:support@mg.roxyproxy.de",
     external: true,
   },
   {
-    title: 'Discord Community',
-    description: 'Join our Discord server for rapid support',
+    title: "Discord Community",
+    description: "Join our Discord server for rapid support",
     icon: <MessageSquare className="h-6 w-6" />,
-    href: 'https://discord.gg/jPxJ52GF3r',
+    href: "https://discord.gg/jPxJ52GF3r",
     external: true,
   },
   {
-    title: 'Help Center',
-    description: 'Browse our documentation and guides',
+    title: "Help Center",
+    description: "Browse our documentation and guides",
     icon: <HelpCircle className="h-6 w-6" />,
-    href: '/docs',
+    href: "/docs",
     external: false,
   },
 ];
 
 const faqs = [
   {
-    question: 'What file types are supported?',
+    question: "What file types are supported?",
     answer:
-      'We support most image formats (PNG, JPEG, GIF, WebP), videos, audio files, and documents. Each file must be under 100MB.',
+      "We support most image formats (PNG, JPEG, GIF, WebP), videos, audio files, and documents. Each file must be under 100MB.",
   },
   {
-    question: 'How long are files stored?',
+    question: "How long are files stored?",
     answer:
-      'Files are stored indefinitely as long as your account remains active. Premium users get priority storage and additional features.',
+      "Files are stored indefinitely as long as your account remains active. Premium users get priority storage and additional features.",
   },
   {
-    question: 'Is my content private?',
+    question: "Is my content private?",
     answer:
-      'Yes! By default, all uploads are private. You can choose to make specific files public by sharing their links.',
+      "Yes! By default, all uploads are private. You can choose to make specific files public by sharing their links.",
   },
   {
-    question: 'What are the upload limits?',
+    question: "What are the upload limits?",
     answer:
-      'All users can upload up to 100MB per file. Free users have 1GB total storage, while premium users have unlimited storage.',
+      "All users can upload up to 100MB per file. Free users have 1GB total storage, while premium users have unlimited storage.",
   },
   {
-    question: 'How do I get premium?',
+    question: "How do I get premium?",
     answer:
-      'While billing is not yet implemented, you can contact me directly in the Discord server if you are interested',
+      "While billing is not yet implemented, you can contact me directly in the Discord server if you are interested",
   },
 ];
 
@@ -80,8 +80,8 @@ export function ContactPageClient() {
                 Need Help? We&apos;re Here
               </h1>
               <p className="max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Choose how you&apos;d like to get in touch. We&apos;re here to
-                help with any questions about our services.
+                Choose how you&apos;d like to get in touch. We&apos;re here to help with any
+                questions about our services.
               </p>
             </motion.div>
 
@@ -93,10 +93,7 @@ export function ContactPageClient() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Link
-                    href={method.href}
-                    target={method.external ? '_blank' : undefined}
-                  >
+                  <Link href={method.href} target={method.external ? "_blank" : undefined}>
                     <Card className="hover:border-primary h-full transition-colors">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -105,9 +102,7 @@ export function ContactPageClient() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-muted-foreground text-sm">
-                          {method.description}
-                        </p>
+                        <p className="text-muted-foreground text-sm">{method.description}</p>
                       </CardContent>
                     </Card>
                   </Link>
@@ -122,12 +117,8 @@ export function ContactPageClient() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="text-center">
-                <h2 className="text-2xl font-bold tracking-tighter">
-                  Frequently Asked Questions
-                </h2>
-                <p className="text-muted-foreground mt-2">
-                  Find quick answers to common questions
-                </p>
+                <h2 className="text-2xl font-bold tracking-tighter">Frequently Asked Questions</h2>
+                <p className="text-muted-foreground mt-2">Find quick answers to common questions</p>
               </div>
 
               <Accordion type="single" collapsible className="w-full">

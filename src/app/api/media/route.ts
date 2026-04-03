@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
-import { verifyApiKey } from '@/lib/auth';
-import { STORAGE_LIMITS } from '@/lib/upload';
-import { uploadFile } from '@/lib/server/upload-file';
-import { apiKeys, MediaType, media, settings, users } from '@/lib/db/schema';
-import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
-import { db } from '@/lib/db';
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import prisma from "@/lib/prisma";
+import { verifyApiKey } from "@/lib/auth";
+import { STORAGE_LIMITS } from "@/lib/upload";
+import { uploadFile } from "@/lib/server/upload-file";
+import { apiKeys, MediaType, media, settings, users } from "@/lib/db/schema";
+import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
 
 interface MediaItem {
   id: string;
@@ -46,10 +46,10 @@ interface MediaItemResponse extends MediaItem {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+    const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
 
     if (!session && !apiKey) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     let userId: string;
@@ -57,99 +57,80 @@ export async function GET(req: NextRequest) {
     if (apiKey) {
       const user = await verifyApiKey(apiKey);
       if (!user) {
-        return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+        return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
       }
       userId = user.id.toString();
 
-      await db
-        .update(apiKeys)
-        .set({ lastUsed: new Date() })
-        .where(eq(apiKeys.key, apiKey));
+      await db.update(apiKeys).set({ lastUsed: new Date() }).where(eq(apiKeys.key, apiKey));
     } else {
       userId = session!.user.id.toString();
     }
 
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://roxyproxy.de';
+    const baseUrl = process.env.NEXTAUTH_URL || "https://roxyproxy.de";
     const url = new URL(req.url);
-    const page = Math.max(
-      1,
-      Number.parseInt(url.searchParams.get('page') || '1')
-    );
+    const page = Math.max(1, Number.parseInt(url.searchParams.get("page") || "1"));
     const limit = Math.min(
-      Math.max(1, Number.parseInt(url.searchParams.get('limit') || '20')),
-      100
+      Math.max(1, Number.parseInt(url.searchParams.get("limit") || "20")),
+      100,
     );
-    const sort = url.searchParams.get('sort') || 'createdAt';
-    const order = url.searchParams.get('order') || 'desc';
+    const sort = url.searchParams.get("sort") || "createdAt";
+    const order = url.searchParams.get("order") || "desc";
     const skip = (page - 1) * limit;
 
     const orderColumn =
-      sort === 'filename'
-        ? media.filename
-        : sort === 'size'
-          ? media.size
-          : media.createdAt;
-    const orderByExpr = order === 'asc' ? asc(orderColumn) : desc(orderColumn);
+      sort === "filename" ? media.filename : sort === "size" ? media.size : media.createdAt;
+    const orderByExpr = order === "asc" ? asc(orderColumn) : desc(orderColumn);
 
-    const [
-      totalRow,
-      mediaItems,
-      storageRow,
-      apiRequestsRow,
-      userRow,
-      settingsRow,
-    ] = await Promise.all([
-      db
-        .select({ value: sql<number>`count(*)::int` })
-        .from(media)
-        .where(eq(media.userId, userId)),
+    const [totalRow, mediaItems, storageRow, apiRequestsRow, userRow, settingsRow] =
+      await Promise.all([
+        db
+          .select({ value: sql<number>`count(*)::int` })
+          .from(media)
+          .where(eq(media.userId, userId)),
 
-      db
-        .select()
-        .from(media)
-        .where(eq(media.userId, userId))
-        .orderBy(orderByExpr)
-        .offset(skip)
-        .limit(limit),
+        db
+          .select()
+          .from(media)
+          .where(eq(media.userId, userId))
+          .orderBy(orderByExpr)
+          .offset(skip)
+          .limit(limit),
 
-      db
-        .select({ value: sql<number>`coalesce(sum(${media.size}), 0)::int` })
-        .from(media)
-        .where(eq(media.userId, userId)),
+        db
+          .select({ value: sql<number>`coalesce(sum(${media.size}), 0)::int` })
+          .from(media)
+          .where(eq(media.userId, userId)),
 
-      db
-        .select({ value: sql<number>`count(*)::int` })
-        .from(apiKeys)
-        .where(
-          and(
-            eq(apiKeys.userId, userId),
-            gte(
-              apiKeys.lastUsed,
-              new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-            )
-          )
-        ),
+        db
+          .select({ value: sql<number>`count(*)::int` })
+          .from(apiKeys)
+          .where(
+            and(
+              eq(apiKeys.userId, userId),
+              gte(apiKeys.lastUsed, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
+            ),
+          ),
 
-      db
-        .select({
-          premium: users.premium,
-          admin: users.admin,
-          uid: users.uid,
-          createdAt: users.createdAt,
-        })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1),
+        db
+          .select({
+            premium: users.premium,
+            admin: users.admin,
+            uid: users.uid,
+            createdAt: users.createdAt,
+          })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1),
 
-      db
-        .select({
-          customDomain: settings.customDomain,
-          enableDirectLinks: settings.enableDirectLinks,
-        })
-        .from(settings)
-        .where(eq(settings.userId, userId))
-        .limit(1),
-    ]);
+        db
+          .select({
+            customDomain: settings.customDomain,
+            enableDirectLinks: settings.enableDirectLinks,
+          })
+          .from(settings)
+          .where(eq(settings.userId, userId))
+          .limit(1),
+      ]);
 
     const total = totalRow[0]?.value ?? 0;
     const storageUsed = storageRow[0]?.value ?? 0;
@@ -174,7 +155,7 @@ export async function GET(req: NextRequest) {
                 ? `https://${userSettings.customDomain}/${item.id}`
                 : `${baseUrl}/${item.id}`
             : `${baseUrl}/${item.id}`,
-        })
+        }),
       ),
       pagination: {
         total,
@@ -194,25 +175,22 @@ export async function GET(req: NextRequest) {
       baseUrl,
     });
   } catch (error) {
-    console.error('GET /api/media failed:', {
+    console.error("GET /api/media failed:", {
       error,
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return NextResponse.json(
-      { error: 'Failed to load media' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to load media" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
   const baseUrl = process.env.NEXTAUTH_URL;
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let userId: string;
@@ -220,7 +198,7 @@ export async function POST(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
     userId = user.id.toString();
 
@@ -234,22 +212,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get('file') as File;
-    const type = formData.get('type') as 'avatar' | 'banner' | null;
-    const customDomain = formData.get('domain') as string | null;
+    const file = formData.get("file") as File;
+    const type = formData.get("type") as "avatar" | "banner" | null;
+    const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (type === 'avatar' || type === 'banner') {
-      const uploadResult = await uploadFile(
-        file,
-        userId,
-        file.name,
-        crypto.randomUUID(),
-        type
-      );
+    if (type === "avatar" || type === "banner") {
+      const uploadResult = await uploadFile(file, userId, file.name, crypto.randomUUID(), type);
       return NextResponse.json({
         url: uploadResult.url,
         filename: uploadResult.filename,
@@ -257,12 +229,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const uploadResult = await uploadFile(
-      file,
-      userId,
-      file.name,
-      crypto.randomUUID()
-    );
+    const uploadResult = await uploadFile(file, userId, file.name, crypto.randomUUID());
 
     const media = await prisma.media.create({
       data: {
@@ -274,7 +241,7 @@ export async function POST(req: NextRequest) {
         duration: uploadResult.duration,
         type: uploadResult.type.toUpperCase() as MediaType,
         userId,
-        public: formData.get('public') === 'true',
+        public: formData.get("public") === "true",
         domain: customDomain || null,
       },
     });
@@ -305,10 +272,7 @@ export async function POST(req: NextRequest) {
       baseUrl: baseUrl,
     });
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload media' },
-      { status: 500 }
-    );
+    console.error("Upload error:", error);
+    return NextResponse.json({ error: "Failed to upload media" }, { status: 500 });
   }
 }

@@ -1,21 +1,14 @@
-import { Metadata } from 'next';
-import { MediaActions } from '@/components/Files/MediaActions';
-import { ArchivePreview } from '@/components/Archive/ArchivePreview';
-import prisma from '@/lib/prisma';
-import { notFound } from 'next/navigation';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { betaMembers } from '@/lib/beta';
-import { Viewport } from 'next';
-import { LuMusic } from 'react-icons/lu';
-import {
-  Archive,
-  Calendar,
-  File,
-  FileText,
-  HardDrive,
-  User,
-} from 'lucide-react';
-import { HideNavbar } from '@/components/Layout/HideNavbar';
+import { Metadata } from "next";
+import { MediaActions } from "@/components/Files/MediaActions";
+import { ArchivePreview } from "@/components/Archive/ArchivePreview";
+import prisma from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { betaMembers } from "@/lib/beta";
+import { Viewport } from "next";
+import { LuMusic } from "react-icons/lu";
+import { Archive, Calendar, File, FileText, HardDrive, User } from "lucide-react";
+import { HideNavbar } from "@/components/Layout/HideNavbar";
 
 interface Props {
   params: Promise<{ id?: string[] }>;
@@ -23,28 +16,25 @@ interface Props {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
     hour12: false,
   }).format(date);
 }
 
-function applyTemplate(
-  template: string,
-  context: Record<string, string | number>
-): string {
+function applyTemplate(template: string, context: Record<string, string | number>): string {
   return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => {
     const value = context[key];
-    return value === undefined || value === null ? '' : String(value);
+    return value === undefined || value === null ? "" : String(value);
   });
 }
 
@@ -55,8 +45,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (!mediaId) {
     return {
-      title: 'Media not found',
-      description: 'The requested media could not be found.',
+      title: "Media not found",
+      description: "The requested media could not be found.",
     };
   }
 
@@ -82,67 +72,61 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   if (!media) {
     return {
-      title: 'Media not found',
-      description: 'The requested media could not be found.',
+      title: "Media not found",
+      description: "The requested media could not be found.",
     };
   }
 
   const context = {
-    filename: media.filename || 'Untitled',
-    uploader: media.user?.name || 'Anonymous',
+    filename: media.filename || "Untitled",
+    uploader: media.user?.name || "Anonymous",
     size: formatBytes(media.size),
     uploadedAt: formatDate(media.createdAt),
   };
 
   const embedTitle =
-    applyTemplate(
-      media.user?.settings?.embedTitleTemplate || '{{filename}}',
-      context
-    ).trim() ||
+    applyTemplate(media.user?.settings?.embedTitleTemplate || "{{filename}}", context).trim() ||
     media.filename ||
-    'Untitled';
+    "Untitled";
   const description =
     applyTemplate(
       media.user?.settings?.embedDescriptionTemplate ||
-        'Uploaded by {{uploader}}\nSize: {{size}}\nUploaded: {{uploadedAt}}',
-      context
+        "Uploaded by {{uploader}}\nSize: {{size}}\nUploaded: {{uploadedAt}}",
+      context,
     ).trim() || `Uploaded by ${context.uploader}`;
-  const embedSiteName = media.user?.settings?.embedSiteName || 'AnonHost';
+  const embedSiteName = media.user?.settings?.embedSiteName || "AnonHost";
 
   const dimensions = {
-    width: typeof media.width === 'number' ? media.width : 1280,
-    height: typeof media.height === 'number' ? media.height : 720,
+    width: typeof media.width === "number" ? media.width : 1280,
+    height: typeof media.height === "number" ? media.height : 720,
   };
 
-  if (
-    (media as any).disableEmbed ||
-    media.user?.settings?.disableEmbedByDefault
-  ) {
+  if ((media as any).disableEmbed || media.user?.settings?.disableEmbedByDefault) {
     return {
       title: embedTitle,
       description,
       openGraph: {
         title: embedTitle,
         description,
-        type: 'website',
+        type: "website",
         url: media.url,
         siteName: embedSiteName,
-        ...(media.type === 'IMAGE' && {
+        ...(media.type === "IMAGE" && {
           images: [
             {
               url: media.url,
               width: dimensions.width,
               height: dimensions.height,
-              alt: media.filename || 'Image',
+              alt: media.filename || "Image",
             },
           ],
         }),
       },
       twitter: {
-        card: media.type === 'IMAGE' ? 'summary_large_image' : 'summary',
+        card: media.type === "IMAGE" ? "summary_large_image" : "summary",
         title: embedTitle,
         description,
-        ...(media.type === 'IMAGE' && { images: [media.url] }),
+        ...(media.type === "IMAGE" && { images: [media.url] }),
       },
       alternates: {
         canonical: media.url,
@@ -150,14 +134,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     };
   }
 
-  if (media.type === 'VIDEO') {
+  if (media.type === "VIDEO") {
     return {
       title: embedTitle,
       description,
       openGraph: {
         title: embedTitle,
         description,
-        type: 'video.other',
+        type: "video.other",
         url: media.url,
         siteName: embedSiteName,
         videos: [
@@ -165,7 +149,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
             url: media.url,
             width: dimensions.width,
             height: dimensions.height,
-            type: 'video/mp4',
+            type: "video/mp4",
           },
         ],
         images: [
@@ -173,12 +157,12 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
             url: `${media.url}?thumb=1`,
             width: dimensions.width,
             height: dimensions.height,
-            alt: media.filename || 'Video thumbnail',
+            alt: media.filename || "Video thumbnail",
           },
         ],
       },
       twitter: {
-        card: 'player',
+        card: "player",
         title: embedTitle,
         description,
         images: [`${media.url}?thumb=1`],
@@ -200,25 +184,25 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     openGraph: {
       title: embedTitle,
       description,
-      type: 'website',
+      type: "website",
       url: media.url,
       siteName: embedSiteName,
-      ...(media.type === 'IMAGE' && {
+      ...(media.type === "IMAGE" && {
         images: [
           {
             url: media.url,
             width: dimensions.width,
             height: dimensions.height,
-            alt: media.filename || 'Image',
+            alt: media.filename || "Image",
           },
         ],
       }),
     },
     twitter: {
-      card: media.type === 'IMAGE' ? 'summary_large_image' : 'summary',
+      card: media.type === "IMAGE" ? "summary_large_image" : "summary",
       title: embedTitle,
       description,
-      ...(media.type === 'IMAGE' && { images: [media.url] }),
+      ...(media.type === "IMAGE" && { images: [media.url] }),
       creator: media.user.name ?? undefined,
     },
   };
@@ -231,7 +215,7 @@ export async function generateViewport(props: Props): Promise<Viewport> {
 
   if (!mediaId) {
     return {
-      width: 'device-width',
+      width: "device-width",
       initialScale: 1,
       maximumScale: 1,
       userScalable: false,
@@ -254,21 +238,18 @@ export async function generateViewport(props: Props): Promise<Viewport> {
     },
   });
 
-  if (
-    (media as any)?.disableEmbed ||
-    media?.user?.settings?.disableEmbedByDefault
-  ) {
+  if ((media as any)?.disableEmbed || media?.user?.settings?.disableEmbedByDefault) {
     return {
-      width: 'device-width',
+      width: "device-width",
       initialScale: 1,
       maximumScale: 1,
       userScalable: false,
-      themeColor: '#000000',
+      themeColor: "#000000",
     };
   }
 
   return {
-    width: 'device-width',
+    width: "device-width",
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
@@ -301,7 +282,7 @@ export default async function MediaPage(props: Props) {
   }
 
   const hasArchiveTreePreview =
-    (media as any).type === 'ARCHIVE' && Boolean((media as any).archiveMeta);
+    (media as any).type === "ARCHIVE" && Boolean((media as any).archiveMeta);
 
   if (hasArchiveTreePreview) {
     return (
@@ -311,7 +292,7 @@ export default async function MediaPage(props: Props) {
           metadata={(media as any).archiveMeta}
           filename={media.filename}
           downloadUrl={media.url}
-          uploader={media.user?.name || 'Anonymous'}
+          uploader={media.user?.name || "Anonymous"}
           uploadedAt={media.createdAt}
           fileId={media.id}
           fileSize={media.size}
@@ -328,7 +309,7 @@ export default async function MediaPage(props: Props) {
           <div className="relative flex aspect-video items-center justify-center border-b leading-none">
             {(() => {
               switch ((media as any).type) {
-                case 'VIDEO':
+                case "VIDEO":
                   return (
                     <video
                       src={media.url}
@@ -338,7 +319,7 @@ export default async function MediaPage(props: Props) {
                       playsInline
                     />
                   );
-                case 'AUDIO':
+                case "AUDIO":
                   return (
                     <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-6">
                       <LuMusic className="text-muted-foreground h-20 w-20" />
@@ -348,25 +329,25 @@ export default async function MediaPage(props: Props) {
                       </audio>
                     </div>
                   );
-                case 'TEXT':
+                case "TEXT":
                   return (
                     <div className="flex h-full w-full items-center justify-center">
                       <FileText className="text-muted-foreground h-20 w-20" />
                     </div>
                   );
-                case 'DOCUMENT':
+                case "DOCUMENT":
                   return (
                     <div className="flex h-full w-full items-center justify-center">
                       <File className="text-muted-foreground h-20 w-20" />
                     </div>
                   );
-                case 'ARCHIVE':
+                case "ARCHIVE":
                   return (
                     <div className="flex h-full w-full items-center justify-center">
                       <Archive className="text-muted-foreground h-20 w-20" />
                     </div>
                   );
-                case 'IMAGE':
+                case "IMAGE":
                 default:
                   return (
                     <img
@@ -408,9 +389,7 @@ export default async function MediaPage(props: Props) {
                     <User className="h-3.5 w-3.5" />
                     Uploader
                   </p>
-                  <p className="text-sm font-semibold">
-                    {media.user?.name || 'Anonymous'}
-                  </p>
+                  <p className="text-sm font-semibold">{media.user?.name || "Anonymous"}</p>
                 </CardHeader>
               </Card>
               <Card className="bg-card/70 border">
@@ -419,9 +398,7 @@ export default async function MediaPage(props: Props) {
                     <HardDrive className="h-3.5 w-3.5" />
                     Size
                   </p>
-                  <p className="text-sm font-semibold">
-                    {formatBytes(media.size)}
-                  </p>
+                  <p className="text-sm font-semibold">{formatBytes(media.size)}</p>
                 </CardHeader>
               </Card>
               <Card className="bg-card/70 border">
@@ -430,28 +407,24 @@ export default async function MediaPage(props: Props) {
                     <Calendar className="h-3.5 w-3.5" />
                     Uploaded
                   </p>
-                  <p className="text-sm font-semibold">
-                    {formatDate(media.createdAt)}
-                  </p>
+                  <p className="text-sm font-semibold">{formatDate(media.createdAt)}</p>
                 </CardHeader>
               </Card>
               <Card className="bg-card/70 border">
                 <CardHeader className="gap-1.5 p-3">
-                  <p className="text-muted-foreground text-xs tracking-wide uppercase">
-                    File ID
-                  </p>
+                  <p className="text-muted-foreground text-xs tracking-wide uppercase">File ID</p>
                   <p className="text-sm font-semibold break-all">{media.id}</p>
                 </CardHeader>
               </Card>
             </div>
 
-            {media.type === 'VIDEO' && media.duration && (
+            {media.type === "VIDEO" && media.duration && (
               <Card className="bg-card/70 border">
                 <CardHeader className="p-3">
                   <h3 className="text-sm font-medium">Duration</h3>
                   <p className="text-muted-foreground text-sm font-semibold">
                     {Math.floor(media.duration / 60)}:
-                    {(media.duration % 60).toString().padStart(2, '0')}
+                    {(media.duration % 60).toString().padStart(2, "0")}
                   </p>
                 </CardHeader>
               </Card>

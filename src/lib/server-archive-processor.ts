@@ -1,7 +1,7 @@
-import JSZip from 'jszip';
-import tar from 'tar-stream';
-import { Readable } from 'stream';
-import { gunzipSync } from 'zlib';
+import JSZip from "jszip";
+import tar from "tar-stream";
+import { Readable } from "stream";
+import { gunzipSync } from "zlib";
 
 export interface ArchiveEntry {
   name: string;
@@ -23,46 +23,36 @@ export interface ArchiveMetadata {
 }
 
 export type ArchiveType =
-  | 'zip'
-  | 'tar'
-  | 'tar.gz'
-  | 'tgz'
-  | 'tar.bz2'
-  | 'tbz2'
-  | '7z'
-  | 'rar'
-  | 'gz'
-  | 'bz2';
+  | "zip"
+  | "tar"
+  | "tar.gz"
+  | "tgz"
+  | "tar.bz2"
+  | "tbz2"
+  | "7z"
+  | "rar"
+  | "gz"
+  | "bz2";
 
-const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>([
-  'zip',
-  'tar',
-  'tar.gz',
-  'tgz',
-]);
+const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>(["zip", "tar", "tar.gz", "tgz"]);
 
 export class ServerArchiveProcessor {
-  static async processArchive(
-    buffer: Buffer,
-    filename: string
-  ): Promise<ArchiveMetadata> {
+  static async processArchive(buffer: Buffer, filename: string): Promise<ArchiveMetadata> {
     const archiveType = this.getArchiveType(filename);
 
     if (!archiveType) {
-      throw new Error('Unsupported archive format');
+      throw new Error("Unsupported archive format");
     }
 
     switch (archiveType) {
-      case 'zip':
+      case "zip":
         return this.processZip(buffer);
-      case 'tar':
-      case 'tar.gz':
-      case 'tgz':
+      case "tar":
+      case "tar.gz":
+      case "tgz":
         return this.processTar(buffer, archiveType);
       default:
-        throw new Error(
-          `Archive preview is not supported for ${archiveType} files`
-        );
+        throw new Error(`Archive preview is not supported for ${archiveType} files`);
     }
   }
 
@@ -108,7 +98,7 @@ export class ServerArchiveProcessor {
         uncompressedSize,
         compressedSize: buffer.length,
         entries: archiveEntries,
-        archiveType: 'zip',
+        archiveType: "zip",
       };
     } catch (error) {
       throw new Error(`Failed to process ZIP archive: ${error}`);
@@ -117,10 +107,9 @@ export class ServerArchiveProcessor {
 
   private static async processTar(
     buffer: Buffer,
-    archiveType: 'tar' | 'tar.gz' | 'tgz'
+    archiveType: "tar" | "tar.gz" | "tgz",
   ): Promise<ArchiveMetadata> {
-    const tarBuffer =
-      archiveType === 'tar' ? buffer : Buffer.from(gunzipSync(buffer));
+    const tarBuffer = archiveType === "tar" ? buffer : Buffer.from(gunzipSync(buffer));
 
     return new Promise((resolve, reject) => {
       const extract = tar.extract();
@@ -129,11 +118,11 @@ export class ServerArchiveProcessor {
       let totalDirectories = 0;
       let uncompressedSize = 0;
 
-      extract.on('entry', (header, stream, next) => {
+      extract.on("entry", (header, stream, next) => {
         const entry: ArchiveEntry = {
           name: header.name,
           size: header.size || 0,
-          isDirectory: header.type === 'directory',
+          isDirectory: header.type === "directory",
           lastModified: header.mtime,
         };
 
@@ -146,11 +135,11 @@ export class ServerArchiveProcessor {
           uncompressedSize += entry.size;
         }
 
-        stream.on('end', next);
+        stream.on("end", next);
         stream.resume();
       });
 
-      extract.on('finish', () => {
+      extract.on("finish", () => {
         resolve({
           totalFiles,
           totalDirectories,
@@ -161,7 +150,7 @@ export class ServerArchiveProcessor {
         });
       });
 
-      extract.on('error', reject);
+      extract.on("error", reject);
 
       const readable = new Readable();
       readable.push(tarBuffer);
@@ -173,20 +162,11 @@ export class ServerArchiveProcessor {
   static getArchiveType(filename: string): ArchiveType | null {
     const lower = filename.toLowerCase();
 
-    if (lower.endsWith('.tar.gz')) return 'tar.gz';
-    if (lower.endsWith('.tar.bz2')) return 'tar.bz2';
+    if (lower.endsWith(".tar.gz")) return "tar.gz";
+    if (lower.endsWith(".tar.bz2")) return "tar.bz2";
 
-    const extension = lower.split('.').pop() as ArchiveType | undefined;
-    const supportedTypes: ArchiveType[] = [
-      'zip',
-      'tar',
-      '7z',
-      'rar',
-      'gz',
-      'bz2',
-      'tgz',
-      'tbz2',
-    ];
+    const extension = lower.split(".").pop() as ArchiveType | undefined;
+    const supportedTypes: ArchiveType[] = ["zip", "tar", "7z", "rar", "gz", "bz2", "tgz", "tbz2"];
 
     return extension && supportedTypes.includes(extension) ? extension : null;
   }

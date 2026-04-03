@@ -1,11 +1,11 @@
-import { ApiKey } from '@/types/settings';
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
-import { fadeIn } from '@/lib/animations';
-import { ShareXConfigDialog } from '@/components/Files/ShareXConfigDialog';
-import { DeleteApiKeyDialog } from '@/components/ApiKey/DeleteApiKeyDialog';
+import { ApiKey } from "@/types/settings";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
+import { fadeIn } from "@/lib/animations";
+import { ShareXConfigDialog } from "@/components/Files/ShareXConfigDialog";
+import { DeleteApiKeyDialog } from "@/components/ApiKey/DeleteApiKeyDialog";
 
 interface ApiKeyCardProps {
   apiKey: ApiKey;

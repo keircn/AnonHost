@@ -1,28 +1,28 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
-import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from '@/lib/upload';
-import { uploadFile } from '@/lib/server/upload-file';
-import { verifyApiKey } from '@/lib/auth';
-import { MediaType } from '@/lib/db/schema';
-import { sendDiscordWebhook } from '@/lib/discord';
-import { processFile } from '@/lib/process-file';
-import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
-import { FileSettings } from '@/types/file-settings';
-import { nanoid } from 'nanoid';
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import prisma from "@/lib/prisma";
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
+import { uploadFile } from "@/lib/server/upload-file";
+import { verifyApiKey } from "@/lib/auth";
+import { MediaType } from "@/lib/db/schema";
+import { sendDiscordWebhook } from "@/lib/discord";
+import { processFile } from "@/lib/process-file";
+import { ServerArchiveProcessor } from "@/lib/server-archive-processor";
+import { FileSettings } from "@/types/file-settings";
+import { nanoid } from "nanoid";
 
 function isErrorWithCause(error: unknown): error is { cause: unknown } {
-  return typeof error === 'object' && error !== null && 'cause' in error;
+  return typeof error === "object" && error !== null && "cause" in error;
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
   const baseUrl = process.env.NEXTAUTH_URL;
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let userId: string;
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
     userId = user.id.toString();
     isPremium = user.premium;
@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get('file') as File | Blob;
-    const settingsStr = formData.get('settings') as string | null;
+    const file = formData.get("file") as File | Blob;
+    const settingsStr = formData.get("settings") as string | null;
     const userSettings = await prisma.settings.findUnique({
       where: { userId },
       select: {
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         width: undefined,
         height: undefined,
         maintainAspectRatio: true,
-        fit: 'inside',
+        fit: "inside",
       },
     };
     if (settingsStr) {
@@ -86,12 +86,9 @@ export async function POST(req: NextRequest) {
             enabled: parsedSettings?.conversion?.enabled ?? false,
             format: parsedSettings?.conversion?.format ?? null,
           },
-          public:
-            parsedSettings?.public ?? userSettings?.makeImagesPublic ?? false,
+          public: parsedSettings?.public ?? userSettings?.makeImagesPublic ?? false,
           disableEmbed:
-            parsedSettings?.disableEmbed ??
-            userSettings?.disableEmbedByDefault ??
-            false,
+            parsedSettings?.disableEmbed ?? userSettings?.disableEmbedByDefault ?? false,
           stripMetadata: parsedSettings?.stripMetadata ?? true,
           optimizeForWeb: parsedSettings?.optimizeForWeb ?? true,
           compression: {
@@ -102,32 +99,29 @@ export async function POST(req: NextRequest) {
             enabled: parsedSettings?.resize?.enabled ?? false,
             width: parsedSettings?.resize?.width ?? undefined,
             height: parsedSettings?.resize?.height ?? undefined,
-            maintainAspectRatio:
-              parsedSettings?.resize?.maintainAspectRatio ?? true,
-            fit: parsedSettings?.resize?.fit ?? 'inside',
+            maintainAspectRatio: parsedSettings?.resize?.maintainAspectRatio ?? true,
+            fit: parsedSettings?.resize?.fit ?? "inside",
           },
         };
       } catch (e) {
-        console.warn('Failed to parse settings:', e);
+        console.warn("Failed to parse settings:", e);
       }
     }
-    const customDomain = formData.get('domain') as string | null;
+    const customDomain = formData.get("domain") as string | null;
     const fileId = nanoid(6);
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const originalName = (file as File).name || 'untitled';
+    const originalName = (file as File).name || "untitled";
     const newFormat =
       settings.conversion.enabled && settings.conversion.format
         ? settings.conversion.format
-        : originalName.split('.').pop();
-    const newFilename = `${originalName.split('.')[0]}.${newFormat}`;
+        : originalName.split(".").pop();
+    const newFilename = `${originalName.split(".")[0]}.${newFormat}`;
 
-    const sizeLimit = isPremium
-      ? FILE_SIZE_LIMITS.PREMIUM
-      : FILE_SIZE_LIMITS.FREE;
+    const sizeLimit = isPremium ? FILE_SIZE_LIMITS.PREMIUM : FILE_SIZE_LIMITS.FREE;
 
     if (file.size > sizeLimit) {
       const limitInMb = sizeLimit / (1024 * 1024);
@@ -135,7 +129,7 @@ export async function POST(req: NextRequest) {
         {
           error: `File too large. Maximum file size is ${limitInMb}MB for all users`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -149,10 +143,9 @@ export async function POST(req: NextRequest) {
       if (currentUsage + file.size > STORAGE_LIMITS.FREE) {
         return NextResponse.json(
           {
-            error:
-              'Storage limit reached. Upgrade to premium for unlimited storage.',
+            error: "Storage limit reached. Upgrade to premium for unlimited storage.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -160,19 +153,14 @@ export async function POST(req: NextRequest) {
     if (BLOCKED_TYPES.includes(file.type)) {
       return NextResponse.json(
         {
-          error: 'This file type is not allowed for security reasons.',
+          error: "This file type is not allowed for security reasons.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const processedFile = await processFile(file, settings);
-    const uploadResult = await uploadFile(
-      processedFile,
-      userId.toString(),
-      newFilename,
-      fileId
-    );
+    const uploadResult = await uploadFile(processedFile, userId.toString(), newFilename, fileId);
 
     let archiveMetadata = null;
     let archiveType = null;
@@ -181,14 +169,11 @@ export async function POST(req: NextRequest) {
     if (ServerArchiveProcessor.supportsPreview(originalName)) {
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        archiveMetadata = await ServerArchiveProcessor.processArchive(
-          buffer,
-          originalName
-        );
+        archiveMetadata = await ServerArchiveProcessor.processArchive(buffer, originalName);
         archiveType = archiveMetadata.archiveType;
         fileCount = archiveMetadata.totalFiles;
       } catch (error) {
-        console.warn('Failed to process archive metadata:', error);
+        console.warn("Failed to process archive metadata:", error);
       }
     }
 
@@ -237,18 +222,15 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Error details:', {
+      console.error("Error details:", {
         name: error.name,
         message: error.message,
         stack: error.stack,
         cause: isErrorWithCause(error) ? error.cause : undefined,
       });
     } else {
-      console.error('Unknown error:', error);
+      console.error("Unknown error:", error);
     }
-    return NextResponse.json(
-      { error: 'Failed to upload media' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to upload media" }, { status: 500 });
   }
 }

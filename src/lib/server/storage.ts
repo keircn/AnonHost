@@ -1,30 +1,25 @@
-import path from 'path';
-import { promises as fs } from 'fs';
-import mime from 'mime-types';
-import {
-  uploadToR2,
-  generateR2Key,
-  checkR2Connection,
-  isR2Configured,
-} from '@/lib/r2';
+import path from "path";
+import { promises as fs } from "fs";
+import mime from "mime-types";
+import { uploadToR2, generateR2Key, checkR2Connection, isR2Configured } from "@/lib/r2";
 
 export async function saveFile(
   buffer: Buffer,
   userId: string,
   filename: string,
   fileId: string,
-  type?: 'avatar' | 'banner'
+  type?: "avatar" | "banner",
 ): Promise<string> {
   const fileExt = path.extname(filename);
   const r2Key = generateR2Key(userId, fileId, fileExt, type);
 
-  let contentType = 'application/octet-stream';
+  let contentType = "application/octet-stream";
   const ext = fileExt.toLowerCase();
-  if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-  else if (ext === '.png') contentType = 'image/png';
-  else if (ext === '.gif') contentType = 'image/gif';
-  else if (ext === '.webp') contentType = 'image/webp';
-  else if (ext === '.svg') contentType = 'image/svg+xml';
+  if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
+  else if (ext === ".png") contentType = "image/png";
+  else if (ext === ".gif") contentType = "image/gif";
+  else if (ext === ".webp") contentType = "image/webp";
+  else if (ext === ".svg") contentType = "image/svg+xml";
 
   if (isR2Configured() && (await checkR2Connection())) {
     return uploadToR2({
@@ -35,22 +30,20 @@ export async function saveFile(
     });
   }
 
-  const localPath = path.join(process.cwd(), 'uploads', ...r2Key.split('/'));
+  const localPath = path.join(process.cwd(), "uploads", ...r2Key.split("/"));
   const localDir = path.dirname(localPath);
 
   await fs.mkdir(localDir, { recursive: true });
   await fs.writeFile(localPath, buffer);
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   return `${baseUrl}/api/upload/storage/${r2Key}`;
 }
 
-export async function getFile(
-  filePath: string
-): Promise<{ buffer: Buffer; contentType: string }> {
-  const normalized = filePath.replace(/^\/+/, '');
+export async function getFile(filePath: string): Promise<{ buffer: Buffer; contentType: string }> {
+  const normalized = filePath.replace(/^\/+/, "");
   const fullPath = path.join(process.cwd(), normalized);
   const buffer = await fs.readFile(fullPath);
-  const contentType = mime.lookup(fullPath) || 'application/octet-stream';
+  const contentType = mime.lookup(fullPath) || "application/octet-stream";
   return { buffer, contentType };
 }

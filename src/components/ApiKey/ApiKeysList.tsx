@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { ApiKeyItem } from '@/components/ApiKey/ApiKeyItem';
-import type { ApiKey } from '@/types/settings';
+import { motion, AnimatePresence } from "framer-motion";
+import { ApiKeyItem } from "@/components/ApiKey/ApiKeyItem";
+import type { ApiKey } from "@/types/settings";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },

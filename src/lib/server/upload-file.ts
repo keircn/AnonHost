@@ -1,6 +1,6 @@
-import { ArchiveProcessor } from '@/lib/archive-processor';
-import { BLOCKED_TYPES } from '@/lib/upload';
-import { saveFile } from '@/lib/server/storage';
+import { ArchiveProcessor } from "@/lib/archive-processor";
+import { BLOCKED_TYPES } from "@/lib/upload";
+import { saveFile } from "@/lib/server/storage";
 
 interface UploadResult {
   url: string;
@@ -9,7 +9,7 @@ interface UploadResult {
   width: number | null;
   height: number | null;
   duration?: number | null;
-  type: 'image' | 'video' | 'text' | 'document' | 'audio' | 'archive' | 'other';
+  type: "image" | "video" | "text" | "document" | "audio" | "archive" | "other";
 }
 
 export async function uploadFile(
@@ -17,48 +17,48 @@ export async function uploadFile(
   userId: string,
   filename: string,
   fileId: string,
-  type?: 'avatar' | 'banner'
+  type?: "avatar" | "banner",
 ): Promise<UploadResult> {
   try {
     const fileType = file.type;
 
     if (BLOCKED_TYPES.includes(fileType)) {
-      throw new Error('File type is not allowed');
+      throw new Error("File type is not allowed");
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const url = await saveFile(buffer, userId, filename, fileId, type);
 
-    let mediaType: UploadResult['type'];
+    let mediaType: UploadResult["type"];
     if (ArchiveProcessor.isArchive(filename)) {
-      mediaType = 'archive';
-    } else if (fileType.startsWith('image/')) {
-      mediaType = 'image';
-    } else if (fileType.startsWith('video/')) {
-      mediaType = 'video';
-    } else if (fileType.startsWith('audio/')) {
-      mediaType = 'audio';
+      mediaType = "archive";
+    } else if (fileType.startsWith("image/")) {
+      mediaType = "image";
+    } else if (fileType.startsWith("video/")) {
+      mediaType = "video";
+    } else if (fileType.startsWith("audio/")) {
+      mediaType = "audio";
     } else if (
-      fileType.startsWith('text/') ||
-      fileType.includes('json') ||
-      fileType.includes('xml')
+      fileType.startsWith("text/") ||
+      fileType.includes("json") ||
+      fileType.includes("xml")
     ) {
-      mediaType = 'text';
+      mediaType = "text";
     } else {
-      mediaType = 'document';
+      mediaType = "document";
     }
 
     return {
       url,
       filename,
       size: file.size,
-      width: mediaType === 'image' ? 0 : null,
-      height: mediaType === 'image' ? 0 : null,
-      ...(mediaType === 'video' ? { duration: 0 } : {}),
+      width: mediaType === "image" ? 0 : null,
+      height: mediaType === "image" ? 0 : null,
+      ...(mediaType === "video" ? { duration: 0 } : {}),
       type: mediaType,
     };
   } catch (error) {
-    console.error('Error uploading file:', error);
-    throw new Error('Failed to upload file');
+    console.error("Error uploading file:", error);
+    throw new Error("Failed to upload file");
   }
 }

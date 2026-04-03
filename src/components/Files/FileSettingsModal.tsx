@@ -1,29 +1,29 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import type { FileSettings } from '@/types/file-settings';
+} from "@/components/ui/accordion";
+import type { FileSettings } from "@/types/file-settings";
 
 interface FileSettingsModalProps {
   isOpen: boolean;
@@ -52,7 +52,7 @@ export function FileSettingsModal({
     },
     resize: {
       ...settings.resize,
-      fit: settings.resize.fit ?? 'inside',
+      fit: settings.resize.fit ?? "inside",
     },
   });
 
@@ -73,30 +73,26 @@ export function FileSettingsModal({
       },
       resize: {
         ...settings.resize,
-        fit: settings.resize.fit ?? 'inside',
+        fit: settings.resize.fit ?? "inside",
       },
     });
   }, [isOpen, settings]);
 
   const effectiveConversionEnabled =
-    localSettings.conversion.enabled &&
-    Boolean(localSettings.conversion.format);
+    localSettings.conversion.enabled && Boolean(localSettings.conversion.format);
   const effectiveResizeEnabled =
     localSettings.resize.enabled &&
-    (Boolean(localSettings.resize.width) ||
-      Boolean(localSettings.resize.height));
+    (Boolean(localSettings.resize.width) || Boolean(localSettings.resize.height));
 
   const fileType = useMemo(() => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const extension = fileName.split(".").pop()?.toLowerCase();
     return {
-      isImage: /^(jpg|jpeg|png|gif|webp)$/i.test(extension || ''),
-      isVideo: /^(mp4|webm|mov)$/i.test(extension || ''),
+      isImage: /^(jpg|jpeg|png|gif|webp)$/i.test(extension || ""),
+      isVideo: /^(mp4|webm|mov)$/i.test(extension || ""),
     };
   }, [fileName]);
 
-  const updateCompression = (
-    update: Partial<typeof localSettings.compression>
-  ) => {
+  const updateCompression = (update: Partial<typeof localSettings.compression>) => {
     setLocalSettings((prev) => ({
       ...prev,
       compression: {
@@ -106,9 +102,7 @@ export function FileSettingsModal({
     }));
   };
 
-  const updateConversion = (
-    update: Partial<typeof localSettings.conversion>
-  ) => {
+  const updateConversion = (update: Partial<typeof localSettings.conversion>) => {
     setLocalSettings((prev) => ({
       ...prev,
       conversion: {
@@ -163,9 +157,7 @@ export function FileSettingsModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>File Settings</DialogTitle>
-          <DialogDescription>
-            Configure settings for {fileName}
-          </DialogDescription>
+          <DialogDescription>Configure settings for {fileName}</DialogDescription>
         </DialogHeader>
 
         <Accordion type="single" collapsible className="w-full">
@@ -229,8 +221,7 @@ export function FileSettingsModal({
                   />
                 </div>
                 <p className="text-muted-foreground text-xs">
-                  Prioritizes smaller file size and faster loading while keeping
-                  visual quality.
+                  Prioritizes smaller file size and faster loading while keeping visual quality.
                 </p>
               </AccordionContent>
             </AccordionItem>
@@ -274,16 +265,12 @@ export function FileSettingsModal({
                   <Switch
                     id="compression-toggle"
                     checked={localSettings.compression.enabled}
-                    onCheckedChange={(checked) =>
-                      updateCompression({ enabled: checked })
-                    }
+                    onCheckedChange={(checked) => updateCompression({ enabled: checked })}
                   />
                 </div>
                 {localSettings.compression.enabled && (
                   <div className="space-y-2">
-                    <Label htmlFor="quality">
-                      Quality ({localSettings.compression.quality}%)
-                    </Label>
+                    <Label htmlFor="quality">Quality ({localSettings.compression.quality}%)</Label>
                     <Input
                       id="quality"
                       type="range"
@@ -311,9 +298,7 @@ export function FileSettingsModal({
                   <Switch
                     id="conversion-toggle"
                     checked={localSettings.conversion.enabled}
-                    onCheckedChange={(checked) =>
-                      updateConversion({ enabled: checked })
-                    }
+                    onCheckedChange={(checked) => updateConversion({ enabled: checked })}
                   />
                 </div>
                 {localSettings.conversion.enabled && (
@@ -359,9 +344,7 @@ export function FileSettingsModal({
                   <Switch
                     id="resize-toggle"
                     checked={localSettings.resize.enabled}
-                    onCheckedChange={(checked) =>
-                      updateResize({ enabled: checked })
-                    }
+                    onCheckedChange={(checked) => updateResize({ enabled: checked })}
                   />
                 </div>
                 {localSettings.resize.enabled && (
@@ -373,7 +356,7 @@ export function FileSettingsModal({
                           id="width"
                           type="number"
                           placeholder="Width"
-                          value={localSettings.resize.width || ''}
+                          value={localSettings.resize.width || ""}
                           onChange={(e) =>
                             updateResize({
                               width: parseInt(e.target.value) || undefined,
@@ -387,7 +370,7 @@ export function FileSettingsModal({
                           id="height"
                           type="number"
                           placeholder="Height"
-                          value={localSettings.resize.height || ''}
+                          value={localSettings.resize.height || ""}
                           onChange={(e) =>
                             updateResize({
                               height: parseInt(e.target.value) || undefined,
@@ -397,9 +380,7 @@ export function FileSettingsModal({
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="aspect-ratio">
-                        Maintain aspect ratio
-                      </Label>
+                      <Label htmlFor="aspect-ratio">Maintain aspect ratio</Label>
                       <Switch
                         id="aspect-ratio"
                         checked={localSettings.resize.maintainAspectRatio}

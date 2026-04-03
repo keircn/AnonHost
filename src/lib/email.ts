@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 type SendEmailInput = {
   to: string;
@@ -16,9 +16,9 @@ function getRequiredEnv(name: string): string {
 }
 
 function createTransporter() {
-  const host = getRequiredEnv('SMTP_HOST');
-  const port = Number(process.env.SMTP_PORT || '587');
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+  const host = getRequiredEnv("SMTP_HOST");
+  const port = Number(process.env.SMTP_PORT || "587");
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
@@ -31,7 +31,7 @@ function createTransporter() {
 }
 
 function getFromAddress(): string {
-  const fromEmail = getRequiredEnv('SMTP_FROM_EMAIL');
+  const fromEmail = getRequiredEnv("SMTP_FROM_EMAIL");
   const fromName = process.env.SMTP_FROM_NAME;
   return fromName ? `${fromName} <${fromEmail}>` : fromEmail;
 }
@@ -48,6 +48,6 @@ export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
     html,
   });
 
-  console.log('Email sent successfully:', result.messageId);
+  console.log("Email sent successfully:", result.messageId);
   return result;
 }

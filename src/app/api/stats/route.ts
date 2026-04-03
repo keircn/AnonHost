@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { Stats } from '@/types/stats';
-import { db } from '@/lib/db';
-import { media, users } from '@/lib/db/schema';
-import { sql } from 'drizzle-orm';
+import { NextResponse } from "next/server";
+import { Stats } from "@/types/stats";
+import { db } from "@/lib/db";
+import { media, users } from "@/lib/db/schema";
+import { sql } from "drizzle-orm";
 
 const cache = {
   data: null as Stats | null,
@@ -21,9 +21,7 @@ export async function GET() {
     const [userCountRow, totalUploadsRow, storageUsedRow] = await Promise.all([
       db.select({ value: sql<number>`count(*)::int` }).from(users),
       db.select({ value: sql<number>`count(*)::int` }).from(media),
-      db
-        .select({ total: sql<number>`coalesce(sum(${media.size}), 0)::int` })
-        .from(media),
+      db.select({ total: sql<number>`coalesce(sum(${media.size}), 0)::int` }).from(media),
     ]);
 
     const userCount = userCountRow[0]?.value ?? 0;
@@ -41,10 +39,7 @@ export async function GET() {
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error('Failed to fetch stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch stats' },
-      { status: 500 }
-    );
+    console.error("Failed to fetch stats:", error);
+    return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
   }
 }

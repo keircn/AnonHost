@@ -1,13 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import type { ApiKey } from '@/types/settings';
-import {
-  fetchApiKeys,
-  createApiKey as createKey,
-  deleteApiKey as deleteKey,
-} from '@/lib/api-keys';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from "react";
+import type { ApiKey } from "@/types/settings";
+import { fetchApiKeys, createApiKey as createKey, deleteApiKey as deleteKey } from "@/lib/api-keys";
+import { toast } from "sonner";
 
 export function useApiKeys() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
@@ -21,11 +17,9 @@ export function useApiKeys() {
       setApiKeys(keys);
       setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('Failed to load API keys')
-      );
-      console.error('Failed to load API keys:', err);
-      toast.error('Failed to fetch API keys');
+      setError(err instanceof Error ? err : new Error("Failed to load API keys"));
+      console.error("Failed to load API keys:", err);
+      toast.error("Failed to fetch API keys");
     } finally {
       setIsLoading(false);
     }
@@ -42,8 +36,8 @@ export function useApiKeys() {
       setApiKeys((currentKeys) => [...currentKeys, newKey]);
       return newKey;
     } catch (err) {
-      console.error('Failed to create API key:', err);
-      toast.error('Failed to create API key');
+      console.error("Failed to create API key:", err);
+      toast.error("Failed to create API key");
       throw err;
     } finally {
       setIsLoading(false);
@@ -55,10 +49,10 @@ export function useApiKeys() {
       setIsLoading(true);
       await deleteKey(id);
       setApiKeys((currentKeys) => currentKeys.filter((key) => key.id !== id));
-      toast.success('API key deleted successfully');
+      toast.success("API key deleted successfully");
     } catch (err) {
-      console.error('Failed to delete API key:', err);
-      toast.error('Failed to delete API key');
+      console.error("Failed to delete API key:", err);
+      toast.error("Failed to delete API key");
       throw err;
     } finally {
       setIsLoading(false);

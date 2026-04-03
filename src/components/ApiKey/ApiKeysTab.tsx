@@ -1,17 +1,11 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { useApiKeys } from '@/hooks/use-api-keys';
-import { useSettings } from '@/hooks/use-settings';
-import { ApiKeyCreator } from '@/components/ApiKey/ApiKeyCreator';
-import { ApiKeysList } from '@/components/ApiKey/ApiKeysList';
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useApiKeys } from "@/hooks/use-api-keys";
+import { useSettings } from "@/hooks/use-settings";
+import { ApiKeyCreator } from "@/components/ApiKey/ApiKeyCreator";
+import { ApiKeysList } from "@/components/ApiKey/ApiKeysList";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -26,8 +20,7 @@ const staggerContainer = {
 };
 
 export function ApiKeysTab() {
-  const { apiKeys, isLoading, refreshApiKeys, createApiKey, deleteApiKey } =
-    useApiKeys();
+  const { apiKeys, isLoading, refreshApiKeys, createApiKey, deleteApiKey } = useApiKeys();
   const { settings } = useSettings();
 
   const handleChange = async () => {

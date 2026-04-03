@@ -1,4 +1,4 @@
-import { ArchiveProcessor } from './archive-processor';
+import { ArchiveProcessor } from "./archive-processor";
 
 export const STORAGE_LIMITS = {
   PREMIUM: Number.MAX_SAFE_INTEGER,
@@ -11,17 +11,17 @@ export const FILE_SIZE_LIMITS = {
 };
 
 export const BLOCKED_TYPES = [
-  'application/x-msdownload',
-  'application/x-executable',
-  'application/x-msdos-program',
-  'application/x-msi',
-  'application/x-ms-installer',
-  'application/x-msbatch',
+  "application/x-msdownload",
+  "application/x-executable",
+  "application/x-msdos-program",
+  "application/x-msi",
+  "application/x-ms-installer",
+  "application/x-msbatch",
 
-  'application/x-dex',
-  'application/x-elf',
-  'application/x-sharedlib',
-  'application/x-object',
+  "application/x-dex",
+  "application/x-elf",
+  "application/x-sharedlib",
+  "application/x-object",
 ];
 
 interface StorageStats {
@@ -38,7 +38,7 @@ interface UploadResult {
   width: number | null;
   height: number | null;
   duration?: number | null;
-  type: 'image' | 'video' | 'text' | 'document' | 'audio' | 'archive' | 'other';
+  type: "image" | "video" | "text" | "document" | "audio" | "archive" | "other";
 }
 
 export function formatFileSize(bytes: number): string {
@@ -60,7 +60,7 @@ export function formatFileSize(bytes: number): string {
 export function getStorageStats(
   used: number,
   isPremium: boolean,
-  isAdmin: boolean = false
+  isAdmin: boolean = false,
 ): StorageStats {
   const limit = isAdmin
     ? Number.MAX_SAFE_INTEGER
@@ -72,11 +72,9 @@ export function getStorageStats(
 
   return {
     used: formatFileSize(used),
-    total: isAdmin ? 'Unlimited' : formatFileSize(limit),
-    percentage: isAdmin ? '0%' : `${Math.min(percentage, 100)}%`,
-    remaining: isAdmin
-      ? 'Unlimited'
-      : formatFileSize(Math.max(0, limit - used)),
+    total: isAdmin ? "Unlimited" : formatFileSize(limit),
+    percentage: isAdmin ? "0%" : `${Math.min(percentage, 100)}%`,
+    remaining: isAdmin ? "Unlimited" : formatFileSize(Math.max(0, limit - used)),
   };
 }
 
@@ -85,71 +83,69 @@ export async function uploadFile(
   userId: string,
   filename: string,
   fileId: string,
-  type?: 'avatar' | 'banner'
+  type?: "avatar" | "banner",
 ): Promise<UploadResult> {
   try {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('fileId', fileId);
-    formData.append('filename', filename);
-    formData.append('userId', userId);
+    formData.append("file", file);
+    formData.append("fileId", fileId);
+    formData.append("filename", filename);
+    formData.append("userId", userId);
     if (type) {
-      formData.append('type', type);
+      formData.append("type", type);
     }
 
     const baseUrl =
-      typeof window !== 'undefined'
-        ? window.location.origin
-        : process.env.NEXTAUTH_URL;
+      typeof window !== "undefined" ? window.location.origin : process.env.NEXTAUTH_URL;
     const url = `${baseUrl}/api/upload/storage`;
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       body: formData,
-      credentials: 'include',
+      credentials: "include",
     });
 
     if (!response.ok) {
-      console.error('Upload failed:', await response.text());
-      throw new Error('Failed to upload file');
+      console.error("Upload failed:", await response.text());
+      throw new Error("Failed to upload file");
     }
 
     const result = await response.json();
 
-    let fileType: UploadResult['type'];
+    let fileType: UploadResult["type"];
     if (ArchiveProcessor.isArchive(filename)) {
-      fileType = 'archive';
-    } else if (file.type.startsWith('image/')) {
-      fileType = 'image';
-    } else if (file.type.startsWith('video/')) {
-      fileType = 'video';
-    } else if (file.type.startsWith('audio/')) {
-      fileType = 'audio';
+      fileType = "archive";
+    } else if (file.type.startsWith("image/")) {
+      fileType = "image";
+    } else if (file.type.startsWith("video/")) {
+      fileType = "video";
+    } else if (file.type.startsWith("audio/")) {
+      fileType = "audio";
     } else if (
-      file.type.startsWith('text/') ||
-      file.type.includes('json') ||
-      file.type.includes('xml')
+      file.type.startsWith("text/") ||
+      file.type.includes("json") ||
+      file.type.includes("xml")
     ) {
-      fileType = 'text';
+      fileType = "text";
     } else {
-      fileType = 'document';
+      fileType = "document";
     }
 
     if (BLOCKED_TYPES.includes(file.type)) {
-      throw new Error('File type is not allowed');
+      throw new Error("File type is not allowed");
     }
 
     return {
       url: result.url,
       filename: result.filename,
       size: result.size,
-      width: fileType === 'image' ? 0 : null,
-      height: fileType === 'image' ? 0 : null,
-      ...(fileType === 'video' ? { duration: 0 } : {}),
+      width: fileType === "image" ? 0 : null,
+      height: fileType === "image" ? 0 : null,
+      ...(fileType === "video" ? { duration: 0 } : {}),
       type: fileType,
     };
   } catch (error) {
-    console.error('Error uploading file:', error);
-    throw new Error('Failed to upload file');
+    console.error("Error uploading file:", error);
+    throw new Error("Failed to upload file");
   }
 }

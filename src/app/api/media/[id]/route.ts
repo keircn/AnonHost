@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import prisma from '@/lib/prisma';
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { isR2Configured } from '@/lib/r2';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import prisma from "@/lib/prisma";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { promises as fs } from "fs";
+import path from "path";
+import { isR2Configured } from "@/lib/r2";
 
 function getR2Client() {
   return new S3Client({
-    region: 'auto',
+    region: "auto",
     endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -18,16 +18,13 @@ function getR2Client() {
   });
 }
 
-export async function DELETE(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   const { id } = await context.params;
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = apiKey
@@ -36,11 +33,11 @@ export async function DELETE(
           where: { key: apiKey },
           select: { userId: true },
         })
-      )?.userId ?? '')
+      )?.userId ?? "")
     : session!.user.id;
 
   if (!userId) {
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
   try {
@@ -50,11 +47,11 @@ export async function DELETE(
     });
 
     if (!media) {
-      return NextResponse.json({ error: 'Media not found' }, { status: 404 });
+      return NextResponse.json({ error: "Media not found" }, { status: 404 });
     }
 
     if (media.userId !== userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const shouldDeleteFromR2 =
@@ -77,52 +74,45 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Delete error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete media' },
-      { status: 500 }
-    );
+    console.error("Delete error:", error);
+    return NextResponse.json({ error: "Failed to delete media" }, { status: 500 });
   }
 }
 
 async function deleteFromR2(mediaUrl: string) {
   const publicUrl = process.env.R2_PUBLIC_URL!;
-  const key = mediaUrl.replace(`${publicUrl}/`, '');
+  const key = mediaUrl.replace(`${publicUrl}/`, "");
   const s3Client = getR2Client();
 
   await s3Client.send(
     new DeleteObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
-    })
+    }),
   );
 }
 
 async function deleteFromLocalStorage(mediaUrl: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const pathname = new URL(mediaUrl, baseUrl).pathname;
 
   let relativePath: string | null = null;
-  if (pathname.startsWith('/api/upload/storage/')) {
-    relativePath = pathname.replace('/api/upload/storage/', '');
-  } else if (pathname.startsWith('/uploads/')) {
-    relativePath = pathname.replace('/uploads/', '');
+  if (pathname.startsWith("/api/upload/storage/")) {
+    relativePath = pathname.replace("/api/upload/storage/", "");
+  } else if (pathname.startsWith("/uploads/")) {
+    relativePath = pathname.replace("/uploads/", "");
   }
 
   if (!relativePath) {
     return;
   }
 
-  const fullPath = path.join(
-    process.cwd(),
-    'uploads',
-    ...relativePath.split('/')
-  );
+  const fullPath = path.join(process.cwd(), "uploads", ...relativePath.split("/"));
   const normalizedPath = path.normalize(fullPath);
-  const uploadDir = path.join(process.cwd(), 'uploads');
+  const uploadDir = path.join(process.cwd(), "uploads");
 
   if (!normalizedPath.startsWith(uploadDir)) {
-    throw new Error('Invalid local media path');
+    throw new Error("Invalid local media path");
   }
 
   try {
@@ -130,9 +120,9 @@ async function deleteFromLocalStorage(mediaUrl: string) {
   } catch (error: unknown) {
     if (
       error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      (error as { code: string }).code === 'ENOENT'
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code: string }).code === "ENOENT"
     ) {
       return;
     }

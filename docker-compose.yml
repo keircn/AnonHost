@@ -12,11 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-anonhost} -d ${POSTGRES_DB:-anonhost}',
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-anonhost} -d ${POSTGRES_DB:-anonhost}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -41,8 +37,8 @@ services:
     volumes:
       - uploads_data:/app/uploads
     ports:
-      - '${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984'
-    command: ['sh', '-c', 'bun run db:migrate && bun run start']
+      - "${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984"
+    command: ["sh", "-c", "bun run db:migrate && bun run start"]
 
 volumes:
   postgres_data:

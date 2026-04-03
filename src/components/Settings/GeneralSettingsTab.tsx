@@ -1,23 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { useSettings } from '@/hooks/use-settings';
-import { NotificationSettings } from '@/components/Settings/NotificationSettings';
-import { DirectLinksSettings } from '@/components/Settings/DirectLinksSettings';
-import { EmailChangeSection } from '@/components/Settings/EmailChangeSection';
-import { CustomDomainSettings } from '@/components/Settings/CustomDomainSettings';
-import { ImagePrivacySettings } from '@/components/Settings/ImagePrivacySettings';
-import { EmbedSettingsSection } from '@/components/Settings/EmbedSettingsSection';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useSettings } from "@/hooks/use-settings";
+import { NotificationSettings } from "@/components/Settings/NotificationSettings";
+import { DirectLinksSettings } from "@/components/Settings/DirectLinksSettings";
+import { EmailChangeSection } from "@/components/Settings/EmailChangeSection";
+import { CustomDomainSettings } from "@/components/Settings/CustomDomainSettings";
+import { ImagePrivacySettings } from "@/components/Settings/ImagePrivacySettings";
+import { EmbedSettingsSection } from "@/components/Settings/EmbedSettingsSection";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -32,18 +26,17 @@ const staggerContainer = {
 };
 
 export function GeneralSettingsTab() {
-  const { settings, updateSettings, updateSettingsField, isLoading } =
-    useSettings();
+  const { settings, updateSettings, updateSettingsField, isLoading } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
       await updateSettings();
-      toast.success('Your settings have been saved successfully');
+      toast.success("Your settings have been saved successfully");
     } catch (error) {
-      console.error('Failed to save settings:', error);
-      toast.error('Failed to save settings');
+      console.error("Failed to save settings:", error);
+      toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
     }
@@ -59,39 +52,22 @@ export function GeneralSettingsTab() {
         <CardHeader>
           <motion.div variants={fadeIn}>
             <CardTitle>General Settings</CardTitle>
-            <CardDescription>
-              Manage your account preferences and settings
-            </CardDescription>
+            <CardDescription>Manage your account preferences and settings</CardDescription>
           </motion.div>
         </CardHeader>
         <CardContent className="space-y-6">
           <motion.div className="space-y-4" variants={staggerContainer}>
-            <NotificationSettings
-              settings={settings}
-              onFieldChange={updateSettingsField}
-            />
-            <DirectLinksSettings
-              settings={settings}
-              onFieldChange={updateSettingsField}
-            />
-            <ImagePrivacySettings
-              settings={settings}
-              onFieldChange={updateSettingsField}
-            />
-            <CustomDomainSettings
-              settings={settings}
-              onFieldChange={updateSettingsField}
-            />
-            <EmbedSettingsSection
-              settings={settings}
-              onFieldChange={updateSettingsField}
-            />
+            <NotificationSettings settings={settings} onFieldChange={updateSettingsField} />
+            <DirectLinksSettings settings={settings} onFieldChange={updateSettingsField} />
+            <ImagePrivacySettings settings={settings} onFieldChange={updateSettingsField} />
+            <CustomDomainSettings settings={settings} onFieldChange={updateSettingsField} />
+            <EmbedSettingsSection settings={settings} onFieldChange={updateSettingsField} />
             <EmailChangeSection />
           </motion.div>
 
           <motion.div className="flex justify-end" variants={fadeIn}>
             <Button onClick={handleSaveSettings} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Settings'}
+              {isSaving ? "Saving..." : "Save Settings"}
             </Button>
           </motion.div>
         </CardContent>

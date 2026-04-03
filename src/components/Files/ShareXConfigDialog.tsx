@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { SiSharex } from 'react-icons/si';
-import { Copy, Download } from 'lucide-react';
-import { toast } from 'sonner';
-import type { ApiKey } from '@/types/settings';
+import { Button } from "@/components/ui/button";
+import { SiSharex } from "react-icons/si";
+import { Copy, Download } from "lucide-react";
+import { toast } from "sonner";
+import type { ApiKey } from "@/types/settings";
 import {
   Dialog,
   DialogContent,
@@ -12,29 +12,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   generateShareXConfig,
   generateShareXShortenerConfig,
   downloadShareXConfig,
-} from '@/lib/sharex';
+} from "@/lib/sharex";
 
 interface ShareXConfigDialogProps {
   apiKey: ApiKey;
   customDomain?: string;
 }
 
-export function ShareXConfigDialog({
-  apiKey,
-  customDomain,
-}: ShareXConfigDialogProps) {
+export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogProps) {
   interface ShareXConfig {
     [key: string]: unknown;
   }
@@ -54,9 +45,7 @@ export function ShareXConfigDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Export ShareX Configuration</DialogTitle>
-          <DialogDescription>
-            Choose which ShareX configuration you want to use.
-          </DialogDescription>
+          <DialogDescription>Choose which ShareX configuration you want to use.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
           <p className="text-muted-foreground text-sm">
@@ -72,7 +61,7 @@ export function ShareXConfigDialog({
                 const config = generateShareXConfig(
                   apiKey.key,
                   window.location.origin,
-                  customDomain
+                  customDomain,
                 );
                 downloadShareXConfig(config, `${apiKey.name}-uploader`);
               }}
@@ -80,9 +69,9 @@ export function ShareXConfigDialog({
                 const config = generateShareXConfig(
                   apiKey.key,
                   window.location.origin,
-                  customDomain
+                  customDomain,
                 );
-                handleCopyConfig(config, 'Image uploader');
+                handleCopyConfig(config, "Image uploader");
               }}
             />
 
@@ -92,18 +81,12 @@ export function ShareXConfigDialog({
               apiKey={apiKey}
               configType="shortener"
               onDownload={() => {
-                const config = generateShareXShortenerConfig(
-                  apiKey.key,
-                  window.location.origin
-                );
+                const config = generateShareXShortenerConfig(apiKey.key, window.location.origin);
                 downloadShareXConfig(config, `${apiKey.name}-shortener`);
               }}
               onCopy={() => {
-                const config = generateShareXShortenerConfig(
-                  apiKey.key,
-                  window.location.origin
-                );
-                handleCopyConfig(config, 'URL shortener');
+                const config = generateShareXShortenerConfig(apiKey.key, window.location.origin);
+                handleCopyConfig(config, "URL shortener");
               }}
             />
           </div>
@@ -127,17 +110,12 @@ interface ShareXConfigCardProps {
   title: string;
   description: string;
   apiKey: ApiKey;
-  configType: 'uploader' | 'shortener';
+  configType: "uploader" | "shortener";
   onDownload: () => void;
   onCopy: () => void;
 }
 
-function ShareXConfigCard({
-  title,
-  description,
-  onDownload,
-  onCopy,
-}: ShareXConfigCardProps) {
+function ShareXConfigCard({ title, description, onDownload, onCopy }: ShareXConfigCardProps) {
   return (
     <Card className="p-4">
       <CardHeader className="p-0">

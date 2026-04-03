@@ -1,12 +1,12 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import sharp from 'sharp';
-import type { FileSettings } from '@/types/file-settings';
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import sharp from "sharp";
+import type { FileSettings } from "@/types/file-settings";
 
 let ffmpeg: FFmpeg | null = null;
 
 function toSafeBlobPart(data: unknown): BlobPart {
-  if (typeof data === 'string') {
+  if (typeof data === "string") {
     return data;
   }
 
@@ -15,7 +15,7 @@ function toSafeBlobPart(data: unknown): BlobPart {
     return bytes.buffer;
   }
 
-  throw new Error('Unsupported processed file data type');
+  throw new Error("Unsupported processed file data type");
 }
 
 async function initFFmpeg() {
@@ -24,20 +24,17 @@ async function initFFmpeg() {
   ffmpeg = new FFmpeg();
 
   await ffmpeg.load({
-    coreURL: await toBlobURL(`/ffmpeg/ffmpeg-core.js`, 'text/javascript'),
-    wasmURL: await toBlobURL(`/ffmpeg/ffmpeg-core.wasm`, 'application/wasm'),
+    coreURL: await toBlobURL(`/ffmpeg/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`/ffmpeg/ffmpeg-core.wasm`, "application/wasm"),
   });
 
   return ffmpeg;
 }
 
-export async function processFile(
-  file: Blob,
-  settings: FileSettings
-): Promise<Blob> {
+export async function processFile(file: Blob, settings: FileSettings): Promise<Blob> {
   const buffer = Buffer.from(await file.arrayBuffer());
   const fileType = file.type;
-  const fileName = (file as File).name || 'file';
+  const fileName = (file as File).name || "file";
 
   if (
     !settings.stripMetadata &&
@@ -49,7 +46,7 @@ export async function processFile(
     return file;
   }
 
-  if (fileType.startsWith('image/')) {
+  if (fileType.startsWith("image/")) {
     let image = sharp(buffer, {
       failOnError: false,
       limitInputPixels: false,
@@ -62,20 +59,18 @@ export async function processFile(
     }
 
     if (settings.optimizeForWeb) {
-      image = image.rotate().pipelineColorspace('srgb');
+      image = image.rotate().pipelineColorspace("srgb");
     }
 
     if (settings.resize.enabled) {
       image = image.resize({
         width: settings.resize.width,
         height: settings.resize.height,
-        fit: settings.resize.maintainAspectRatio
-          ? (settings.resize.fit ?? 'inside')
-          : 'fill',
+        fit: settings.resize.maintainAspectRatio ? (settings.resize.fit ?? "inside") : "fill",
       });
     }
 
-    const currentFormat = fileType.split('/')[1] as keyof sharp.FormatEnum;
+    const currentFormat = fileType.split("/")[1] as keyof sharp.FormatEnum;
 
     let format = currentFormat;
     let formatOptions: Record<string, unknown> = {};
@@ -86,16 +81,16 @@ export async function processFile(
 
     if (settings.compression.enabled) {
       switch (format) {
-        case 'jpeg':
-        case 'jpg':
+        case "jpeg":
+        case "jpg":
           formatOptions = {
             quality: settings.compression.quality,
             mozjpeg: true,
-            chromaSubsampling: '4:4:4',
+            chromaSubsampling: "4:4:4",
             progressive: settings.optimizeForWeb,
           };
           break;
-        case 'webp':
+        case "webp":
           formatOptions = {
             quality: settings.compression.quality,
             lossless: false,
@@ -103,24 +98,21 @@ export async function processFile(
             smartSubsample: settings.optimizeForWeb,
           };
           break;
-        case 'png':
+        case "png":
           formatOptions = {
             compressionLevel: Math.min(
               9,
-              Math.max(0, Math.round((100 - settings.compression.quality) / 11))
+              Math.max(0, Math.round((100 - settings.compression.quality) / 11)),
             ),
             palette: true,
             progressive: settings.optimizeForWeb,
           };
           break;
-        case 'gif':
+        case "gif":
           formatOptions = {
             colours: Math.max(
               2,
-              Math.min(
-                256,
-                Math.round(256 * (settings.compression.quality / 100))
-              )
+              Math.min(256, Math.round(256 * (settings.compression.quality / 100))),
             ),
           };
           break;
@@ -138,9 +130,9 @@ export async function processFile(
     });
   }
 
-  if (fileType.startsWith('video/')) {
+  if (fileType.startsWith("video/")) {
     const ffmpeg = await initFFmpeg();
-    const extension = fileName.split('.').pop() || 'mp4';
+    const extension = fileName.split(".").pop() || "mp4";
     const inputFileName = `input.${extension}`;
     const outputFormat =
       settings.conversion.enabled && settings.conversion.format
@@ -150,35 +142,33 @@ export async function processFile(
 
     ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
-    const args = ['-i', inputFileName];
+    const args = ["-i", inputFileName];
 
     if (settings.compression.enabled || settings.optimizeForWeb) {
-      const quality = settings.compression.enabled
-        ? settings.compression.quality
-        : 80;
-      args.push('-crf', `${Math.round((100 - quality) / 2)}`);
+      const quality = settings.compression.enabled ? settings.compression.quality : 80;
+      args.push("-crf", `${Math.round((100 - quality) / 2)}`);
     }
 
     if (settings.resize.enabled) {
       const scale = settings.resize.maintainAspectRatio
         ? `scale='min(${settings.resize.width || -1}\\,iw):min(${settings.resize.height || -1}\\,ih):force_original_aspect_ratio=decrease'`
         : `scale=${settings.resize.width || -1}:${settings.resize.height || -1}`;
-      args.push('-vf', scale);
+      args.push("-vf", scale);
     }
 
     if (settings.conversion.enabled && settings.conversion.format) {
       switch (settings.conversion.format) {
-        case 'webm':
-          args.push('-c:v', 'libvpx-vp9', '-c:a', 'libopus');
+        case "webm":
+          args.push("-c:v", "libvpx-vp9", "-c:a", "libopus");
           break;
-        case 'mp4':
-          args.push('-c:v', 'libx264', '-c:a', 'aac');
+        case "mp4":
+          args.push("-c:v", "libx264", "-c:a", "aac");
           break;
       }
     }
 
     if (settings.optimizeForWeb) {
-      args.push('-movflags', '+faststart');
+      args.push("-movflags", "+faststart");
     }
 
     args.push(outputFileName);

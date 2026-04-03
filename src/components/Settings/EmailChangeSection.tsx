@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { changeEmail } from '@/lib/settings';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { changeEmail } from "@/lib/settings";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -15,12 +15,12 @@ const fadeIn = {
 };
 
 export function EmailChangeSection() {
-  const [newEmail, setNewEmail] = useState('');
+  const [newEmail, setNewEmail] = useState("");
   const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const handleEmailChange = async () => {
     if (!newEmail || !newEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      toast.error('Invalid email: Please enter a valid email address');
+      toast.error("Invalid email: Please enter a valid email address");
       return;
     }
 
@@ -29,12 +29,12 @@ export function EmailChangeSection() {
     try {
       await changeEmail(newEmail);
       toast.success(
-        'Verification email sent: Please check your new email address to confirm the change'
+        "Verification email sent: Please check your new email address to confirm the change",
       );
-      setNewEmail('');
+      setNewEmail("");
     } catch (error) {
-      console.error('Failed to change email:', error);
-      toast.error('Error: Failed to change email');
+      console.error("Failed to change email:", error);
+      toast.error("Error: Failed to change email");
     } finally {
       setIsChangingEmail(false);
     }
@@ -54,12 +54,8 @@ export function EmailChangeSection() {
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
         />
-        <Button
-          variant="outline"
-          onClick={handleEmailChange}
-          disabled={isChangingEmail}
-        >
-          {isChangingEmail ? 'Changing...' : 'Change'}
+        <Button variant="outline" onClick={handleEmailChange} disabled={isChangingEmail}>
+          {isChangingEmail ? "Changing..." : "Change"}
         </Button>
       </div>
     </motion.div>

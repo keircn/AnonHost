@@ -44,9 +44,7 @@ async function listAllObjects(): Promise<string[]> {
       if (response.Contents) {
         const keys = response.Contents.map((obj) => obj.Key!).filter(Boolean);
         objects.push(...keys);
-        console.log(
-          `   Found ${keys.length} objects (total: ${objects.length})`
-        );
+        console.log(`   Found ${keys.length} objects (total: ${objects.length})`);
       }
 
       continuationToken = response.NextContinuationToken;
@@ -117,9 +115,7 @@ async function clearBucket(): Promise<DeleteStats> {
       const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
       const totalBatches = Math.ceil(allObjects.length / BATCH_SIZE);
 
-      console.log(
-        `   Processing batch ${batchNumber}/${totalBatches} (${batch.length} objects)`
-      );
+      console.log(`   Processing batch ${batchNumber}/${totalBatches} (${batch.length} objects)`);
 
       const deleted = await deleteObjectsBatch(batch);
       stats.deletedObjects += deleted;
@@ -170,7 +166,7 @@ async function main() {
     ) {
       console.error("Missing required R2 environment variables");
       console.error(
-        "Required: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME"
+        "Required: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME",
       );
       process.exit(1);
     }

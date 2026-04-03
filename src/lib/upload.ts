@@ -1,5 +1,3 @@
-import { ArchiveProcessor } from "./archive-processor";
-
 export const STORAGE_LIMITS = {
   PREMIUM: Number.MAX_SAFE_INTEGER,
   FREE: 1024 * 1024 * 1024,
@@ -29,16 +27,6 @@ interface StorageStats {
   total: string;
   percentage: string;
   remaining: string;
-}
-
-interface UploadResult {
-  url: string;
-  filename: string;
-  size: number;
-  width: number | null;
-  height: number | null;
-  duration?: number | null;
-  type: "image" | "video" | "text" | "document" | "audio" | "archive" | "other";
 }
 
 export function formatFileSize(bytes: number): string {
@@ -76,76 +64,4 @@ export function getStorageStats(
     percentage: isAdmin ? "0%" : `${Math.min(percentage, 100)}%`,
     remaining: isAdmin ? "Unlimited" : formatFileSize(Math.max(0, limit - used)),
   };
-}
-
-export async function uploadFile(
-  file: Blob,
-  userId: string,
-  filename: string,
-  fileId: string,
-  type?: "avatar" | "banner",
-): Promise<UploadResult> {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileId", fileId);
-    formData.append("filename", filename);
-    formData.append("userId", userId);
-    if (type) {
-      formData.append("type", type);
-    }
-
-    const baseUrl =
-      typeof window !== "undefined" ? window.location.origin : process.env.NEXTAUTH_URL;
-    const url = `${baseUrl}/api/upload/storage`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      console.error("Upload failed:", await response.text());
-      throw new Error("Failed to upload file");
-    }
-
-    const result = await response.json();
-
-    let fileType: UploadResult["type"];
-    if (ArchiveProcessor.isArchive(filename)) {
-      fileType = "archive";
-    } else if (file.type.startsWith("image/")) {
-      fileType = "image";
-    } else if (file.type.startsWith("video/")) {
-      fileType = "video";
-    } else if (file.type.startsWith("audio/")) {
-      fileType = "audio";
-    } else if (
-      file.type.startsWith("text/") ||
-      file.type.includes("json") ||
-      file.type.includes("xml")
-    ) {
-      fileType = "text";
-    } else {
-      fileType = "document";
-    }
-
-    if (BLOCKED_TYPES.includes(file.type)) {
-      throw new Error("File type is not allowed");
-    }
-
-    return {
-      url: result.url,
-      filename: result.filename,
-      size: result.size,
-      width: fileType === "image" ? 0 : null,
-      height: fileType === "image" ? 0 : null,
-      ...(fileType === "video" ? { duration: 0 } : {}),
-      type: fileType,
-    };
-  } catch (error) {
-    console.error("Error uploading file:", error);
-    throw new Error("Failed to upload file");
-  }
 }

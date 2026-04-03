@@ -3,7 +3,7 @@ import tar from "tar-stream";
 import { Readable } from "stream";
 import { gunzipSync } from "zlib";
 
-export interface ArchiveEntry {
+interface ArchiveEntry {
   name: string;
   size: number;
   isDirectory: boolean;
@@ -12,7 +12,7 @@ export interface ArchiveEntry {
   crc32?: number;
 }
 
-export interface ArchiveMetadata {
+interface ArchiveMetadata {
   totalFiles: number;
   totalDirectories: number;
   uncompressedSize: number;
@@ -22,7 +22,7 @@ export interface ArchiveMetadata {
   hasPassword?: boolean;
 }
 
-export type ArchiveType =
+type ArchiveType =
   | "zip"
   | "tar"
   | "tar.gz"

@@ -1,4 +1,4 @@
-export interface ArchiveEntry {
+interface ArchiveEntry {
   name: string;
   size: number;
   isDirectory: boolean;
@@ -7,7 +7,7 @@ export interface ArchiveEntry {
   crc32?: number;
 }
 
-export interface ArchiveMetadata {
+interface ArchiveMetadata {
   totalFiles: number;
   totalDirectories: number;
   uncompressedSize: number;

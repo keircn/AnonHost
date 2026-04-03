@@ -27,7 +27,7 @@ function getR2Client() {
   });
 }
 
-export interface UploadToR2Options {
+interface UploadToR2Options {
   file: Buffer;
   key: string;
   contentType: string;

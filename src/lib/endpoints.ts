@@ -79,7 +79,7 @@ export const endpoints: Endpoint[] = [
     id: "upload",
     title: "Upload Image",
     method: "POST",
-    path: "/images",
+    path: "/media",
     description: "Upload a new image to your account.",
     request: {
       description: "Upload a new image to your account.",
@@ -116,7 +116,7 @@ export const endpoints: Endpoint[] = [
     id: "list",
     title: "List Images",
     method: "GET",
-    path: "/images",
+    path: "/media",
     description: "Get a list of all images in your account.",
     request: {
       description: "Get a list of all images in your account.",

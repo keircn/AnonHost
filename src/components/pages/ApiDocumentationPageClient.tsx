@@ -221,7 +221,7 @@ form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
 form.append('public', 'true');
 
-fetch('https://anonhost.cc/api/images', {
+fetch('https://anonhost.cc/api/media', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -235,7 +235,7 @@ fetch('https://anonhost.cc/api/images', {
 .catch(error => {
   console.error('Error:', error);
 });`
-                                    : `fetch('https://anonhost.cc/images?page=1&limit=50', {
+                                    : `fetch('https://anonhost.cc/api/media?page=1&limit=50', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -262,7 +262,7 @@ form.append('file', fileInput.files[0]);
 form.append('filename', 'custom-name.jpg');
 form.append('public', 'true');
 
-fetch('https://anonhost.cc/images', {
+fetch('https://anonhost.cc/api/media', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -276,7 +276,7 @@ fetch('https://anonhost.cc/images', {
 .catch(error => {
   console.error('Error:', error);
 });`
-                                        : `fetch('https://anonhost.cc/images?page=1&limit=50', {
+                                        : `fetch('https://anonhost.cc/api/media?page=1&limit=50', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY'
@@ -310,7 +310,7 @@ fetch('https://anonhost.cc/images', {
                                   {example === "Upload an Image"
                                     ? `import requests
 
-url = "https://anonhost.cc/images"
+url = "https://anonhost.cc/api/media"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -328,7 +328,7 @@ response = requests.post(url, headers=headers, files=files, data=data)
 print(response.json())`
                                     : `import requests
 
-url = "https://anonhost.cc/images"
+url = "https://anonhost.cc/api/media"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -352,7 +352,7 @@ print("Pagination:", data["pagination"])`}
                                       example === "Upload an Image"
                                         ? `import requests
 
-url = "https://anonhost.cc/images"
+url = "https://anonhost.cc/api/media"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -370,7 +370,7 @@ response = requests.post(url, headers=headers, files=files, data=data)
 print(response.json())`
                                         : `import requests
 
-url = "https://anonhost.cc/images"
+url = "https://anonhost.cc/api/media"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"
 }
@@ -402,12 +402,12 @@ print("Pagination:", data["pagination"])`,
                               >
                                 <pre>
                                   {example === "Upload an Image"
-                                    ? `curl -X POST https://anonhost.cc/images \\
+                                    ? `curl -X POST https://anonhost.cc/api/media \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -F "file=@image.jpg" \\
   -F "filename=custom-name.jpg" \\
   -F "public=true"`
-                                    : `curl -X GET "https://anonhost.cc/images?page=1&limit=50" \\
+                                    : `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
                                 </pre>
                                 <Button
@@ -417,12 +417,12 @@ print("Pagination:", data["pagination"])`,
                                   onClick={() =>
                                     copyToClipboard(
                                       example === "Upload an Image"
-                                        ? `curl -X POST https://anonhost.cc/images \\
+                                        ? `curl -X POST https://anonhost.cc/api/media \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -F "file=@image.jpg" \\
   -F "filename=custom-name.jpg" \\
   -F "public=true"`
-                                        : `curl -X GET "https://anonhost.cc/images?page=1&limit=50" \\
+                                        : `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
                                     )
                                   }

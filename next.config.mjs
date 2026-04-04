@@ -5,17 +5,17 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "r2.roxyproxy.de",
+        hostname: "r2.anonhost.cc",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "roxyproxy.de",
+        hostname: "anonhost.cc",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "**.roxyproxy.de",
+        hostname: "**.anonhost.cc",
         pathname: "/**",
       },
       {

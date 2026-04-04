@@ -4,7 +4,7 @@
 
 ## Live instance
 
-[Roxyproxy](https://roxyproxy.de)
+[Roxyproxy](https://anonhost.cc)
 
 ## Installation (Docker Compose)
 

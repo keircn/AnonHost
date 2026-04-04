@@ -260,7 +260,7 @@ export function UploadPageClient() {
     formData.append("filename", file.name);
     formData.append("settings", JSON.stringify(settings));
 
-    if (settings.domain && settings.domain !== "roxyproxy.de") {
+    if (settings.domain && settings.domain !== "anonhost.cc") {
       formData.append("domain", settings.domain);
     }
 

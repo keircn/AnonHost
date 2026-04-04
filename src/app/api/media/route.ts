@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       userId = session!.user.id.toString();
     }
 
-    const baseUrl = process.env.NEXTAUTH_URL || "https://roxyproxy.de";
+    const baseUrl = process.env.NEXTAUTH_URL || "https://anonhost.cc";
     const url = new URL(req.url);
     const page = Math.max(1, Number.parseInt(url.searchParams.get("page") || "1"));
     const limit = Math.min(

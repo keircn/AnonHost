@@ -99,7 +99,7 @@ export function PrivacyPageClient() {
         >
           <p>
             To exercise your privacy rights or ask questions about our privacy practices, please
-            contact us at <span className="text-primary">support@roxyproxy.de</span>
+            contact us at <span className="text-primary">support@anonhost.cc</span>
           </p>
           <p className="text-xs">
             Last updated: April 2, 2025. AnonHost is committed to protecting your privacy and

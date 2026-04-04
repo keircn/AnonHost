@@ -105,7 +105,7 @@ export function TermsPageClient() {
         >
           <p className="mb-4">
             These terms were last updated on April 2, 2025. If you have any questions about these
-            terms, please contact us at <span className="text-primary">support@roxyproxy.de</span>
+            terms, please contact us at <span className="text-primary">support@anonhost.cc</span>
           </p>
           <p>
             AnonHost reserves the right to update these terms at any time. Continued use of the

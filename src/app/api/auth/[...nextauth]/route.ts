@@ -165,42 +165,6 @@ export const authOptions: AuthOptions = {
             });
           }
 
-          if (!existingUser?.emailVerified) {
-            console.log("Sending verification email to Discord user:", user.email);
-            const otp = generateOTP();
-            const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-            await prisma.oTP.deleteMany({
-              where: {
-                email: user.email!,
-                type: "registration",
-                used: false,
-              },
-            });
-
-            await prisma.oTP.create({
-              data: {
-                email: user.email!,
-                code: otp,
-                expiresAt,
-                type: "registration",
-              },
-            });
-
-            const { subject, text, html } = verificationEmailTemplate(otp, user.email!, "login");
-
-            await sendEmail({
-              to: user.email!,
-              subject,
-              text,
-              html,
-            }).catch((error) => {
-              console.error("Failed to send verification email:", {
-                error,
-                user: user.email,
-              });
-            });
-          }
         } catch (error) {
           console.error("Error in signIn callback:", error);
         }

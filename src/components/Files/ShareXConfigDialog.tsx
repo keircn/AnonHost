@@ -81,11 +81,19 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
               apiKey={apiKey}
               configType="shortener"
               onDownload={() => {
-                const config = generateShareXShortenerConfig(apiKey.key, window.location.origin);
+                const config = generateShareXShortenerConfig(
+                  apiKey.key,
+                  window.location.origin,
+                  customDomain,
+                );
                 downloadShareXConfig(config, `${apiKey.name}-shortener`);
               }}
               onCopy={() => {
-                const config = generateShareXShortenerConfig(apiKey.key, window.location.origin);
+                const config = generateShareXShortenerConfig(
+                  apiKey.key,
+                  window.location.origin,
+                  customDomain,
+                );
                 handleCopyConfig(config, "URL shortener");
               }}
             />

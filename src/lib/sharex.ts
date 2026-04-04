@@ -33,7 +33,13 @@ export function generateShareXConfig(apiKey: string, apiBaseUrl: string, customD
   };
 }
 
-export function generateShareXShortenerConfig(apiKey: string, baseUrl: string) {
+export function generateShareXShortenerConfig(
+  apiKey: string,
+  baseUrl: string,
+  customDomain?: string,
+) {
+  const normalizedCustomDomain = customDomain ? normalizeDomain(customDomain) : null;
+
   return {
     Version: "17.0.0",
     Name: "AnonHost Shortener",
@@ -46,7 +52,9 @@ export function generateShareXShortenerConfig(apiKey: string, baseUrl: string) {
     },
     Body: "JSON",
     Data: '{"originalUrl":"{input}"}',
-    URL: "{json:shortUrl}",
+    URL: normalizedCustomDomain
+      ? `https://${normalizedCustomDomain}/s/{json:id}`
+      : "{json:shortUrl}",
     DeletionURL: `${baseUrl}/api/shortener/{json:id}`,
     ErrorMessage: "$json:error$",
   };

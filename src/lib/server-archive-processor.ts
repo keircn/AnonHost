@@ -2,6 +2,7 @@ import JSZip from "jszip";
 import { execFile } from "child_process";
 import { randomUUID } from "crypto";
 import { mkdtemp, rm, writeFile } from "fs/promises";
+import { path7za } from "7zip-bin";
 import { join } from "path";
 import { tmpdir } from "os";
 import tar from "tar-stream";
@@ -141,7 +142,7 @@ export class ServerArchiveProcessor {
     try {
       await writeFile(archivePath, buffer);
 
-      const { stdout } = await execFileAsync("7z", ["l", "-slt", "-ba", "-p", archivePath], {
+      const { stdout } = await execFileAsync(path7za, ["l", "-slt", "-ba", "-p", archivePath], {
         timeout: 10000,
         maxBuffer: 20 * 1024 * 1024,
       });

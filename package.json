@@ -18,6 +18,7 @@
     "db:deploy": "drizzle-kit migrate"
   },
   "dependencies": {
+    "7zip-bin": "^5.2.0",
     "@auth/core": "^0.34.3",
     "@auth/drizzle-adapter": "^1.11.1",
     "@aws-sdk/client-s3": "^3.1023.0",

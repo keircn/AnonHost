@@ -8,6 +8,7 @@ import { verifyApiKey } from "@/lib/auth";
 import { MediaType } from "@/lib/db/schema";
 import { sendDiscordWebhook } from "@/lib/discord";
 import { processFile } from "@/lib/process-file";
+import { ArchiveProcessor } from "@/lib/archive-processor";
 import { ServerArchiveProcessor } from "@/lib/server-archive-processor";
 import { FileSettings } from "@/types/file-settings";
 import { nanoid } from "nanoid";
@@ -177,6 +178,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const isArchiveUpload = ArchiveProcessor.isArchive(originalName);
+
     const dbData = {
       id: fileId,
       url: uploadResult.url,
@@ -185,7 +188,7 @@ export async function POST(req: NextRequest) {
       width: uploadResult.width,
       height: uploadResult.height,
       duration: uploadResult.duration || null,
-      type: uploadResult.type.toUpperCase() as MediaType,
+      type: (isArchiveUpload ? "ARCHIVE" : uploadResult.type.toUpperCase()) as MediaType,
       userId,
       public: Boolean(settings.public),
       disableEmbed: Boolean(settings.disableEmbed),

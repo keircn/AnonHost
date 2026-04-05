@@ -69,7 +69,6 @@ export class ServerArchiveProcessor {
   private static parse7zEntries(output: string): ArchiveEntry[] {
     const entries: ArchiveEntry[] = [];
     const lines = output.split(/\r?\n/);
-    let inEntries = false;
     let current: Record<string, string> | null = null;
 
     const flush = () => {
@@ -103,22 +102,6 @@ export class ServerArchiveProcessor {
     };
 
     for (const line of lines) {
-      const separator = line.trim();
-
-      if (separator.startsWith("----------")) {
-        if (!inEntries) {
-          inEntries = true;
-          continue;
-        }
-
-        flush();
-        continue;
-      }
-
-      if (!inEntries) {
-        continue;
-      }
-
       if (!line.trim()) {
         flush();
         continue;

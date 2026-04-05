@@ -281,8 +281,7 @@ export default async function MediaPage(props: Props) {
     notFound();
   }
 
-  const hasArchiveTreePreview =
-    (media as any).type === "ARCHIVE" && Boolean((media as any).archiveMeta);
+  const hasArchiveTreePreview = Boolean((media as any).archiveMeta);
 
   if (hasArchiveTreePreview) {
     return (

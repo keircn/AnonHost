@@ -1,7 +1,8 @@
 import JSZip from "jszip";
 import { execFile } from "child_process";
 import { randomUUID } from "crypto";
-import { mkdtemp, rm, writeFile } from "fs/promises";
+import { constants } from "fs";
+import { access, chmod, mkdtemp, rm, writeFile } from "fs/promises";
 import { path7za } from "7zip-bin";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -44,6 +45,41 @@ type ArchiveType =
   | "bz2";
 
 const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>(["zip", "tar", "tar.gz", "tgz", "7z"]);
+
+function getBundled7zaFallbackPath(): string {
+  const platformDir =
+    process.platform === "darwin" ? "mac" : process.platform === "win32" ? "win" : "linux";
+  const executable = process.platform === "win32" ? "7za.exe" : "7za";
+
+  return join(process.cwd(), "node_modules", "7zip-bin", platformDir, process.arch, executable);
+}
+
+async function commandExists(command: string): Promise<boolean> {
+  if (command.includes("/") || command.includes("\\")) {
+    try {
+      await access(command, constants.F_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+async function ensureExecutable(command: string): Promise<void> {
+  if (!command.includes("/") && !command.includes("\\")) {
+    return;
+  }
+
+  try {
+    await access(command, constants.X_OK);
+  } catch {
+    try {
+      await chmod(command, 0o755);
+    } catch {}
+  }
+}
 
 export class ServerArchiveProcessor {
   static async processArchive(buffer: Buffer, filename: string): Promise<ArchiveMetadata> {
@@ -142,10 +178,49 @@ export class ServerArchiveProcessor {
     try {
       await writeFile(archivePath, buffer);
 
-      const { stdout } = await execFileAsync(path7za, ["l", "-slt", "-ba", "-p", archivePath], {
-        timeout: 10000,
-        maxBuffer: 20 * 1024 * 1024,
-      });
+      const commands = [
+        process.env.SEVEN_ZIP_BINARY?.trim(),
+        path7za,
+        getBundled7zaFallbackPath(),
+        "7z",
+        "7za",
+      ].filter((value): value is string => Boolean(value));
+
+      let stdout = "";
+      let lastError: unknown = null;
+
+      for (const command of commands) {
+        if (!(await commandExists(command))) {
+          continue;
+        }
+
+        await ensureExecutable(command);
+
+        try {
+          const result = await execFileAsync(command, ["l", "-slt", "-ba", "-p", archivePath], {
+            timeout: 10000,
+            maxBuffer: 20 * 1024 * 1024,
+          });
+          stdout = result.stdout;
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+          const code = (error as { code?: string }).code;
+
+          if (code === "ENOENT" || code === "EACCES") {
+            continue;
+          }
+
+          throw new Error(`7z command failed (${command}): ${error}`);
+        }
+      }
+
+      if (!stdout) {
+        throw new Error(
+          `No usable 7z binary found (tried ${commands.join(", ")}). Last error: ${String(lastError)}`,
+        );
+      }
 
       const entries = this.parse7zEntries(stdout);
       let totalFiles = 0;

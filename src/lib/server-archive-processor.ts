@@ -1,7 +1,15 @@
 import JSZip from "jszip";
+import { execFile } from "child_process";
+import { randomUUID } from "crypto";
+import { mkdtemp, rm, writeFile } from "fs/promises";
+import { join } from "path";
+import { tmpdir } from "os";
 import tar from "tar-stream";
 import { Readable } from "stream";
+import { promisify } from "util";
 import { gunzipSync } from "zlib";
+
+const execFileAsync = promisify(execFile);
 
 interface ArchiveEntry {
   name: string;
@@ -34,7 +42,7 @@ type ArchiveType =
   | "gz"
   | "bz2";
 
-const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>(["zip", "tar", "tar.gz", "tgz"]);
+const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>(["zip", "tar", "tar.gz", "tgz", "7z"]);
 
 export class ServerArchiveProcessor {
   static async processArchive(buffer: Buffer, filename: string): Promise<ArchiveMetadata> {
@@ -51,8 +59,136 @@ export class ServerArchiveProcessor {
       case "tar.gz":
       case "tgz":
         return this.processTar(buffer, archiveType);
+      case "7z":
+        return this.process7z(buffer);
       default:
         throw new Error(`Archive preview is not supported for ${archiveType} files`);
+    }
+  }
+
+  private static parse7zEntries(output: string): ArchiveEntry[] {
+    const entries: ArchiveEntry[] = [];
+    const lines = output.split(/\r?\n/);
+    let inEntries = false;
+    let current: Record<string, string> | null = null;
+
+    const flush = () => {
+      if (!current) {
+        return;
+      }
+
+      const name = current.Path;
+
+      if (!name) {
+        current = null;
+        return;
+      }
+
+      const isDirectory =
+        current.Folder === "+" || current.Attributes?.toUpperCase().includes("D") === true;
+      const rawSize = Number.parseInt(current.Size || "0", 10);
+      const rawCompressedSize = Number.parseInt(current["Packed Size"] || "0", 10);
+      const modified = current.Modified ? new Date(current.Modified) : undefined;
+
+      entries.push({
+        name: name.replace(/\\/g, "/"),
+        size: Number.isNaN(rawSize) ? 0 : rawSize,
+        isDirectory,
+        compressedSize:
+          !isDirectory && !Number.isNaN(rawCompressedSize) ? rawCompressedSize : undefined,
+        lastModified: modified && !Number.isNaN(modified.getTime()) ? modified : undefined,
+      });
+
+      current = null;
+    };
+
+    for (const line of lines) {
+      const separator = line.trim();
+
+      if (separator.startsWith("----------")) {
+        if (!inEntries) {
+          inEntries = true;
+          continue;
+        }
+
+        flush();
+        continue;
+      }
+
+      if (!inEntries) {
+        continue;
+      }
+
+      if (!line.trim()) {
+        flush();
+        continue;
+      }
+
+      const delimiter = line.indexOf(" = ");
+
+      if (delimiter === -1) {
+        continue;
+      }
+
+      const key = line.slice(0, delimiter).trim();
+      const value = line.slice(delimiter + 3).trim();
+
+      if (key === "Path") {
+        flush();
+        current = { Path: value };
+        continue;
+      }
+
+      if (!current) {
+        continue;
+      }
+
+      current[key] = value;
+    }
+
+    flush();
+
+    return entries;
+  }
+
+  private static async process7z(buffer: Buffer): Promise<ArchiveMetadata> {
+    const tempDir = await mkdtemp(join(tmpdir(), "anonhost-archive-"));
+    const archivePath = join(tempDir, `${randomUUID()}.7z`);
+
+    try {
+      await writeFile(archivePath, buffer);
+
+      const { stdout } = await execFileAsync("7z", ["l", "-slt", "-ba", "-p", archivePath], {
+        timeout: 10000,
+        maxBuffer: 20 * 1024 * 1024,
+      });
+
+      const entries = this.parse7zEntries(stdout);
+      let totalFiles = 0;
+      let totalDirectories = 0;
+      let uncompressedSize = 0;
+
+      for (const entry of entries) {
+        if (entry.isDirectory) {
+          totalDirectories++;
+        } else {
+          totalFiles++;
+          uncompressedSize += entry.size;
+        }
+      }
+
+      return {
+        totalFiles,
+        totalDirectories,
+        uncompressedSize,
+        compressedSize: buffer.length,
+        entries,
+        archiveType: "7z",
+      };
+    } catch (error) {
+      throw new Error(`Failed to process 7z archive: ${error}`);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
     }
   }
 

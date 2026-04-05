@@ -3,8 +3,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/auth";
+import { ArchiveProcessor } from "@/lib/archive-processor";
 import { STORAGE_LIMITS } from "@/lib/upload";
 import { uploadFile } from "@/lib/server/upload-file";
+import { ServerArchiveProcessor } from "@/lib/server-archive-processor";
 import { apiKeys, MediaType, media, settings, users } from "@/lib/db/schema";
 import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -214,6 +216,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const type = formData.get("type") as "avatar" | "banner" | null;
+    const filenameField = formData.get("filename") as string | null;
     const customDomain = formData.get("domain") as string | null;
 
     if (!file) {
@@ -229,7 +232,27 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const uploadResult = await uploadFile(file, userId, file.name, crypto.randomUUID());
+    const originalName =
+      filenameField?.trim() || (file as File).name || "untitled";
+
+    const uploadResult = await uploadFile(file, userId, originalName, crypto.randomUUID());
+
+    let archiveMetadata = null;
+    let archiveType = null;
+    let fileCount = null;
+
+    if (ServerArchiveProcessor.supportsPreview(originalName)) {
+      try {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        archiveMetadata = await ServerArchiveProcessor.processArchive(buffer, originalName);
+        archiveType = archiveMetadata.archiveType;
+        fileCount = archiveMetadata.totalFiles;
+      } catch (error) {
+        console.warn("Failed to process archive metadata:", error);
+      }
+    }
+
+    const isArchiveUpload = ArchiveProcessor.isArchive(originalName);
 
     const media = await prisma.media.create({
       data: {
@@ -239,10 +262,13 @@ export async function POST(req: NextRequest) {
         width: uploadResult.width,
         height: uploadResult.height,
         duration: uploadResult.duration,
-        type: uploadResult.type.toUpperCase() as MediaType,
+        type: (isArchiveUpload ? "ARCHIVE" : uploadResult.type.toUpperCase()) as MediaType,
         userId,
         public: formData.get("public") === "true",
         domain: customDomain || null,
+        archiveType,
+        fileCount,
+        archiveMeta: archiveMetadata ? (archiveMetadata as any) : null,
       },
     });
 

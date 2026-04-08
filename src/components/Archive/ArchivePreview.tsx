@@ -162,7 +162,6 @@ export function ArchivePreview({
   downloadUrl,
   uploader,
   uploadedAt,
-  fileId,
   fileSize,
 }: ArchivePreviewProps) {
   const [currentPath, setCurrentPath] = useState("");

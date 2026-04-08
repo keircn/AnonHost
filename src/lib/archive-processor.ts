@@ -1,22 +1,3 @@
-interface ArchiveEntry {
-  name: string;
-  size: number;
-  isDirectory: boolean;
-  compressedSize?: number;
-  lastModified?: Date;
-  crc32?: number;
-}
-
-interface ArchiveMetadata {
-  totalFiles: number;
-  totalDirectories: number;
-  uncompressedSize: number;
-  compressedSize: number;
-  entries: ArchiveEntry[];
-  archiveType: string;
-  hasPassword?: boolean;
-}
-
 export class ArchiveProcessor {
   static getArchiveType(filename: string): string | null {
     const extension = filename.toLowerCase().split(".").pop();

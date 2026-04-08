@@ -232,8 +232,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const originalName =
-      filenameField?.trim() || (file as File).name || "untitled";
+    const originalName = filenameField?.trim() || (file as File).name || "untitled";
 
     const uploadResult = await uploadFile(file, userId, originalName, crypto.randomUUID());
 

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "NODE_ENV=production next start -p 1984",
     "start:dev": "next start -p 3000",
-    "lint": "oxlint src --fix --unsafe",
+    "lint": "oxlint src --fix-dangerously",
     "format": "oxfmt",
     "check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",

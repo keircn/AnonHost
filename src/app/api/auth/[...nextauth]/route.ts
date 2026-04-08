@@ -164,7 +164,6 @@ export const authOptions: AuthOptions = {
               });
             });
           }
-
         } catch (error) {
           console.error("Error in signIn callback:", error);
         }

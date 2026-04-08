@@ -73,7 +73,7 @@ interface UploadProgress {
 }
 
 export function UploadPageClient() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);

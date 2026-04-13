@@ -1,15 +1,16 @@
 FROM node:22-alpine AS base
 WORKDIR /app
+RUN corepack enable
 
 FROM base AS deps
 COPY package.json ./
-RUN npm install
+RUN pnpm install
 
 FROM deps AS builder
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 ENV DATABASE_URL=${DATABASE_URL}
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
@@ -28,4 +29,4 @@ RUN mkdir -p /app/uploads
 
 EXPOSE 1984
 
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]

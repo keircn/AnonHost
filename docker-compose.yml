@@ -42,7 +42,7 @@ services:
       - uploads_data:/app/uploads
     ports:
       - "${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984"
-    command: ["sh", "-c", "npm run db:migrate && npm run start"]
+    command: ["sh", "-c", "pnpm run db:migrate && pnpm run start"]
 
 volumes:
   postgres_data:

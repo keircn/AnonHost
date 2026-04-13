@@ -1,15 +1,15 @@
-FROM oven/bun:1 AS base
+FROM node:22-alpine1 AS base
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+COPY package.json ./
+RUN npm install
 
 FROM deps AS builder
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 ENV DATABASE_URL=${DATABASE_URL}
 COPY . .
-RUN bun run build
+RUN npm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
@@ -28,4 +28,4 @@ RUN mkdir -p /app/uploads
 
 EXPOSE 1984
 
-CMD ["bun", "run", "start"]
+CMD ["npm", "run", "start"]

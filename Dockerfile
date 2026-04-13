@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:22-bookworm-slim AS base
 WORKDIR /app
 RUN corepack enable
 
@@ -10,7 +10,7 @@ FROM deps AS builder
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres
 ENV DATABASE_URL=${DATABASE_URL}
 COPY . .
-RUN pnpm run build
+RUN pnpm run build -- --webpack
 
 FROM base AS runner
 ENV NODE_ENV=production

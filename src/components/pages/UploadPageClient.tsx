@@ -75,8 +75,93 @@ interface UploadProgress {
 const CHUNK_SIZE_BYTES = 5 * 1024 * 1024;
 const MAX_CHUNK_RETRIES = 5;
 const RETRY_BASE_DELAY_MS = 800;
+const UPLOAD_SESSION_STORAGE_KEY = "anonhost.upload-sessions.v1";
+const UPLOAD_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface PersistedUploadSession {
+  uploadId: string;
+  updatedAt: number;
+}
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const toHex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+
+const getFileResumeKey = (file: File) =>
+  [file.name, file.size, file.lastModified, file.type || "application/octet-stream"].join("::");
+
+const sha256Hex = async (blob: Blob): Promise<string> => {
+  const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+  return toHex(new Uint8Array(digest));
+};
+
+const getStoredUploadSessions = (): Record<string, PersistedUploadSession> => {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(UPLOAD_SESSION_STORAGE_KEY);
+    if (!rawValue) {
+      return {};
+    }
+
+    const parsed = JSON.parse(rawValue) as Record<string, PersistedUploadSession>;
+    const now = Date.now();
+    const cleaned = Object.fromEntries(
+      Object.entries(parsed).filter(([, session]) => now - session.updatedAt <= UPLOAD_SESSION_TTL_MS),
+    );
+
+    if (Object.keys(cleaned).length !== Object.keys(parsed).length) {
+      window.localStorage.setItem(UPLOAD_SESSION_STORAGE_KEY, JSON.stringify(cleaned));
+    }
+
+    return cleaned;
+  } catch {
+    return {};
+  }
+};
+
+const setStoredUploadSession = (file: File, uploadId: string) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const sessions = getStoredUploadSessions();
+  sessions[getFileResumeKey(file)] = {
+    uploadId,
+    updatedAt: Date.now(),
+  };
+  window.localStorage.setItem(UPLOAD_SESSION_STORAGE_KEY, JSON.stringify(sessions));
+};
+
+const clearStoredUploadSession = (file: File) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const sessions = getStoredUploadSessions();
+  const fileKey = getFileResumeKey(file);
+  if (!(fileKey in sessions)) {
+    return;
+  }
+
+  delete sessions[fileKey];
+  window.localStorage.setItem(UPLOAD_SESSION_STORAGE_KEY, JSON.stringify(sessions));
+};
+
+const getOrCreateUploadId = (file: File): string => {
+  const sessions = getStoredUploadSessions();
+  const existing = sessions[getFileResumeKey(file)];
+  if (existing?.uploadId) {
+    setStoredUploadSession(file, existing.uploadId);
+    return existing.uploadId;
+  }
+
+  const uploadId = nanoid(6);
+  setStoredUploadSession(file, uploadId);
+  return uploadId;
+};
 
 export function UploadPageClient() {
   const { status } = useSession();
@@ -158,6 +243,10 @@ export function UploadPageClient() {
   };
 
   const removeFile = (index: number) => {
+    const fileToRemove = files[index];
+    if (fileToRemove) {
+      clearStoredUploadSession(fileToRemove);
+    }
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -291,6 +380,7 @@ export function UploadPageClient() {
       const chunkEnd = Math.min(file.size, chunkStart + CHUNK_SIZE_BYTES);
       const chunkBlob = file.slice(chunkStart, chunkEnd);
       const formData = new FormData();
+      const chunkChecksum = await sha256Hex(chunkBlob);
 
       formData.append("chunk", chunkBlob);
       formData.append("uploadId", fileId);
@@ -298,6 +388,7 @@ export function UploadPageClient() {
       formData.append("fileType", file.type || "application/octet-stream");
       formData.append("chunkIndex", String(chunkIndex));
       formData.append("totalChunks", String(totalChunks));
+      formData.append("chunkChecksum", chunkChecksum);
       formData.append("settings", JSON.stringify(settings));
 
       if (settings.domain && settings.domain !== "anonhost.cc") {
@@ -405,6 +496,8 @@ export function UploadPageClient() {
       [index]: { progress: 100, status: "completed" },
     }));
 
+    clearStoredUploadSession(file);
+
     return finalizeJson;
   };
 
@@ -427,7 +520,7 @@ export function UploadPageClient() {
           const uploadStartTime = Date.now();
 
           const settings = fileSettings[index] || defaultFileSettings;
-          const result = await uploadFileResumable(file, index, nanoid(6), settings);
+          const result = await uploadFileResumable(file, index, getOrCreateUploadId(file), settings);
 
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;

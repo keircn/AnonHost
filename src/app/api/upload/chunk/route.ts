@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { promises as fs } from "fs";
 import path from "path";
+import { createHash } from "crypto";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/auth";
 import { finalizeUpload } from "@/lib/server/upload-finalizer";
 
 const CHUNK_TEMP_DIR = path.join(process.cwd(), "uploads", ".chunks");
+const CHUNK_UPLOAD_TTL_MS = 24 * 60 * 60 * 1000;
+const CHUNK_CLEANUP_INTERVAL_MS = 10 * 60 * 1000;
+let lastChunkCleanupAt = 0;
 
 async function getAuthContext(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -55,7 +59,50 @@ async function getUploadedChunkIndexes(uploadDir: string): Promise<number[]> {
   }
 }
 
+function computeSha256Hex(input: Buffer): string {
+  return createHash("sha256").update(input).digest("hex");
+}
+
+async function cleanupStaleChunkUploads() {
+  const now = Date.now();
+  if (now - lastChunkCleanupAt < CHUNK_CLEANUP_INTERVAL_MS) {
+    return;
+  }
+
+  lastChunkCleanupAt = now;
+
+  try {
+    const userDirs = await fs.readdir(CHUNK_TEMP_DIR, { withFileTypes: true });
+
+    await Promise.all(
+      userDirs
+        .filter((entry) => entry.isDirectory())
+        .map(async (userDir) => {
+          const userPath = path.join(CHUNK_TEMP_DIR, userDir.name);
+          const uploadDirs = await fs.readdir(userPath, { withFileTypes: true });
+
+          await Promise.all(
+            uploadDirs
+              .filter((entry) => entry.isDirectory())
+              .map(async (uploadDir) => {
+                const uploadPath = path.join(userPath, uploadDir.name);
+                const stat = await fs.stat(uploadPath);
+
+                if (now - stat.mtimeMs > CHUNK_UPLOAD_TTL_MS) {
+                  await fs.rm(uploadPath, { recursive: true, force: true });
+                }
+              }),
+          );
+        }),
+    );
+  } catch {
+    return;
+  }
+}
+
 export async function GET(request: NextRequest) {
+  await cleanupStaleChunkUploads();
+
   const auth = await getAuthContext(request);
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -76,6 +123,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  await cleanupStaleChunkUploads();
+
   const auth = await getAuthContext(request);
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -89,6 +138,8 @@ export async function POST(request: NextRequest) {
     const filename = formData.get("filename") as string | null;
     const totalChunks = Number.parseInt((formData.get("totalChunks") as string) || "0", 10);
     const chunkIndex = Number.parseInt((formData.get("chunkIndex") as string) || "-1", 10);
+    const providedChunkChecksum =
+      (formData.get("chunkChecksum") as string | null)?.toLowerCase().trim() || null;
     const fileType = (formData.get("fileType") as string | null) || "application/octet-stream";
     const settings = formData.get("settings") as string | null;
     const customDomain = formData.get("domain") as string | null;
@@ -107,6 +158,14 @@ export async function POST(request: NextRequest) {
 
       const chunkPath = path.join(uploadDir, `${chunkIndex}.part`);
       const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
+
+      if (providedChunkChecksum) {
+        const actualChunkChecksum = computeSha256Hex(chunkBuffer);
+        if (actualChunkChecksum !== providedChunkChecksum) {
+          return NextResponse.json({ error: "Chunk checksum mismatch" }, { status: 400 });
+        }
+      }
+
       await fs.writeFile(chunkPath, chunkBuffer);
     }
 

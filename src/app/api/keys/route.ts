@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
-import { apiKeys } from "@/lib/db/schema";
+import { apiKeys, users } from "@/lib/db/schema";
 import { count, desc, eq } from "drizzle-orm";
 
 function generateApiKey(username: string) {
@@ -19,6 +19,14 @@ export async function GET() {
   }
 
   const userId = session.user.id;
+  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+
+  if (!existingUser) {
+    return NextResponse.json(
+      { error: "Invalid session. Please sign in again." },
+      { status: 401 },
+    );
+  }
 
   const keys = await db
     .select()
@@ -37,6 +45,14 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = session.user.id;
+  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+
+  if (!existingUser) {
+    return NextResponse.json(
+      { error: "Invalid session. Please sign in again." },
+      { status: 401 },
+    );
+  }
 
   try {
     const [{ value: keyCount }] = await db

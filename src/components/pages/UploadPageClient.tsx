@@ -72,6 +72,12 @@ interface UploadProgress {
   message?: string;
 }
 
+const CHUNK_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_CHUNK_RETRIES = 5;
+const RETRY_BASE_DELAY_MS = 800;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export function UploadPageClient() {
   const { status } = useSession();
   const router = useRouter();
@@ -241,89 +247,165 @@ export function UploadPageClient() {
     };
   }, [handlePaste]);
 
-  const uploadFileDirect = async (
+  const uploadFileResumable = async (
     file: File,
     index: number,
     fileId: string,
     settings: FileSettings,
   ) => {
-    console.log(`Starting direct upload for ${file.name} (${formatFileSize(file.size)})`);
+    console.log(`Starting resumable upload for ${file.name} (${formatFileSize(file.size)})`);
 
     setUploadProgress((prev) => ({
       ...prev,
       [index]: { progress: 0, status: "uploading" },
     }));
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileId", fileId);
-    formData.append("filename", file.name);
-    formData.append("settings", JSON.stringify(settings));
+    const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE_BYTES));
+    let uploadedChunkIndexes = new Set<number>();
 
-    if (settings.domain && settings.domain !== "anonhost.cc") {
-      formData.append("domain", settings.domain);
+    try {
+      const statusRes = await fetch(`/api/upload/chunk?uploadId=${encodeURIComponent(fileId)}`);
+      if (statusRes.ok) {
+        const statusJson = (await statusRes.json()) as { uploadedChunks?: number[] };
+        uploadedChunkIndexes = new Set(statusJson.uploadedChunks || []);
+      }
+    } catch {
+      console.warn("Could not fetch upload status; starting from chunk 0");
     }
 
-    const xhr = new XMLHttpRequest();
-    const uploadPromise = new Promise((resolve, reject) => {
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
+    let uploadedBytes = 0;
+    for (const existingChunkIndex of uploadedChunkIndexes) {
+      const chunkStart = existingChunkIndex * CHUNK_SIZE_BYTES;
+      const chunkEnd = Math.min(file.size, chunkStart + CHUNK_SIZE_BYTES);
+      uploadedBytes += Math.max(0, chunkEnd - chunkStart);
+    }
+
+    const initialProgress = file.size > 0 ? Math.round((uploadedBytes / file.size) * 100) : 0;
+    setUploadProgress((prev) => ({
+      ...prev,
+      [index]: { progress: initialProgress, status: "uploading" },
+    }));
+
+    const uploadSingleChunk = async (chunkIndex: number) => {
+      const chunkStart = chunkIndex * CHUNK_SIZE_BYTES;
+      const chunkEnd = Math.min(file.size, chunkStart + CHUNK_SIZE_BYTES);
+      const chunkBlob = file.slice(chunkStart, chunkEnd);
+      const formData = new FormData();
+
+      formData.append("chunk", chunkBlob);
+      formData.append("uploadId", fileId);
+      formData.append("filename", file.name);
+      formData.append("fileType", file.type || "application/octet-stream");
+      formData.append("chunkIndex", String(chunkIndex));
+      formData.append("totalChunks", String(totalChunks));
+      formData.append("settings", JSON.stringify(settings));
+
+      if (settings.domain && settings.domain !== "anonhost.cc") {
+        formData.append("domain", settings.domain);
+      }
+
+      let lastError: Error | null = null;
+
+      for (let attempt = 1; attempt <= MAX_CHUNK_RETRIES; attempt++) {
+        try {
+          const response = await fetch("/api/upload/chunk", {
+            method: "POST",
+            body: formData,
+          });
+
+          const json = (await response.json()) as {
+            error?: string;
+            complete?: boolean;
+            uploadedChunks?: number[];
+          };
+
+          if (!response.ok) {
+            throw new Error(json.error || "Chunk upload failed");
+          }
+
+          uploadedChunkIndexes.add(chunkIndex);
+          uploadedBytes += chunkEnd - chunkStart;
+          const progress = file.size > 0 ? Math.round((uploadedBytes / file.size) * 100) : 0;
+
           setUploadProgress((prev) => ({
             ...prev,
-            [index]: { progress, status: "uploading" },
+            [index]: { progress: Math.min(progress, 99), status: "uploading" },
           }));
+
+          return json;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error("Chunk upload failed");
+
+          if (attempt < MAX_CHUNK_RETRIES) {
+            const retryDelay = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+            setUploadProgress((prev) => ({
+              ...prev,
+              [index]: {
+                progress: Math.min(Math.round((uploadedBytes / file.size) * 100), 99),
+                status: "uploading",
+                message: `Retrying chunk ${chunkIndex + 1}/${totalChunks} (${attempt}/${
+                  MAX_CHUNK_RETRIES - 1
+                })...`,
+              },
+            }));
+            await wait(retryDelay);
+            continue;
+          }
+
+          throw lastError;
         }
-      });
+      }
 
-      xhr.addEventListener("load", () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const response = JSON.parse(xhr.responseText);
-          setUploadProgress((prev) => ({
-            ...prev,
-            [index]: { progress: 100, status: "completed" },
-          }));
-          resolve(response);
-        } else {
-          let errorMessage = "Upload failed";
-          try {
-            const errorData = JSON.parse(xhr.responseText) as {
-              error?: string;
-            };
-            if (errorData?.error) {
-              errorMessage = errorData.error;
-            }
-          } catch {}
+      throw lastError || new Error("Chunk upload failed");
+    };
 
-          setUploadProgress((prev) => ({
-            ...prev,
-            [index]: {
-              progress: 0,
-              status: "error",
-              message: errorMessage,
-            },
-          }));
-          reject(new Error(errorMessage));
-        }
-      });
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      if (uploadedChunkIndexes.has(chunkIndex)) {
+        continue;
+      }
 
-      xhr.addEventListener("error", () => {
+      const chunkResponse = await uploadSingleChunk(chunkIndex);
+      if (chunkResponse.complete) {
         setUploadProgress((prev) => ({
           ...prev,
-          [index]: {
-            progress: 0,
-            status: "error",
-            message: "Network error",
-          },
+          [index]: { progress: 100, status: "completed" },
         }));
-        reject(new Error("Network error"));
-      });
+        return chunkResponse;
+      }
+    }
 
-      xhr.open("POST", "/api/upload");
-      xhr.send(formData);
+    const finalizeFormData = new FormData();
+    finalizeFormData.append("finalize", "true");
+    finalizeFormData.append("uploadId", fileId);
+    finalizeFormData.append("filename", file.name);
+    finalizeFormData.append("fileType", file.type || "application/octet-stream");
+    finalizeFormData.append("totalChunks", String(totalChunks));
+    finalizeFormData.append("settings", JSON.stringify(settings));
+
+    if (settings.domain && settings.domain !== "anonhost.cc") {
+      finalizeFormData.append("domain", settings.domain);
+    }
+
+    const finalizeResponse = await fetch("/api/upload/chunk", {
+      method: "POST",
+      body: finalizeFormData,
     });
+    const finalizeJson = (await finalizeResponse.json()) as {
+      error?: string;
+      complete?: boolean;
+      [key: string]: unknown;
+    };
 
-    return uploadPromise;
+    if (!finalizeResponse.ok || !finalizeJson.complete) {
+      throw new Error(finalizeJson.error || "Upload finalization failed");
+    }
+
+    setUploadProgress((prev) => ({
+      ...prev,
+      [index]: { progress: 100, status: "completed" },
+    }));
+
+    return finalizeJson;
   };
 
   const handleUpload = async () => {
@@ -345,7 +427,7 @@ export function UploadPageClient() {
           const uploadStartTime = Date.now();
 
           const settings = fileSettings[index] || defaultFileSettings;
-          const result = await uploadFileDirect(file, index, nanoid(6), settings);
+          const result = await uploadFileResumable(file, index, nanoid(6), settings);
 
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;

@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, HeadBucketCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const REQUIRED_R2_ENV_VARS = [
   "R2_ACCOUNT_ID",
@@ -7,6 +7,10 @@ const REQUIRED_R2_ENV_VARS = [
   "R2_BUCKET_NAME",
   "R2_PUBLIC_URL",
 ] as const;
+
+let cachedConnectionStatus: boolean | null = null;
+let lastConnectionCheckAt = 0;
+const CONNECTION_CHECK_TTL_MS = 30_000;
 
 export function isR2Configured(): boolean {
   return REQUIRED_R2_ENV_VARS.every((name) => Boolean(process.env[name]));
@@ -24,6 +28,8 @@ function getR2Client() {
       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
     },
+    maxAttempts: 2,
+    useDualstackEndpoint: false,
   });
 }
 
@@ -63,6 +69,11 @@ export async function uploadToR2({
 }
 
 export async function checkR2Connection(): Promise<boolean> {
+  const now = Date.now();
+  if (cachedConnectionStatus !== null && now - lastConnectionCheckAt < CONNECTION_CHECK_TTL_MS) {
+    return cachedConnectionStatus;
+  }
+
   try {
     const r2Client = getR2Client();
     const command = new HeadBucketCommand({
@@ -70,9 +81,13 @@ export async function checkR2Connection(): Promise<boolean> {
     });
 
     await r2Client.send(command);
+    cachedConnectionStatus = true;
+    lastConnectionCheckAt = now;
     return true;
   } catch (error) {
     console.error("R2 connection error:", error);
+    cachedConnectionStatus = false;
+    lastConnectionCheckAt = now;
     return false;
   }
 }
@@ -87,4 +102,15 @@ export function generateR2Key(
     return `${userId}/${type}s/${fileId}${fileExt}`;
   }
   return `${userId}/${fileId}${fileExt}`;
+}
+
+export async function deleteFromR2Key(key: string): Promise<void> {
+  const r2Client = getR2Client();
+
+  await r2Client.send(
+    new DeleteObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    }),
+  );
 }

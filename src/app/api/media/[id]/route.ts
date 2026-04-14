@@ -2,21 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prisma";
-import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { promises as fs } from "fs";
 import path from "path";
-import { isR2Configured } from "@/lib/r2";
-
-function getR2Client() {
-  return new S3Client({
-    region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-    },
-  });
-}
+import { deleteFromR2Key, isR2Configured } from "@/lib/r2";
 
 export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   const { id } = await context.params;
@@ -64,7 +52,9 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
       : deleteFromLocalStorage(media.url);
 
     await Promise.all([
-      storageDeleteTask,
+      storageDeleteTask.catch((error) => {
+        console.warn("Storage delete failed; continuing with DB delete:", error);
+      }),
       prisma.media.delete({ where: { id } }),
       prisma.user.update({
         where: { id: userId.toString() },
@@ -82,14 +72,7 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
 async function deleteFromR2(mediaUrl: string) {
   const publicUrl = process.env.R2_PUBLIC_URL!;
   const key = mediaUrl.replace(`${publicUrl}/`, "");
-  const s3Client = getR2Client();
-
-  await s3Client.send(
-    new DeleteObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-    }),
-  );
+  await deleteFromR2Key(key);
 }
 
 async function deleteFromLocalStorage(mediaUrl: string) {

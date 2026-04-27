@@ -33,6 +33,55 @@ export function generateShareXConfig(apiKey: string, apiBaseUrl: string, customD
   };
 }
 
+export function generateDirectUploadPowerShellScript(apiKey: string, apiBaseUrl: string) {
+  const escapedApiKey = apiKey.replace(/'/g, "''");
+  const escapedApiBaseUrl = apiBaseUrl.replace(/'/g, "''");
+
+  return `param(
+  [Parameter(Mandatory = $true)]
+  [string]$FilePath,
+  [switch]$Public,
+  [switch]$DisableEmbed,
+  [string]$Domain = ""
+)
+
+$ErrorActionPreference = "Stop"
+
+if (-not (Test-Path -LiteralPath $FilePath)) {
+  throw "File not found: $FilePath"
+}
+
+$file = Get-Item -LiteralPath $FilePath
+$apiBase = '${escapedApiBaseUrl}'
+$apiKey = '${escapedApiKey}'
+$headers = @{ Authorization = "Bearer $apiKey"; "Content-Type" = "application/json" }
+
+$initBody = @{
+  action = "direct-init"
+  fileName = $file.Name
+  fileSize = [int64]$file.Length
+  contentType = "application/octet-stream"
+} | ConvertTo-Json
+
+$init = Invoke-RestMethod -Uri "$apiBase/api/media" -Method Post -Headers $headers -Body $initBody
+
+$putHeaders = @{ "Content-Type" = "application/octet-stream" }
+Invoke-WebRequest -Uri $init.data.uploadUrl -Method Put -Headers $putHeaders -InFile $FilePath | Out-Null
+
+$finalizeBody = @{
+  action = "direct-finalize"
+  imageId = $init.data.imageId
+  objectKey = $init.data.objectKey
+  public = [bool]$Public
+  disableEmbed = [bool]$DisableEmbed
+  domain = if ([string]::IsNullOrWhiteSpace($Domain)) { $null } else { $Domain }
+} | ConvertTo-Json
+
+$final = Invoke-RestMethod -Uri "$apiBase/api/media" -Method Post -Headers $headers -Body $finalizeBody
+$final.data.url
+`;
+}
+
 export function generateShareXShortenerConfig(
   apiKey: string,
   baseUrl: string,

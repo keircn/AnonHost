@@ -70,6 +70,9 @@ export interface Endpoint {
       }>;
       clicks?: number;
       count?: number;
+      ok?: boolean;
+      error?: string;
+      data?: Record<string, unknown> | null;
     };
   };
 }
@@ -82,7 +85,7 @@ export const endpoints: Endpoint[] = [
     path: "/media",
     description: "Upload a new image to your account.",
     request: {
-      description: "Upload a new image to your account.",
+      description: "Upload media using multipart/form-data (legacy) or actions.",
       headers: "Content-Type: multipart/form-data\nAuthorization: Bearer YOUR_API_KEY",
       parameters: [
         {
@@ -94,6 +97,11 @@ export const endpoints: Endpoint[] = [
           name: "public",
           type: "Boolean",
           description: "Whether the image should be public (default: false)",
+        },
+        {
+          name: "action",
+          type: "String",
+          description: "direct-init, direct-finalize, direct-fail",
         },
       ],
     },

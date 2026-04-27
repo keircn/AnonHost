@@ -6,6 +6,11 @@ import { verifyApiKey } from "@/lib/auth";
 import { ArchiveProcessor } from "@/lib/archive-processor";
 import { STORAGE_LIMITS } from "@/lib/upload";
 import { uploadFile } from "@/lib/server/upload-file";
+import {
+  createDirectUploadForUser,
+  finalizeDirectUploadForUser,
+  markDirectUploadFailedForUser,
+} from "@/lib/server/direct-upload";
 import { ServerArchiveProcessor } from "@/lib/server-archive-processor";
 import { apiKeys, MediaType, media, settings, users } from "@/lib/db/schema";
 import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
@@ -213,6 +218,75 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const requestContentType = req.headers.get("content-type") || "";
+
+    if (requestContentType.includes("application/json")) {
+      const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+
+      if (!body || typeof body.action !== "string") {
+        return NextResponse.json({ error: "Invalid direct upload action" }, { status: 400 });
+      }
+
+      try {
+        if (body.action === "direct-init") {
+          if (typeof body.fileName !== "string") {
+            return NextResponse.json({ error: "fileName must be a string" }, { status: 400 });
+          }
+          if (typeof body.fileSize !== "number") {
+            return NextResponse.json({ error: "fileSize must be a number" }, { status: 400 });
+          }
+          if (typeof body.contentType !== "string") {
+            return NextResponse.json({ error: "contentType must be a string" }, { status: 400 });
+          }
+
+          const data = await createDirectUploadForUser({
+            userId,
+            fileName: body.fileName,
+            fileSize: body.fileSize,
+            contentType: body.contentType,
+          });
+
+          return NextResponse.json({ ok: true, data });
+        }
+
+        if (body.action === "direct-finalize") {
+          if (typeof body.imageId !== "string") {
+            return NextResponse.json({ error: "imageId must be a string" }, { status: 400 });
+          }
+          if (typeof body.objectKey !== "string") {
+            return NextResponse.json({ error: "objectKey must be a string" }, { status: 400 });
+          }
+
+          const data = await finalizeDirectUploadForUser({
+            userId,
+            imageId: body.imageId,
+            objectKey: body.objectKey,
+            public: typeof body.public === "boolean" ? body.public : false,
+            disableEmbed: typeof body.disableEmbed === "boolean" ? body.disableEmbed : false,
+            domain: typeof body.domain === "string" ? body.domain : null,
+          });
+
+          return NextResponse.json({ ok: true, data });
+        }
+
+        if (body.action === "direct-fail") {
+          if (typeof body.imageId !== "string") {
+            return NextResponse.json({ error: "imageId must be a string" }, { status: 400 });
+          }
+
+          await markDirectUploadFailedForUser(userId, body.imageId);
+          return NextResponse.json({ ok: true, data: null });
+        }
+
+        return NextResponse.json({ error: "Unknown direct upload action" }, { status: 400 });
+      } catch (error) {
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : "Direct upload request failed" },
+          { status: 400 },
+        );
+      }
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const type = formData.get("type") as "avatar" | "banner" | null;

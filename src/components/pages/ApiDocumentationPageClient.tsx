@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { endpoints } from "@/lib/endpoints";
 import { EndpointCard } from "@/components/Docs/EndpointCard";
+import { CodeBlock } from "@/components/Docs/CodeBlock";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -27,31 +25,157 @@ const tabVariants = {
   exit: { opacity: 0, x: 20 },
 };
 
-const codeBlockVariants = {
-  initial: { opacity: 0, scale: 0.95 },
-  animate: { opacity: 1, scale: 1 },
-  hover: {
-    boxShadow: "0 0 0 2px var(--primary)",
-    transition: { duration: 0.2 },
+const uploadJavaScript = `const file = fileInput.files[0];
+
+const init = await fetch('https://anonhost.cc/api/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
   },
-};
+  body: JSON.stringify({
+    action: 'direct-init',
+    fileName: file.name,
+    fileSize: file.size,
+    contentType: file.type || 'application/octet-stream'
+  })
+}).then(r => r.json());
+
+await fetch(init.data.uploadUrl, {
+  method: 'PUT',
+  headers: { 'Content-Type': file.type || 'application/octet-stream' },
+  body: file
+});
+
+const done = await fetch('https://anonhost.cc/api/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    action: 'direct-finalize',
+    imageId: init.data.imageId,
+    objectKey: init.data.objectKey,
+    public: true
+  })
+}).then(r => r.json());
+
+console.log('Success:', done);`;
+
+const uploadPython = `import requests
+
+url = "https://anonhost.cc/api/media"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+file_path = "image.jpg"
+with open(file_path, "rb") as f:
+    file_bytes = f.read()
+
+init_payload = {
+    "action": "direct-init",
+    "fileName": "image.jpg",
+    "fileSize": len(file_bytes),
+    "contentType": "image/jpeg"
+}
+
+init_res = requests.post(url, headers=headers, json=init_payload)
+init_data = init_res.json()
+
+put_res = requests.put(
+    init_data["data"]["uploadUrl"],
+    headers={"Content-Type": "image/jpeg"},
+    data=file_bytes,
+)
+put_res.raise_for_status()
+
+finalize_payload = {
+    "action": "direct-finalize",
+    "imageId": init_data["data"]["imageId"],
+    "objectKey": init_data["data"]["objectKey"],
+    "public": True,
+}
+
+done = requests.post(url, headers=headers, json=finalize_payload)
+print(done.json())`;
+
+const uploadCurl = `# 1) init
+curl -X POST https://anonhost.cc/api/media \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"action":"direct-init","fileName":"image.jpg","fileSize":1024000,"contentType":"image/jpeg"}'
+
+# 2) upload to returned uploadUrl
+curl -X PUT "<uploadUrl>" \\
+  -H "Content-Type: image/jpeg" \\
+  --data-binary "@image.jpg"
+
+# 3) finalize
+curl -X POST https://anonhost.cc/api/media \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"action":"direct-finalize","imageId":"<imageId>","objectKey":"<objectKey>","public":true}'`;
+
+const listJavaScript = `fetch('https://anonhost.cc/api/media?page=1&limit=50', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Images:', data.images);
+  console.log('Pagination:', data.pagination);
+})
+.catch(error => {
+  console.error('Error:', error);
+});`;
+
+const listPython = `import requests
+
+url = "https://anonhost.cc/api/media"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY"
+}
+params = {
+    "page": 1,
+    "limit": 50
+}
+
+response = requests.get(url, headers=headers, params=params)
+data = response.json()
+
+print("Images:", data["images"])
+print("Pagination:", data["pagination"])`;
+
+const listCurl = `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`;
 
 export function ApiDocumentationPageClient() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+  const toggleSection = (section: string) => {
+    setExpandedSection((prev) => (prev === section ? null : section));
   };
 
-  const toggleSection = (section: string) => {
-    if (expandedSection === section) {
-      setExpandedSection(null);
-    } else {
-      setExpandedSection(section);
-    }
-  };
+  const examples = [
+    {
+      title: "Upload an Image",
+      js: uploadJavaScript,
+      python: uploadPython,
+      curl: uploadCurl,
+    },
+    {
+      title: "List All Images",
+      js: listJavaScript,
+      python: listPython,
+      curl: listCurl,
+    },
+  ];
 
   return (
     <motion.div className="container py-8" variants={fadeIn} initial="initial" animate="animate">
@@ -65,16 +189,20 @@ export function ApiDocumentationPageClient() {
       <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
         <motion.div variants={fadeIn}>
           <TabsList className="mb-4">
-            {["overview", "endpoints", "examples"].map((tab, index) => (
+            {[
+              { id: "overview", label: "Overview" },
+              { id: "endpoints", label: "Endpoints" },
+              { id: "examples", label: "Examples" },
+            ].map((tab, index) => (
               <motion.div
-                key={tab}
+                key={tab.id}
                 variants={tabVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
                 transition={{ delay: index * 0.1 }}
               >
-                <TabsTrigger value={tab}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</TabsTrigger>
+                <TabsTrigger value={tab.id}>{tab.label}</TabsTrigger>
               </motion.div>
             ))}
           </TabsList>
@@ -108,45 +236,13 @@ export function ApiDocumentationPageClient() {
                         API keys in your account settings.
                       </p>
                       <p>Include your API key in the request headers as follows:</p>
-                      <motion.div
-                        className="bg-muted relative rounded-md p-4 font-mono text-sm"
-                        variants={codeBlockVariants}
-                        initial="initial"
-                        animate="animate"
-                        whileHover="hover"
-                      >
-                        <pre>Authorization: Bearer YOUR_API_KEY</pre>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2"
-                          onClick={() => copyToClipboard("Authorization: Bearer YOUR_API_KEY")}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </motion.div>
+                      <CodeBlock code="Authorization: Bearer YOUR_API_KEY" language="http" />
                     </div>
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Base URL</h3>
                       <p>All API endpoints are relative to the following base URL:</p>
-                      <motion.div
-                        className="bg-muted relative rounded-md p-4 font-mono text-sm"
-                        variants={codeBlockVariants}
-                        initial="initial"
-                        animate="animate"
-                        whileHover="hover"
-                      >
-                        <pre>https://anonhost.cc/api</pre>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2"
-                          onClick={() => copyToClipboard("https://anonhost.cc/api")}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </motion.div>
+                      <CodeBlock code="https://anonhost.cc/api" language="bash" />
                     </div>
                   </CardContent>
                 </Card>
@@ -188,16 +284,16 @@ export function ApiDocumentationPageClient() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {["Upload an Image", "List All Images"].map((example, index) => (
+                    {examples.map((example, index) => (
                       <motion.div
-                        key={example}
+                        key={example.title}
                         variants={fadeIn}
                         initial="initial"
                         animate="animate"
                         transition={{ delay: index * 0.2 }}
                       >
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold">{example}</h3>
+                          <h3 className="text-lg font-semibold">{example.title}</h3>
 
                           <Tabs defaultValue="js" className="w-full">
                             <TabsList>
@@ -207,229 +303,15 @@ export function ApiDocumentationPageClient() {
                             </TabsList>
 
                             <TabsContent value="js" className="mt-4">
-                              <motion.div
-                                className="bg-muted relative rounded-md p-4 font-mono text-sm"
-                                variants={codeBlockVariants}
-                                initial="initial"
-                                animate="animate"
-                                whileHover="hover"
-                              >
-                                <pre>
-                                  {example === "Upload an Image"
-                                    ? `const form = new FormData();
-form.append('file', fileInput.files[0]);
-form.append('filename', 'custom-name.jpg');
-form.append('public', 'true');
-
-fetch('https://anonhost.cc/api/media', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  },
-  body: form
-})
-.then(response => response.json())
-.then(data => {
-  console.log('Success:', data);
-})
-.catch(error => {
-  console.error('Error:', error);
-});`
-                                    : `fetch('https://anonhost.cc/api/media?page=1&limit=50', {
-  method: 'GET',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  }
-})
-.then(response => response.json())
-.then(data => {
-  console.log('Images:', data.images);
-  console.log('Pagination:', data.pagination);
-})
-.catch(error => {
-  console.error('Error:', error);
-});`}
-                                </pre>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2"
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      example === "Upload an Image"
-                                        ? `const form = new FormData();
-form.append('file', fileInput.files[0]);
-form.append('filename', 'custom-name.jpg');
-form.append('public', 'true');
-
-fetch('https://anonhost.cc/api/media', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  },
-  body: form
-})
-.then(response => response.json())
-.then(data => {
-  console.log('Success:', data);
-})
-.catch(error => {
-  console.error('Error:', error);
-});`
-                                        : `fetch('https://anonhost.cc/api/media?page=1&limit=50', {
-  method: 'GET',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  }
-})
-.then(response => response.json())
-.then(data => {
-  console.log('Images:', data.images);
-  console.log('Pagination:', data.pagination);
-})
-.catch(error => {
-  console.error('Error:', error);
-});`,
-                                    )
-                                  }
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
+                              <CodeBlock code={example.js} language="javascript" />
                             </TabsContent>
 
                             <TabsContent value="python" className="mt-4">
-                              <motion.div
-                                className="bg-muted relative rounded-md p-4 font-mono text-sm"
-                                variants={codeBlockVariants}
-                                initial="initial"
-                                animate="animate"
-                                whileHover="hover"
-                              >
-                                <pre>
-                                  {example === "Upload an Image"
-                                    ? `import requests
-
-url = "https://anonhost.cc/api/media"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY"
-}
-
-files = {
-    "file": open("image.jpg", "rb")
-}
-
-data = {
-    "filename": "custom-name.jpg",
-    "public": "true"
-}
-
-response = requests.post(url, headers=headers, files=files, data=data)
-print(response.json())`
-                                    : `import requests
-
-url = "https://anonhost.cc/api/media"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY"
-}
-params = {
-    "page": 1,
-    "limit": 50
-}
-
-response = requests.get(url, headers=headers, params=params)
-data = response.json()
-
-print("Images:", data["images"])
-print("Pagination:", data["pagination"])`}
-                                </pre>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2"
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      example === "Upload an Image"
-                                        ? `import requests
-
-url = "https://anonhost.cc/api/media"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY"
-}
-
-files = {
-    "file": open("image.jpg", "rb")
-}
-
-data = {
-    "filename": "custom-name.jpg",
-    "public": "true"
-}
-
-response = requests.post(url, headers=headers, files=files, data=data)
-print(response.json())`
-                                        : `import requests
-
-url = "https://anonhost.cc/api/media"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY"
-}
-params = {
-    "page": 1,
-    "limit": 50
-}
-
-response = requests.get(url, headers=headers, params=params)
-data = response.json()
-
-print("Images:", data["images"])
-print("Pagination:", data["pagination"])`,
-                                    )
-                                  }
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
+                              <CodeBlock code={example.python} language="python" />
                             </TabsContent>
 
                             <TabsContent value="curl" className="mt-4">
-                              <motion.div
-                                className="bg-muted relative rounded-md p-4 font-mono text-sm"
-                                variants={codeBlockVariants}
-                                initial="initial"
-                                animate="animate"
-                                whileHover="hover"
-                              >
-                                <pre>
-                                  {example === "Upload an Image"
-                                    ? `curl -X POST https://anonhost.cc/api/media \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -F "file=@image.jpg" \\
-  -F "filename=custom-name.jpg" \\
-  -F "public=true"`
-                                    : `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`}
-                                </pre>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-2 right-2"
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      example === "Upload an Image"
-                                        ? `curl -X POST https://anonhost.cc/api/media \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -F "file=@image.jpg" \\
-  -F "filename=custom-name.jpg" \\
-  -F "public=true"`
-                                        : `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`,
-                                    )
-                                  }
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                              </motion.div>
+                              <CodeBlock code={example.curl} language="bash" />
                             </TabsContent>
                           </Tabs>
                         </div>

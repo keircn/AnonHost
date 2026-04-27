@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   generateShareXConfig,
   generateShareXShortenerConfig,
+  generateDirectUploadPowerShellScript,
   downloadShareXConfig,
 } from "@/lib/sharex";
 
@@ -49,7 +50,8 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
           <p className="text-muted-foreground text-sm">
-            Select the type of configuration you want to export for ShareX.
+            ShareX .sxcu uploaders use single-request multipart uploads. For faster uploads, use the
+            PowerShell helper below
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <ShareXConfigCard
@@ -98,6 +100,33 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
               }}
             />
           </div>
+          <Card className="p-4">
+            <CardHeader className="p-0">
+              <CardTitle className="text-base">Windows Upload Helper</CardTitle>
+              <CardDescription>
+                PowerShell script that performs faster uploads via a method not compatible with
+                sharex.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 pt-4">
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const script = generateDirectUploadPowerShellScript(
+                      apiKey.key,
+                      window.location.origin,
+                    );
+                    navigator.clipboard.writeText(script);
+                    toast.success("PowerShell upload script copied");
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy PowerShell Script
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           <p className="text-sm">
             <a
               href="https://getsharex.com/docs/custom-uploader#sxcu-file"

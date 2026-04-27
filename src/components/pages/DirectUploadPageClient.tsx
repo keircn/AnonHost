@@ -6,13 +6,18 @@ import { redirect } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  createDirectUpload,
-  finalizeDirectUpload,
-  markDirectUploadFailed,
-} from "@/app/upload/direct/actions";
 
 type UploadState = "idle" | "requesting_url" | "uploading" | "finalizing" | "done" | "error";
+
+type CreateDirectUploadResponse = {
+  imageId: string;
+  objectKey: string;
+  uploadUrl: string;
+  publicUrl: string;
+  expiresIn: number;
+};
+
+type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 export function DirectUploadPageClient() {
   const { status } = useSession();
@@ -77,6 +82,55 @@ export function DirectUploadPageClient() {
     });
   };
 
+  const requestUploadUrl = async (inputFile: File): Promise<ActionResult<CreateDirectUploadResponse>> => {
+    const response = await fetch("/api/upload/direct", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fileName: inputFile.name,
+        fileSize: inputFile.size,
+        contentType: inputFile.type || "application/octet-stream",
+      }),
+    });
+
+    const json = (await response.json()) as ActionResult<CreateDirectUploadResponse>;
+    if (!response.ok && json.ok) {
+      return { ok: false, error: "Failed to create upload" };
+    }
+    return json;
+  };
+
+  const finalizeUpload = async (
+    imageId: string,
+    objectKey: string,
+  ): Promise<ActionResult<{ imageId: string; url: string }>> => {
+    const response = await fetch("/api/upload/direct/finalize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ imageId, objectKey }),
+    });
+
+    const json = (await response.json()) as ActionResult<{ imageId: string; url: string }>;
+    if (!response.ok && json.ok) {
+      return { ok: false, error: "Failed to finalize upload" };
+    }
+    return json;
+  };
+
+  const markUploadFailed = async (imageId: string) => {
+    await fetch("/api/upload/direct/fail", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ imageId }),
+    });
+  };
+
   const handleUpload = async () => {
     if (!file) {
       toast.error("Choose a file first");
@@ -88,11 +142,7 @@ export function DirectUploadPageClient() {
     setProgress(0);
     setUploadState("requesting_url");
 
-    const createResult = await createDirectUpload({
-      fileName: file.name,
-      fileSize: file.size,
-      contentType: file.type || "application/octet-stream",
-    });
+    const createResult = await requestUploadUrl(file);
 
     if (!createResult.ok) {
       setUploadState("error");
@@ -108,10 +158,10 @@ export function DirectUploadPageClient() {
       await uploadWithProgress(uploadUrl, file);
 
       setUploadState("finalizing");
-      const finalizeResult = await finalizeDirectUpload({ imageId, objectKey });
+      const finalizeResult = await finalizeUpload(imageId, objectKey);
 
       if (!finalizeResult.ok) {
-        await markDirectUploadFailed(imageId);
+        await markUploadFailed(imageId);
         setUploadState("error");
         setErrorMessage(finalizeResult.error);
         toast.error(finalizeResult.error);
@@ -122,7 +172,7 @@ export function DirectUploadPageClient() {
       setUploadState("done");
       toast.success("Uploaded successfully");
     } catch (error) {
-      await markDirectUploadFailed(imageId);
+      await markUploadFailed(imageId);
       const message = error instanceof Error ? error.message : "Upload failed";
       setUploadState("error");
       setErrorMessage(message);

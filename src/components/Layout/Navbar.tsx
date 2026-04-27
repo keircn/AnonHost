@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useNavbar } from "@/components/Layout/NavbarContext";
+import { Logo } from "@/components/Brand/Logo";
 
 export function Navbar() {
   interface NavLink {
@@ -62,7 +63,8 @@ export function Navbar() {
     <header className="bg-background/95 supports-backdrop-blur:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
       <div className="container mx-auto flex h-16 max-w-7xl items-center px-4 xl:px-8 2xl:px-16">
         <div className="flex items-center gap-6 lg:gap-8">
-          <Link href="/" className="-ml-3 flex items-center px-3 lg:-ml-4 lg:px-4">
+          <Link href="/" className="-ml-3 flex items-center gap-2 px-3 lg:-ml-4 lg:px-4">
+            <Logo variant="svg" size="sm" />
             <span className="hover:text-foreground/75 text-lg font-bold transition-colors lg:text-xl">
               AnonHost
             </span>

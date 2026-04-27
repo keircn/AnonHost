@@ -16,12 +16,15 @@ import {
   LuImage,
   LuLink2,
   LuShield,
+  LuSparkles,
+  LuStar,
   LuTerminal,
   LuUsers,
 } from "react-icons/lu";
 import bytes from "bytes";
 import useSWR from "swr";
 import { Stats } from "@/types/stats";
+import { PLAN_DETAILS } from "@/lib/plans";
 
 const features = [
   {
@@ -45,6 +48,14 @@ const features = [
     description: "European hosting with straightforward policies and practical data protection.",
     icon: LuShield,
   },
+];
+
+const premiumFeatures = [
+  "Up to 2GB per file",
+  "Unlimited storage",
+  "Direct-to-R2 uploads",
+  "Custom domains",
+  "Priority support",
 ];
 
 const fadeUp = {
@@ -154,10 +165,10 @@ export function HomePageClient() {
                       isLoading
                         ? "..."
                         : bytes(Math.max(0, stats?.storage ?? 0), {
-                            unitSeparator: " ",
-                            decimalPlaces: 1,
-                            fixedDecimals: true,
-                          }) || "0 B"
+                          unitSeparator: " ",
+                          decimalPlaces: 1,
+                          fixedDecimals: true,
+                        }) || "0 B"
                     }
                   />
                 </CardContent>
@@ -206,6 +217,51 @@ export function HomePageClient() {
             })}
           </div>
         </section>
+
+        <motion.section
+          variants={fadeUp}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-70px" }}
+          transition={{ duration: 0.32 }}
+          className="container mx-auto max-w-7xl px-4 py-14 md:px-6"
+          hidden
+        >
+          <Card className="bg-card/85 border-border/70 overflow-hidden shadow-md backdrop-blur-sm">
+            <CardContent className="relative flex flex-col items-start gap-6 p-7 sm:p-10 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl space-y-3 flex-1">
+                <div className="flex items-center gap-2 text-primary">
+                  <LuSparkles className="h-5 w-5" />
+                  <span className="text-sm font-medium uppercase tracking-wide">Premium</span>
+                </div>
+                <h2 className="text-foreground text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Unlock More with Premium
+                </h2>
+                <p className="text-muted-foreground text-base leading-relaxed">
+                  Get higher limits, faster uploads, custom domains, and priority support. Plus, you
+                  help keep the project sustainable.
+                </p>
+                <ul className="space-y-1 pt-2">
+                  {premiumFeatures.map((feat) => (
+                    <li key={feat} className="flex items-center gap-2 text-sm">
+                      <LuCircleCheck className="h-4 w-4 text-green-500" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-auto flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:self-end sm:items-end">
+                <Button asChild size="lg" className="gap-2">
+                  <Link href="/pricing">
+                    View Plans
+                    <LuArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.section>
 
         <motion.section
           variants={fadeUp}
@@ -313,3 +369,4 @@ function StatRow({
     </div>
   );
 }
+

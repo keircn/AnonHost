@@ -4,34 +4,15 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LuCheck } from "react-icons/lu";
+import { LuCheck, LuSparkles } from "react-icons/lu";
 import Link from "next/link";
+import { PLAN_DETAILS, getPremiumCheckoutUrls } from "@/lib/plans";
 
-const features = {
-  free: [
-    "Up to 100MB per file",
-    "1GB total storage",
-    "Image optimization & conversion",
-    "Video compression",
-    "URL shortening",
-    "Basic API access",
-    "Community support",
-  ],
-  premium: [
-    "Everything in Free, plus:",
-    "Up to 100MB per file",
-    "Unlimited storage",
-    "Priority storage allocation",
-    "Custom domains",
-    "Advanced file processing",
-    "Premium API features",
-    "Priority support",
-    "Early access to new features",
-    "Support development",
-  ],
-};
+const { free, premium } = PLAN_DETAILS;
 
 export function PricingPageClient() {
+  const checkoutUrls = getPremiumCheckoutUrls();
+
   return (
     <div className="container mx-auto max-w-6xl space-y-12 py-16 md:mt-24">
       <motion.div
@@ -53,17 +34,17 @@ export function PricingPageClient() {
           <Card className="h-full">
             <CardHeader className="mb-6 space-y-1">
               <Badge variant="secondary" className="w-fit">
-                Free Forever
+                {free.badge}
               </Badge>
-              <CardTitle className="text-2xl">Community</CardTitle>
+              <CardTitle className="text-2xl">{free.name}</CardTitle>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold">$0</span>
-                <span className="text-muted-foreground">/forever</span>
+                <span className="text-3xl font-bold">{free.priceLabel}</span>
+                <span className="text-muted-foreground">{free.intervalLabel}</span>
               </div>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {features.free.map((feature, i) => (
+                {free.features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <LuCheck className="text-primary h-4 w-4" />
                     <span>{feature}</span>
@@ -85,25 +66,33 @@ export function PricingPageClient() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card className="border-primary relative h-full overflow-hidden">
-            <div className="bg-primary text-primary-foreground absolute top-0 right-0 rounded px-3 py-1 text-sm">
-              Coming Soon
+            <div className="bg-primary text-primary-foreground absolute top-0 right-0 rounded-bl px-3 py-1 text-sm flex items-center gap-1">
+              <LuSparkles className="h-3 w-3" />
+              Popular
             </div>
             <CardHeader className="space-y-1">
               <Badge variant="default" className="bg-primary w-fit">
-                Premium
+                {premium.badge}
               </Badge>
-              <CardTitle className="text-2xl">Supporter</CardTitle>
+              <CardTitle className="text-2xl">{premium.name}</CardTitle>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">$5</span>
-                  <span className="text-muted-foreground">/month</span>
+                  <span className="text-3xl font-bold">{premium.monthlyPriceLabel}</span>
+                  <span className="text-muted-foreground">{premium.monthlyIntervalLabel}</span>
                 </div>
-                <div className="text-muted-foreground text-sm">or $50/year (save $10)</div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-semibold">{premium.yearlyPriceLabel}</span>
+                  <span className="text-muted-foreground">{premium.yearlyIntervalLabel}</span>
+                  <Badge variant="outline" className="ml-1 text-green-500 border-green-500">
+                    {premium.savingsLabel}
+                  </Badge>
+                </div>
               </div>
+              <p className="text-muted-foreground text-sm pt-1">{premium.heroSubtitle}</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2">
-                {features.premium.map((feature, i) => (
+                {premium.features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <LuCheck className="text-primary h-4 w-4" />
                     <span>{feature}</span>
@@ -112,27 +101,39 @@ export function PricingPageClient() {
               </ul>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Link
-                href="https://ko-fi.com/qkeiran"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full"
-              >
-                <Button className="w-full" asChild>
-                  <span>Donate</span>
-                </Button>
-              </Link>
+              <div className="grid w-full gap-2 sm:grid-cols-2">
+                {checkoutUrls.monthly && (
+                  <Button asChild>
+                    <Link href={checkoutUrls.monthly} target="_blank" rel="noopener">
+                      Monthly
+                    </Link>
+                  </Button>
+                )}
+                {checkoutUrls.yearly && (
+                  <Button asChild variant="secondary">
+                    <Link href={checkoutUrls.yearly} target="_blank" rel="noopener">
+                      Yearly
+                    </Link>
+                  </Button>
+                )}
+                {!checkoutUrls.monthly && !checkoutUrls.yearly && (
+                  <Button asChild className="sm:col-span-2">
+                    <Link href="https://ko-fi.com/qkeiran" target="_blank" rel="noopener">
+                      Join Waitlist
+                    </Link>
+                  </Button>
+                )}
+              </div>
               <p className="text-muted-foreground text-center text-sm">
-                Join our{" "}
+                Questions? Reach out on{" "}
                 <a
-                  href="https://discord.gg/WZJksYs8"
+                  href="https://discord.gg/jPxJ52GF3r"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary underline"
                 >
                   Discord
-                </a>{" "}
-                for more info
+                </a>
               </p>
             </CardFooter>
           </Card>
@@ -148,7 +149,7 @@ export function PricingPageClient() {
         <p>
           All plans include GDPR compliance, EU hosting, and 99.9% uptime guarantee.
           <br />
-          Currently in open beta - some features may be limited or unavailable.
+          Cancel anytime. No questions asked.
         </p>
       </motion.div>
     </div>

@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
-import { images } from "@/lib/db/schema";
+import { images, media, type MediaType } from "@/lib/db/schema";
 import { FILE_SIZE_LIMITS, BLOCKED_TYPES } from "@/lib/upload";
 import { getR2Client, isR2Configured } from "@/lib/r2";
 
@@ -43,6 +43,36 @@ export interface CreateDirectUploadResponse {
 export interface FinalizeDirectUploadInput {
   imageId: string;
   objectKey: string;
+  public?: boolean;
+  disableEmbed?: boolean;
+  domain?: string | null;
+}
+
+function inferMediaType(contentType: string, fileName: string): MediaType {
+  const normalizedContentType = contentType.toLowerCase();
+  const extension = path.extname(fileName).toLowerCase();
+  const archiveExtensions = new Set([".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz"]);
+
+  if (archiveExtensions.has(extension)) {
+    return "ARCHIVE";
+  }
+  if (normalizedContentType.startsWith("image/")) {
+    return "IMAGE";
+  }
+  if (normalizedContentType.startsWith("video/")) {
+    return "VIDEO";
+  }
+  if (normalizedContentType.startsWith("audio/")) {
+    return "AUDIO";
+  }
+  if (
+    normalizedContentType.startsWith("text/") ||
+    normalizedContentType.includes("json") ||
+    normalizedContentType.includes("xml")
+  ) {
+    return "TEXT";
+  }
+  return "DOCUMENT";
 }
 
 function safeContentType(contentType: string): string {
@@ -151,7 +181,7 @@ export async function createDirectUpload(
 
 export async function finalizeDirectUpload(
   input: FinalizeDirectUploadInput,
-): Promise<ActionResult<{ imageId: string; url: string }>> {
+): Promise<ActionResult<{ imageId: string; mediaId: string; url: string }>> {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
@@ -170,6 +200,9 @@ export async function finalizeDirectUpload(
       id: images.id,
       userId: images.userId,
       status: images.status,
+      fileName: images.fileName,
+      fileSize: images.fileSize,
+      contentType: images.contentType,
     })
     .from(images)
     .where(and(eq(images.id, imageId), eq(images.userId, session.user.id)))
@@ -195,6 +228,26 @@ export async function finalizeDirectUpload(
   }
 
   const finalUrl = buildPublicUrl(objectKey);
+  const mediaId = nanoid(6);
+  const normalizedDomain = input.domain?.trim();
+
+  await db.insert(media).values({
+    id: mediaId,
+    url: finalUrl,
+    filename: pendingImage.fileName,
+    size: pendingImage.fileSize,
+    width: null,
+    height: null,
+    duration: null,
+    type: inferMediaType(pendingImage.contentType, pendingImage.fileName),
+    userId: session.user.id,
+    public: Boolean(input.public),
+    disableEmbed: Boolean(input.disableEmbed),
+    domain: normalizedDomain && normalizedDomain !== "anonhost.cc" ? normalizedDomain : null,
+    archiveType: null,
+    fileCount: null,
+    archiveMeta: null,
+  });
 
   const [updatedImage] = await db
     .update(images)
@@ -213,6 +266,7 @@ export async function finalizeDirectUpload(
     ok: true,
     data: {
       imageId: updatedImage.id,
+      mediaId,
       url: updatedImage.url,
     },
   };

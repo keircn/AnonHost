@@ -15,7 +15,6 @@ import type { FileSettings } from "@/types/file-settings";
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import { formatFileSize } from "@/lib/utils";
 import pLimit from "p-limit";
-import { nanoid } from "nanoid";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -72,96 +71,29 @@ interface UploadProgress {
   message?: string;
 }
 
-const CHUNK_SIZE_BYTES = 5 * 1024 * 1024;
-const MAX_CHUNK_RETRIES = 5;
-const RETRY_BASE_DELAY_MS = 800;
-const UPLOAD_SESSION_STORAGE_KEY = "anonhost.upload-sessions.v1";
-const UPLOAD_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-interface PersistedUploadSession {
-  uploadId: string;
-  updatedAt: number;
+interface CreateDirectUploadData {
+  imageId: string;
+  objectKey: string;
+  uploadUrl: string;
+  publicUrl: string;
+  expiresIn: number;
 }
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const toHex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-
-const getFileResumeKey = (file: File) =>
-  [file.name, file.size, file.lastModified, file.type || "application/octet-stream"].join("::");
-
-const sha256Hex = async (blob: Blob): Promise<string> => {
-  const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
-  return toHex(new Uint8Array(digest));
-};
-
-const getStoredUploadSessions = (): Record<string, PersistedUploadSession> => {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const rawValue = window.localStorage.getItem(UPLOAD_SESSION_STORAGE_KEY);
-    if (!rawValue) {
-      return {};
+type ActionResult<T> =
+  | {
+      ok: true;
+      data: T;
     }
+  | {
+      ok: false;
+      error: string;
+    };
 
-    const parsed = JSON.parse(rawValue) as Record<string, PersistedUploadSession>;
-    const now = Date.now();
-    const cleaned = Object.fromEntries(
-      Object.entries(parsed).filter(([, session]) => now - session.updatedAt <= UPLOAD_SESSION_TTL_MS),
-    );
-
-    if (Object.keys(cleaned).length !== Object.keys(parsed).length) {
-      window.localStorage.setItem(UPLOAD_SESSION_STORAGE_KEY, JSON.stringify(cleaned));
-    }
-
-    return cleaned;
-  } catch {
-    return {};
-  }
-};
-
-const setStoredUploadSession = (file: File, uploadId: string) => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const sessions = getStoredUploadSessions();
-  sessions[getFileResumeKey(file)] = {
-    uploadId,
-    updatedAt: Date.now(),
-  };
-  window.localStorage.setItem(UPLOAD_SESSION_STORAGE_KEY, JSON.stringify(sessions));
-};
-
-const clearStoredUploadSession = (file: File) => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const sessions = getStoredUploadSessions();
-  const fileKey = getFileResumeKey(file);
-  if (!(fileKey in sessions)) {
-    return;
-  }
-
-  delete sessions[fileKey];
-  window.localStorage.setItem(UPLOAD_SESSION_STORAGE_KEY, JSON.stringify(sessions));
-};
-
-const getOrCreateUploadId = (file: File): string => {
-  const sessions = getStoredUploadSessions();
-  const existing = sessions[getFileResumeKey(file)];
-  if (existing?.uploadId) {
-    setStoredUploadSession(file, existing.uploadId);
-    return existing.uploadId;
-  }
-
-  const uploadId = nanoid(6);
-  setStoredUploadSession(file, uploadId);
-  return uploadId;
-};
+interface FinalizeDirectUploadData {
+  imageId: string;
+  mediaId: string;
+  url: string;
+}
 
 export function UploadPageClient() {
   const { status } = useSession();
@@ -243,10 +175,6 @@ export function UploadPageClient() {
   };
 
   const removeFile = (index: number) => {
-    const fileToRemove = files[index];
-    if (fileToRemove) {
-      clearStoredUploadSession(fileToRemove);
-    }
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -336,159 +264,86 @@ export function UploadPageClient() {
     };
   }, [handlePaste]);
 
-  const uploadFileResumable = async (
+  const uploadDirectFile = async (
     file: File,
     index: number,
-    fileId: string,
     settings: FileSettings,
   ) => {
-    console.log(`Starting resumable upload for ${file.name} (${formatFileSize(file.size)})`);
+    console.log(`Starting direct upload for ${file.name} (${formatFileSize(file.size)})`);
 
     setUploadProgress((prev) => ({
       ...prev,
       [index]: { progress: 0, status: "uploading" },
     }));
 
-    const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE_BYTES));
-    let uploadedChunkIndexes = new Set<number>();
+    const createResponse = await fetch("/api/upload/direct", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileSize: file.size,
+        contentType: file.type || "application/octet-stream",
+      }),
+    });
 
-    try {
-      const statusRes = await fetch(`/api/upload/chunk?uploadId=${encodeURIComponent(fileId)}`);
-      if (statusRes.ok) {
-        const statusJson = (await statusRes.json()) as { uploadedChunks?: number[] };
-        uploadedChunkIndexes = new Set(statusJson.uploadedChunks || []);
-      }
-    } catch {
-      console.warn("Could not fetch upload status; starting from chunk 0");
+    const createResult = (await createResponse.json()) as ActionResult<CreateDirectUploadData>;
+    if (!createResponse.ok || !createResult.ok) {
+      throw new Error(createResult.ok ? "Failed to start direct upload" : createResult.error);
     }
 
-    let uploadedBytes = 0;
-    for (const existingChunkIndex of uploadedChunkIndexes) {
-      const chunkStart = existingChunkIndex * CHUNK_SIZE_BYTES;
-      const chunkEnd = Math.min(file.size, chunkStart + CHUNK_SIZE_BYTES);
-      uploadedBytes += Math.max(0, chunkEnd - chunkStart);
+    const uploadResult = await fetch(createResult.data.uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+
+    if (!uploadResult.ok) {
+      await fetch("/api/upload/direct/fail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageId: createResult.data.imageId }),
+      });
+
+      throw new Error(`Direct upload failed with status ${uploadResult.status}`);
     }
 
-    const initialProgress = file.size > 0 ? Math.round((uploadedBytes / file.size) * 100) : 0;
     setUploadProgress((prev) => ({
       ...prev,
-      [index]: { progress: initialProgress, status: "uploading" },
+      [index]: { progress: 95, status: "uploading" },
     }));
 
-    const uploadSingleChunk = async (chunkIndex: number) => {
-      const chunkStart = chunkIndex * CHUNK_SIZE_BYTES;
-      const chunkEnd = Math.min(file.size, chunkStart + CHUNK_SIZE_BYTES);
-      const chunkBlob = file.slice(chunkStart, chunkEnd);
-      const formData = new FormData();
-      const chunkChecksum = await sha256Hex(chunkBlob);
-
-      formData.append("chunk", chunkBlob);
-      formData.append("uploadId", fileId);
-      formData.append("filename", file.name);
-      formData.append("fileType", file.type || "application/octet-stream");
-      formData.append("chunkIndex", String(chunkIndex));
-      formData.append("totalChunks", String(totalChunks));
-      formData.append("chunkChecksum", chunkChecksum);
-      formData.append("settings", JSON.stringify(settings));
-
-      if (settings.domain && settings.domain !== "anonhost.cc") {
-        formData.append("domain", settings.domain);
-      }
-
-      let lastError: Error | null = null;
-
-      for (let attempt = 1; attempt <= MAX_CHUNK_RETRIES; attempt++) {
-        try {
-          const response = await fetch("/api/upload/chunk", {
-            method: "POST",
-            body: formData,
-          });
-
-          const json = (await response.json()) as {
-            error?: string;
-            complete?: boolean;
-            uploadedChunks?: number[];
-          };
-
-          if (!response.ok) {
-            throw new Error(json.error || "Chunk upload failed");
-          }
-
-          uploadedChunkIndexes.add(chunkIndex);
-          uploadedBytes += chunkEnd - chunkStart;
-          const progress = file.size > 0 ? Math.round((uploadedBytes / file.size) * 100) : 0;
-
-          setUploadProgress((prev) => ({
-            ...prev,
-            [index]: { progress: Math.min(progress, 99), status: "uploading" },
-          }));
-
-          return json;
-        } catch (error) {
-          lastError = error instanceof Error ? error : new Error("Chunk upload failed");
-
-          if (attempt < MAX_CHUNK_RETRIES) {
-            const retryDelay = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
-            setUploadProgress((prev) => ({
-              ...prev,
-              [index]: {
-                progress: Math.min(Math.round((uploadedBytes / file.size) * 100), 99),
-                status: "uploading",
-                message: `Retrying chunk ${chunkIndex + 1}/${totalChunks} (${attempt}/${
-                  MAX_CHUNK_RETRIES - 1
-                })...`,
-              },
-            }));
-            await wait(retryDelay);
-            continue;
-          }
-
-          throw lastError;
-        }
-      }
-
-      throw lastError || new Error("Chunk upload failed");
-    };
-
-    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-      if (uploadedChunkIndexes.has(chunkIndex)) {
-        continue;
-      }
-
-      const chunkResponse = await uploadSingleChunk(chunkIndex);
-      if (chunkResponse.complete) {
-        setUploadProgress((prev) => ({
-          ...prev,
-          [index]: { progress: 100, status: "completed" },
-        }));
-        return chunkResponse;
-      }
-    }
-
-    const finalizeFormData = new FormData();
-    finalizeFormData.append("finalize", "true");
-    finalizeFormData.append("uploadId", fileId);
-    finalizeFormData.append("filename", file.name);
-    finalizeFormData.append("fileType", file.type || "application/octet-stream");
-    finalizeFormData.append("totalChunks", String(totalChunks));
-    finalizeFormData.append("settings", JSON.stringify(settings));
-
-    if (settings.domain && settings.domain !== "anonhost.cc") {
-      finalizeFormData.append("domain", settings.domain);
-    }
-
-    const finalizeResponse = await fetch("/api/upload/chunk", {
+    const finalizeResponse = await fetch("/api/upload/direct/finalize", {
       method: "POST",
-      body: finalizeFormData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        imageId: createResult.data.imageId,
+        objectKey: createResult.data.objectKey,
+        public: Boolean(settings.public),
+        disableEmbed: Boolean(settings.disableEmbed),
+        domain: settings.domain || null,
+      }),
     });
-    const finalizeJson = (await finalizeResponse.json()) as {
-      error?: string;
-      complete?: boolean;
-      [key: string]: unknown;
-    };
 
-    if (!finalizeResponse.ok || !finalizeJson.complete) {
-      throw new Error(finalizeJson.error || "Upload finalization failed");
+    const finalizeResult = (await finalizeResponse.json()) as ActionResult<FinalizeDirectUploadData>;
+
+    if (!finalizeResponse.ok || !finalizeResult.ok) {
+      await fetch("/api/upload/direct/fail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageId: createResult.data.imageId }),
+      });
+
+      throw new Error(finalizeResult.ok ? "Upload finalization failed" : finalizeResult.error);
     }
 
     setUploadProgress((prev) => ({
@@ -496,9 +351,7 @@ export function UploadPageClient() {
       [index]: { progress: 100, status: "completed" },
     }));
 
-    clearStoredUploadSession(file);
-
-    return finalizeJson;
+    return finalizeResult.data;
   };
 
   const handleUpload = async () => {
@@ -520,7 +373,7 @@ export function UploadPageClient() {
           const uploadStartTime = Date.now();
 
           const settings = fileSettings[index] || defaultFileSettings;
-          const result = await uploadFileResumable(file, index, getOrCreateUploadId(file), settings);
+          const result = await uploadDirectFile(file, index, settings);
 
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;

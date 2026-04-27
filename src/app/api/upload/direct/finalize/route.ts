@@ -4,6 +4,9 @@ import { finalizeDirectUpload } from "@/app/upload/direct/actions";
 type FinalizeBody = {
   imageId?: unknown;
   objectKey?: unknown;
+  public?: unknown;
+  disableEmbed?: unknown;
+  domain?: unknown;
 };
 
 export async function POST(request: NextRequest) {
@@ -24,6 +27,9 @@ export async function POST(request: NextRequest) {
   const result = await finalizeDirectUpload({
     imageId: body.imageId,
     objectKey: body.objectKey,
+    public: typeof body.public === "boolean" ? body.public : false,
+    disableEmbed: typeof body.disableEmbed === "boolean" ? body.disableEmbed : false,
+    domain: typeof body.domain === "string" ? body.domain : null,
   });
 
   if (!result.ok) {

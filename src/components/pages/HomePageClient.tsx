@@ -99,10 +99,6 @@ export function HomePageClient() {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="space-y-6"
             >
-              <div className="bg-card/80 text-muted-foreground inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-sm">
-                Fast • Private • Free
-              </div>
-
               <h1 className="text-foreground text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-6xl">
                 Upload, shorten, and share files in seconds.
               </h1>
@@ -369,4 +365,3 @@ function StatRow({
     </div>
   );
 }
-

@@ -24,6 +24,7 @@ COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/db ./src/lib/db
 COPY --from=builder /app/src/lib/install.sh ./src/lib/install.sh
+COPY --from=builder /app/scripts ./scripts
 
 RUN mkdir -p /app/uploads
 

@@ -16,7 +16,7 @@ export function isR2Configured(): boolean {
   return REQUIRED_R2_ENV_VARS.every((name) => Boolean(process.env[name]));
 }
 
-function getR2Client() {
+export function getR2Client() {
   if (!isR2Configured()) {
     throw new Error("R2 is not fully configured");
   }

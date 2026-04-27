@@ -22,6 +22,8 @@ export const mediaTypeEnum = pgEnum("media_type", [
   "ARCHIVE",
 ]);
 
+export const imageStatusEnum = pgEnum("image_status", ["pending", "ready", "failed"]);
+
 export const users = pgTable("User", {
   id: uuid("id").defaultRandom().primaryKey(),
   uid: integer("uid").generatedAlwaysAsIdentity().unique(),
@@ -101,6 +103,18 @@ export const media = pgTable("Media", {
   archiveMeta: jsonb("archiveMeta"),
 });
 
+export const images = pgTable("images", {
+  id: varchar("id", { length: 21 }).primaryKey(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileSize: integer("fileSize").notNull(),
+  contentType: varchar("contentType", { length: 255 }).notNull(),
+  status: imageStatusEnum("status").notNull().default("pending"),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  url: text("url"),
+});
+
 export const apiKeys = pgTable("ApiKey", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -170,3 +184,4 @@ export const shortlinks = pgTable(
 
 export type DbUser = typeof users.$inferSelect;
 export type MediaType = (typeof mediaTypeEnum.enumValues)[number];
+export type ImageStatus = (typeof imageStatusEnum.enumValues)[number];

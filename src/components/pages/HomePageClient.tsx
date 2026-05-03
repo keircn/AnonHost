@@ -236,38 +236,6 @@ export function HomePageClient() {
           body="Large files use direct upload paths so the app stays responsive."
         />
       </section>
-
-      <section className="container mx-auto grid max-w-7xl gap-5 px-4 pb-12 md:px-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <RetroCard header={<WindowTitle title="ACCOUNT SLOTS" />} sx={windowSx}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <AccountSlot
-              name="Free"
-              price="$0"
-              body="Dashboard uploads, URL shortener, API access, and private files."
-              action="Create account"
-              onClick={() => router.push("/register")}
-            />
-            <AccountSlot
-              name="Premium"
-              price="More room"
-              body="Larger files, unlimited storage, custom domains, and priority support."
-              action="View limits"
-              onClick={() => router.push("/pricing")}
-            />
-          </div>
-        </RetroCard>
-
-        <RetroCard header={<WindowTitle title="WHY IT EXISTS" />} sx={windowSx}>
-          <div className="retro-inset p-4">
-            <p className="text-lg font-bold">A file host should feel like a tool, not a funnel.</p>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              The dashboard is for files, links, domains, keys, and upload settings. The landing
-              page now shows the same mental model: a small control panel for moving things onto the
-              web.
-            </p>
-          </div>
-        </RetroCard>
-      </section>
     </main>
   );
 }

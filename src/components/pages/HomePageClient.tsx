@@ -1,67 +1,66 @@
 "use client";
 
-import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  LuArrowRight,
+  Badge as RetroBadge,
+  Button as RetroButton,
+  Card as RetroCard,
+  ProgressBar,
+} from "retro-react";
+import {
+  LuArchive,
   LuCircleCheck,
-  LuCode,
   LuCopy,
-  LuExternalLink,
+  LuFile,
   LuHardDrive,
   LuImage,
+  LuKeyRound,
   LuLink2,
-  LuShield,
-  LuSparkles,
-  LuStar,
+  LuLock,
+  LuMusic,
+  LuSettings,
+  LuShieldCheck,
   LuTerminal,
+  LuUpload,
   LuUsers,
+  LuVideo,
 } from "react-icons/lu";
 import bytes from "bytes";
 import useSWR from "swr";
 import { Stats } from "@/types/stats";
-import { PLAN_DETAILS } from "@/lib/plans";
 
-const features = [
-  {
-    title: "Image Hosting",
-    description:
-      "Instant uploads with direct links, automatic previews, and excellent reliability.",
-    icon: LuImage,
-  },
-  {
-    title: "URL Shortener",
-    description: "Create branded, readable short links with fast redirects and clean analytics.",
-    icon: LuLink2,
-  },
-  {
-    title: "CLI + API",
-    description: "Automate uploads and link creation from scripts, terminals, and internal tools.",
-    icon: LuCode,
-  },
-  {
-    title: "Privacy First",
-    description: "European hosting with straightforward policies and practical data protection.",
-    icon: LuShield,
-  },
+const installCommand = "curl https://anonhost.cc/install | bash";
+
+const desktopShortcuts = [
+  { label: "Upload", hint: "drop files", icon: LuUpload, href: "/upload" },
+  { label: "Shorten", hint: "clean URLs", icon: LuLink2, href: "/shortener" },
+  { label: "Keys", hint: "API access", icon: LuKeyRound, href: "/settings" },
+  { label: "Settings", hint: "privacy", icon: LuSettings, href: "/settings" },
 ];
 
-const premiumFeatures = [
-  "Up to 2GB per file",
-  "Unlimited storage",
-  "Direct-to-R2 uploads",
-  "Custom domains",
-  "Priority support",
+const transferRows = [
+  { name: "screenshot-0426.png", type: "image/png", progress: 100, status: "ready" },
+  { name: "demo-recording.mp4", type: "video/mp4", progress: 73, status: "uploading" },
+  { name: "release-build.zip", type: "application/zip", progress: 42, status: "queued" },
 ];
 
-const fadeUp = {
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
-};
+const fileTypes = [
+  { label: "PNG", icon: LuImage },
+  { label: "MP4", icon: LuVideo },
+  { label: "MP3", icon: LuMusic },
+  { label: "ZIP", icon: LuArchive },
+  { label: "TXT", icon: LuFile },
+];
+
+const privacyItems = [
+  "Private files by default",
+  "Embed controls per upload",
+  "Metadata stripping options",
+  "Custom domain routing",
+];
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(Math.max(0, value));
@@ -69,17 +68,25 @@ function formatNumber(value: number): string {
 
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
-  const installCommand = "curl https://anonhost.cc/install | bash";
+  const router = useRouter();
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
     refreshInterval: 300000,
   });
 
+  const storage = isLoading
+    ? "..."
+    : bytes(Math.max(0, stats?.storage ?? 0), {
+      unitSeparator: " ",
+      decimalPlaces: 1,
+      fixedDecimals: true,
+    }) || "0 B";
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(installCommand);
       setIsCopied(true);
-      toast.success("Install command copied to clipboard");
+      toast.success("Install command copied");
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy text:", err);
@@ -88,263 +95,226 @@ export function HomePageClient() {
   };
 
   return (
-    <div className="text-foreground relative flex min-h-screen w-full flex-col bg-transparent">
-      <main className="relative z-10 flex-1 pt-20 sm:pt-24">
-        <section className="container mx-auto max-w-7xl px-4 pb-16 md:px-6 md:pb-24">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
-            <motion.div
-              variants={fadeUp}
-              initial="initial"
-              animate="animate"
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="space-y-6"
-            >
-              <h1 className="text-foreground text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                Upload, shorten, and share files in seconds.
-              </h1>
+    <main className="w-full overflow-hidden">
+      <section className="container mx-auto max-w-7xl px-4 py-10 md:px-6 lg:py-14">
+        <RetroCard sx={windowSx}>
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+            <div className="space-y-4">
+              <div className="retro-inset p-5 sm:p-6">
+                <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <div>
+                    <h1 className="max-w-4xl text-4xl font-black leading-[0.95] sm:text-6xl">
+                      A public drawer for files, links, and quick uploads.
+                    </h1>
+                  </div>
+                </div>
+                <p className="max-w-3xl text-base leading-7 text-muted-foreground">
+                  AnonHost gives you a small, direct place to put files, create short links, and
+                  wire uploads into ShareX, scripts, or the CLI.
+                </p>
 
-              <p className="text-muted-foreground max-w-2xl text-lg leading-relaxed sm:text-xl">
-                AnonHost is a fast, practical platform for image hosting and URL shortening with a
-                clean API and terminal-first workflow.
-              </p>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="group">
-                  <Link href="/dashboard">
-                    Open Dashboard
-                    <LuArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="/api">
-                    API Docs
-                    <LuExternalLink className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {desktopShortcuts.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => router.push(item.href)}
+                        className="retro-outset flex min-h-24 flex-col items-start justify-between p-3 text-left transition-transform active:translate-x-1 active:translate-y-1"
+                      >
+                        <Icon className="h-7 w-7" />
+                        <span>
+                          <span className="block text-sm font-bold">{item.label}</span>
+                          <span className="text-muted-foreground block text-xs">{item.hint}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </motion.div>
 
-            <motion.div
-              variants={fadeUp}
-              initial="initial"
-              animate="animate"
-              transition={{ delay: 0.08, duration: 0.35, ease: "easeOut" }}
-              className="relative"
-            >
-              <Card className="bg-card/85 border-border/70 relative overflow-hidden shadow-2xl backdrop-blur-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-foreground flex items-center gap-2 text-lg">
-                    <span className="bg-primary/10 rounded-md p-1.5">
-                      <LuUsers className="text-primary h-4 w-4" />
-                    </span>
-                    Instance Stats
-                  </CardTitle>
-                  <CardDescription>
-                    Current scale across uploads, users, and total storage.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <StatRow
+              <div className="retro-outset p-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="font-bold">Transfer queue</span>
+                  <span className="font-mono text-xs text-muted-foreground">3 JOBS</span>
+                </div>
+                <div className="space-y-2">
+                  {transferRows.map((row) => (
+                    <TransferRow key={row.name} {...row} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="retro-outset p-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="font-bold">Instance counters</span>
+                  <LuHardDrive className="h-4 w-4" />
+                </div>
+                <div className="grid gap-2">
+                  <CounterLine
                     icon={LuUsers}
-                    label="Registered users"
+                    label="Users"
                     value={isLoading ? "..." : formatNumber(stats?.users ?? 0)}
                   />
-                  <StatRow
+                  <CounterLine
                     icon={LuImage}
-                    label="Total uploads"
+                    label="Uploads"
                     value={isLoading ? "..." : formatNumber(stats?.uploads ?? 0)}
                   />
-                  <StatRow
-                    icon={LuHardDrive}
-                    label="Storage used"
-                    value={
-                      isLoading
-                        ? "..."
-                        : bytes(Math.max(0, stats?.storage ?? 0), {
-                          unitSeparator: " ",
-                          decimalPlaces: 1,
-                          fixedDecimals: true,
-                        }) || "0 B"
-                    }
-                  />
-                </CardContent>
-              </Card>
-
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.3, ease: "easeOut" }}
-                className="bg-card/90 text-muted-foreground border-border/70 absolute -top-7 -right-4 hidden rounded-xl border px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm md:block"
-              >
-                Fast uploads. Clean links.
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="container mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="animate"
-                  viewport={{ once: true, margin: "-60px" }}
-                  transition={{ delay: index * 0.05, duration: 0.28 }}
-                >
-                  <Card className="bg-card/85 card border-border/70 hover:border-primary/40 hover:bg-card h-full shadow-md transition-colors">
-                    <CardHeader className="pb-3">
-                      <div className="bg-muted text-muted-foreground mb-2 w-fit rounded-lg p-2">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground text-sm leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
-
-        <motion.section
-          variants={fadeUp}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-70px" }}
-          transition={{ duration: 0.32 }}
-          className="container mx-auto max-w-7xl px-4 py-14 md:px-6"
-          hidden
-        >
-          <Card className="bg-card/85 border-border/70 overflow-hidden shadow-md backdrop-blur-sm">
-            <CardContent className="relative flex flex-col items-start gap-6 p-7 sm:p-10 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-2xl space-y-3 flex-1">
-                <div className="flex items-center gap-2 text-primary">
-                  <LuSparkles className="h-5 w-5" />
-                  <span className="text-sm font-medium uppercase tracking-wide">Premium</span>
+                  <CounterLine icon={LuHardDrive} label="Storage" value={storage} />
                 </div>
-                <h2 className="text-foreground text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Unlock More with Premium
-                </h2>
-                <p className="text-muted-foreground text-base leading-relaxed">
-                  Get higher limits, faster uploads, custom domains, and priority support. Plus, you
-                  help keep the project sustainable.
-                </p>
-                <ul className="space-y-1 pt-2">
-                  {premiumFeatures.map((feat) => (
-                    <li key={feat} className="flex items-center gap-2 text-sm">
-                      <LuCircleCheck className="h-4 w-4 text-green-500" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
 
-              <div className="mt-auto flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:self-end sm:items-end">
-                <Button asChild size="lg" className="gap-2">
-                  <Link href="/pricing">
-                    View Plans
-                    <LuArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
-
-        <motion.section
-          variants={fadeUp}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-70px" }}
-          transition={{ duration: 0.32 }}
-          className="container mx-auto max-w-7xl px-4 py-14 md:px-6"
-        >
-          <Card className="bg-card/90 border-border/70 overflow-hidden shadow-xl backdrop-blur-sm">
-            <CardHeader className="border-b">
-              <CardTitle className="text-foreground flex items-center gap-2 text-2xl">
-                <LuTerminal className="text-muted-foreground h-6 w-6" />
-                CLI in one command
-              </CardTitle>
-              <CardDescription>
-                Install AnonHost CLI and start uploading from your terminal.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-5 p-6">
-              <div className="bg-muted flex flex-col items-stretch gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:gap-3">
-                <code className="text-foreground flex-1 font-mono text-sm sm:text-base">
+              <div className="retro-inset p-3">
+                <div className="mb-3 flex items-center gap-2">
+                  <LuTerminal className="h-4 w-4" />
+                  <span className="font-bold">Install CLI</span>
+                </div>
+                <code className="retro-inset block overflow-x-auto whitespace-nowrap p-2 font-mono text-xs">
                   {installCommand}
                 </code>
-                <Button
-                  size="icon"
+                <RetroButton
+                  className="mt-3 w-full"
                   variant="secondary"
+                  size="small"
                   onClick={handleCopy}
-                  aria-label="Copy install command"
-                  className="shrink-0"
                 >
-                  {isCopied ? (
-                    <LuCircleCheck className="h-4 w-4" />
-                  ) : (
-                    <LuCopy className="h-4 w-4" />
-                  )}
-                </Button>
+                  {isCopied ? "Copied" : "Copy command"}
+                </RetroButton>
               </div>
+            </div>
+          </div>
+        </RetroCard>
+      </section>
 
-              <p className="text-muted-foreground text-sm">
-                Requires cURL and bash, installs anonhost into $HOME/.local/bin
-              </p>
-            </CardContent>
-          </Card>
-        </motion.section>
+      <section className="py-8">
+        <div className="container mx-auto grid max-w-7xl w-full gap-4 px-2 md:grid-cols-[1.1fr_0.9fr] md:px-6">
+          <RetroCard header={<WindowTitle title="SUPPORTED FILE TYPES" />} sx={windowSx}>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {fileTypes.map((type) => {
+                const Icon = type.icon;
+                return (
+                  <div key={type.label} className="retro-inset p-4 text-center">
+                    <Icon className="mx-auto mb-3 h-7 w-7" />
+                    <span className="font-mono text-xs">{type.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </RetroCard>
 
-        <motion.section
-          variants={fadeUp}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-70px" }}
-          transition={{ duration: 0.32 }}
-          className="container mx-auto max-w-7xl px-4 pb-16 md:px-6 md:pb-24"
-        >
-          <Card className="bg-card border-border/70 relative overflow-hidden shadow-2xl">
-            <CardContent className="relative flex flex-col items-start gap-6 p-7 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl space-y-3">
-                <h2 className="text-foreground text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Ready to ship your first link?
-                </h2>
-                <p className="text-muted-foreground text-base">
-                  Create an account in under a minute and start uploading, shortening, and sharing
-                  right away.
-                </p>
-              </div>
+          <RetroCard header={<WindowTitle title="UPLOAD DEFAULTS" />} sx={windowSx}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {privacyItems.map((item) => (
+                <div key={item} className="retro-inset flex items-center gap-2 p-3 text-sm">
+                  <LuShieldCheck className="h-4 w-4 shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </RetroCard>
+        </div>
+      </section>
 
-              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                <Button asChild size="lg">
-                  <Link href="/register">
-                    Create Free Account
-                    <LuArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="/pricing">View Pricing</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
-      </main>
+      <section className="container mx-auto grid max-w-7xl gap-4 px-4 py-8 md:grid-cols-3 md:px-6">
+        <SystemPanel
+          title="ShareX ready"
+          command="POST /api/upload"
+          body="Create API keys and point ShareX at AnonHost for fast screen captures."
+        />
+        <SystemPanel
+          title="Short links"
+          command="POST /api/shortener"
+          body="Make readable links with titles, expiry options, and click counts."
+        />
+        <SystemPanel
+          title="Direct storage"
+          command="PUT R2 OBJECT"
+          body="Large files use direct upload paths so the app stays responsive."
+        />
+      </section>
+
+      <section className="container mx-auto grid max-w-7xl gap-5 px-4 pb-12 md:px-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <RetroCard header={<WindowTitle title="ACCOUNT SLOTS" />} sx={windowSx}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <AccountSlot
+              name="Free"
+              price="$0"
+              body="Dashboard uploads, URL shortener, API access, and private files."
+              action="Create account"
+              onClick={() => router.push("/register")}
+            />
+            <AccountSlot
+              name="Premium"
+              price="More room"
+              body="Larger files, unlimited storage, custom domains, and priority support."
+              action="View limits"
+              onClick={() => router.push("/pricing")}
+            />
+          </div>
+        </RetroCard>
+
+        <RetroCard header={<WindowTitle title="WHY IT EXISTS" />} sx={windowSx}>
+          <div className="retro-inset p-4">
+            <p className="text-lg font-bold">A file host should feel like a tool, not a funnel.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              The dashboard is for files, links, domains, keys, and upload settings. The landing
+              page now shows the same mental model: a small control panel for moving things onto the
+              web.
+            </p>
+          </div>
+        </RetroCard>
+      </section>
+    </main>
+  );
+}
+
+const windowSx = {
+  background: "#d8d8d8",
+  color: "#000000",
+  borderColor: "#fff #555 #555 #fff",
+  boxShadow: "8px 8px 0 #808080",
+};
+
+function WindowTitle({ title, right }: { title: string; right?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="truncate">{title}</span>
+      {right && <span className="flex shrink-0 items-center gap-2">{right}</span>}
     </div>
   );
 }
 
-function StatRow({
+function TransferRow({
+  name,
+  type,
+  progress,
+  status,
+}: {
+  name: string;
+  type: string;
+  progress: number;
+  status: string;
+}) {
+  return (
+    <div className="retro-inset grid gap-2 p-3">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="truncate font-bold">{name}</span>
+        <span className="font-mono text-xs uppercase text-muted-foreground">{status}</span>
+      </div>
+      <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span>{type}</span>
+        <span>{progress}%</span>
+      </div>
+      <ProgressBar value={progress} animated={progress < 100} />
+    </div>
+  );
+}
+
+function CounterLine({
   icon: Icon,
   label,
   value,
@@ -354,14 +324,55 @@ function StatRow({
   value: string;
 }) {
   return (
-    <div className="bg-muted/45 flex items-center justify-between rounded-lg border px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span className="bg-muted text-muted-foreground rounded-md p-2">
-          <Icon className="h-4 w-4" />
-        </span>
-        <span className="text-muted-foreground text-sm">{label}</span>
+    <div className="retro-inset flex items-center justify-between gap-3 p-2">
+      <span className="flex min-w-0 items-center gap-2 text-sm">
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{label}</span>
+      </span>
+      <span className="font-mono text-sm font-bold">{value}</span>
+    </div>
+  );
+}
+
+function SystemPanel({ title, command, body }: { title: string; command: string; body: string }) {
+  return (
+    <div className="surface-panel p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="font-bold">{title}</h2>
+        <LuCircleCheck className="h-4 w-4" />
       </div>
-      <span className="text-foreground text-lg font-semibold">{value}</span>
+      <code className="retro-inset mb-3 block p-2 font-mono text-xs">{command}</code>
+      <p className="text-sm leading-6 text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
+function AccountSlot({
+  name,
+  price,
+  body,
+  action,
+  onClick,
+}: {
+  name: string;
+  price: string;
+  body: string;
+  action: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="retro-inset p-4">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-bold">{name}</h3>
+          <p className="text-muted-foreground text-xs">ACCOUNT SLOT</p>
+        </div>
+        <span className="font-mono text-sm font-bold">{price}</span>
+      </div>
+      <p className="min-h-16 text-sm leading-6 text-muted-foreground">{body}</p>
+      <RetroButton className="mt-4 w-full" variant="secondary" onClick={onClick}>
+        {action}
+      </RetroButton>
     </div>
   );
 }

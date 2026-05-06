@@ -1,4 +1,10 @@
-import { S3Client, PutObjectCommand, HeadBucketCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  HeadBucketCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 
 const REQUIRED_R2_ENV_VARS = [
   "R2_ACCOUNT_ID",
@@ -113,4 +119,34 @@ export async function deleteFromR2Key(key: string): Promise<void> {
       Key: key,
     }),
   );
+}
+
+export async function readFromR2Key(key: string): Promise<Buffer> {
+  const r2Client = getR2Client();
+  const result = await r2Client.send(
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    }),
+  );
+
+  if (!result.Body) {
+    throw new Error("R2 object has no body");
+  }
+
+  const body = result.Body as unknown as {
+    transformToByteArray?: () => Promise<Uint8Array>;
+  };
+
+  if (typeof body.transformToByteArray === "function") {
+    return Buffer.from(await body.transformToByteArray());
+  }
+
+  const stream = result.Body as NodeJS.ReadableStream;
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  return Buffer.concat(chunks);
 }

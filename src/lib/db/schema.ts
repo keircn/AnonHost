@@ -182,6 +182,31 @@ export const shortlinks = pgTable(
   }),
 );
 
+export const privateUploads = pgTable(
+  "PrivateUpload",
+  {
+    id: varchar("id", { length: 21 }).primaryKey(),
+    downloadToken: varchar("downloadToken", { length: 64 }).notNull().unique(),
+    objectKey: text("objectKey").notNull(),
+    filename: varchar("filename", { length: 255 }).notNull(),
+    size: integer("size").notNull(),
+    contentType: varchar("contentType", { length: 255 }).notNull(),
+    passwordHash: text("passwordHash").notNull(),
+    passwordSalt: text("passwordSalt").notNull(),
+    oneUse: boolean("oneUse").notNull().default(false),
+    downloadTokenUsedAt: timestamp("downloadTokenUsedAt", { mode: "date" }),
+    consumedAt: timestamp("consumedAt", { mode: "date" }),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdx: index("private_upload_user_idx").on(table.userId),
+    tokenIdx: index("private_upload_download_token_idx").on(table.downloadToken),
+  }),
+);
+
 export type DbUser = typeof users.$inferSelect;
 export type MediaType = (typeof mediaTypeEnum.enumValues)[number];
 export type ImageStatus = (typeof imageStatusEnum.enumValues)[number];

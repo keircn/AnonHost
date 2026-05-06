@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
+import { Upload, Settings, LogOut, Menu, X, ExternalLink, FileKey } from "lucide-react";
 import { useState } from "react";
 import { useNavbar } from "@/components/Layout/NavbarContext";
 import { Logo } from "@/components/Brand/Logo";
@@ -38,6 +38,7 @@ export function Navbar() {
       {[
         isAuthenticated && { href: "/dashboard", label: "Dashboard" },
         isAuthenticated && { href: "/upload", label: "Upload" },
+        isAuthenticated && { href: "/private", label: "Private" },
         isAuthenticated && { href: "/shortener", label: "Shortener" },
         { href: "/api", label: "API" },
         session?.user?.admin && { href: "/admin", label: "Admin" },
@@ -156,6 +157,12 @@ function UserMenu({ session }: UserMenuProps) {
           <Link href="/upload" className="flex w-full cursor-pointer">
             <Upload className="mr-2 h-4 w-4" />
             <span>Upload</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/private" className="flex w-full cursor-pointer">
+            <FileKey className="mr-2 h-4 w-4" />
+            <span>Private Upload</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

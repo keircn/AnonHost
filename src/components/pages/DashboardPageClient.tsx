@@ -485,8 +485,8 @@ export function DashboardPageClient() {
                                       <TableHead>Size</TableHead>
                                       <TableHead>Created</TableHead>
                                       <TableHead>Mode</TableHead>
-                                      <TableHead className="min-w-64">Links</TableHead>
-                                      <TableHead className="w-24 text-right">Actions</TableHead>
+                                      <TableHead className="min-w-64">Web Link</TableHead>
+                                      <TableHead className="w-32 text-right">Actions</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -508,24 +508,29 @@ export function DashboardPageClient() {
                                               value={item.webUrl}
                                               onCopy={() => copyValue(item.webUrl, "Web URL")}
                                             />
-                                            <DashboardLinkButton
-                                              icon={<Terminal className="h-4 w-4" />}
-                                              label="Curl"
-                                              value={item.curlCommand}
-                                              onCopy={() =>
-                                                copyValue(item.curlCommand, "Curl command")
-                                              }
-                                            />
                                           </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                          <Button
-                                            variant="destructive"
-                                            size="icon"
-                                            onClick={() => handleDeletePrivateUpload(item.id)}
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
+                                          <div className="flex justify-end gap-2">
+                                            <Button
+                                              variant="outline"
+                                              size="icon"
+                                              onClick={() =>
+                                                copyValue(item.curlCommand, "Curl command")
+                                              }
+                                              aria-label={`Copy curl command for ${item.filename}`}
+                                            >
+                                              <Terminal className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                              variant="destructive"
+                                              size="icon"
+                                              onClick={() => handleDeletePrivateUpload(item.id)}
+                                              aria-label={`Delete ${item.filename}`}
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
                                         </TableCell>
                                       </TableRow>
                                     ))}
@@ -554,20 +559,26 @@ export function DashboardPageClient() {
                                         value={item.webUrl}
                                         onCopy={() => copyValue(item.webUrl, "Web URL")}
                                       />
-                                      <DashboardLinkButton
-                                        icon={<Terminal className="h-4 w-4" />}
-                                        label="Curl"
-                                        value={item.curlCommand}
-                                        onCopy={() => copyValue(item.curlCommand, "Curl command")}
-                                      />
-                                      <Button
-                                        variant="destructive"
-                                        className="w-full"
-                                        onClick={() => handleDeletePrivateUpload(item.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                        Delete
-                                      </Button>
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                          variant="outline"
+                                          className="w-full"
+                                          onClick={() =>
+                                            copyValue(item.curlCommand, "Curl command")
+                                          }
+                                        >
+                                          <Terminal className="h-4 w-4" />
+                                          Curl
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          className="w-full"
+                                          onClick={() => handleDeletePrivateUpload(item.id)}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                          Delete
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}

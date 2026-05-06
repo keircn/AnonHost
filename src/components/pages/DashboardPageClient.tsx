@@ -205,7 +205,7 @@ export function DashboardPageClient() {
   }, [status]);
 
   useEffect(() => {
-    if (activeTab === "private" && privateUploads.length <= 1) {
+    if (activeTab === "private" && privateUploads.length === 0) {
       setActiveTab("media");
     }
   }, [activeTab, privateUploads.length]);
@@ -243,7 +243,7 @@ export function DashboardPageClient() {
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="media">My Media</TabsTrigger>
-            {privateUploads.length > 1 && (
+            {privateUploads.length > 0 && (
               <TabsTrigger value="private">Private Uploads</TabsTrigger>
             )}
             <TabsTrigger value="stats">Stats</TabsTrigger>
@@ -431,7 +431,7 @@ export function DashboardPageClient() {
               )}
             </TabsContent>
 
-            {privateUploads.length !== 0 && (
+            {privateUploads.length > 0 && (
               <TabsContent value="private" forceMount>
                 {activeTab === "private" && (
                   <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>

@@ -225,7 +225,7 @@ export function DashboardPageClient() {
 
   return (
     <motion.main
-      className="mx-auto w-full min-w-0 max-w-7xl px-2 py-4 sm:px-4 sm:py-6 lg:py-8"
+      className="mx-auto w-full min-w-0 max-w-5xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -264,7 +264,7 @@ export function DashboardPageClient() {
             <TabsContent value="media" forceMount>
               {activeTab === "media" && (
                 <>
-                  <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
+                  <motion.div className="grid gap-4 lg:gap-5" variants={staggerContainer}>
                     <motion.div
                       className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                       variants={fadeIn}
@@ -306,13 +306,13 @@ export function DashboardPageClient() {
                       </motion.div>
                     ) : (
                       <motion.div
-                        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
                         variants={staggerContainer}
                       >
                         {mediaItems.map((item) => (
                           <motion.div key={item.id} variants={fadeIn} layoutId={item.id}>
                             <Card className="h-full overflow-hidden py-0">
-                              <div className="relative aspect-[4/3] overflow-hidden bg-white shadow-[inset_1px_1px_0_#808080]">
+                              <div className="relative aspect-[5/3] overflow-hidden bg-white shadow-[inset_1px_1px_0_#808080]">
                                 {(() => {
                                   switch (item.type) {
                                     case "VIDEO":
@@ -362,7 +362,7 @@ export function DashboardPageClient() {
                                       )}
                                     </p>
                                   </div>
-                                  <div className="flex shrink-0 items-center gap-2">
+                                  <div className="flex shrink-0 items-center gap-1">
                                     <Button
                                       variant="outline"
                                       size="icon"
@@ -448,7 +448,7 @@ export function DashboardPageClient() {
             {privateUploads.length > 0 && (
               <TabsContent value="private" forceMount>
                 {activeTab === "private" && (
-                  <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
+                  <motion.div className="grid gap-4 lg:gap-5" variants={staggerContainer}>
                     <motion.div
                       className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                       variants={fadeIn}
@@ -477,7 +477,7 @@ export function DashboardPageClient() {
                             <div className="py-8 text-center">Loading private uploads...</div>
                           ) : (
                             <>
-                              <div className="hidden md:block">
+                              <div className="hidden xl:block">
                                 <Table>
                                   <TableHeader>
                                     <TableRow>
@@ -533,40 +533,19 @@ export function DashboardPageClient() {
                                 </Table>
                               </div>
 
-                              <div className="grid gap-3 p-3 md:hidden">
+                              <div className="grid gap-3 p-3 xl:hidden">
                                 {privateUploads.map((item) => (
                                   <div
                                     key={item.id}
                                     className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-3 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080]"
                                   >
-                                    <div className="mb-3 flex items-start justify-between gap-3">
+                                    <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
                                       <PrivateFileSummary item={item} />
-                                      <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        onClick={() => handleDeletePrivateUpload(item.id)}
-                                        aria-label={`Delete ${item.filename}`}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
                                     </div>
-                                    <div className="mb-3 grid gap-2 text-xs min-[420px]:grid-cols-3">
-                                      <div>
-                                        <p className="text-muted-foreground">Size</p>
-                                        <p className="font-medium">{formatFileSize(item.size)}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-muted-foreground">Created</p>
-                                        <p className="font-medium">
-                                          {formatShortDate(item.createdAt)}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="text-muted-foreground">Mode</p>
-                                        <p className="font-medium">
-                                          {item.oneUse ? "One-use" : "Reusable"}
-                                        </p>
-                                      </div>
+                                    <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                                      <span>{formatFileSize(item.size)}</span>
+                                      <span>{formatShortDate(item.createdAt)}</span>
+                                      <span>{item.oneUse ? "One-use" : "Reusable"}</span>
                                     </div>
                                     <div className="grid gap-2">
                                       <DashboardLinkButton
@@ -581,6 +560,14 @@ export function DashboardPageClient() {
                                         value={item.curlCommand}
                                         onCopy={() => copyValue(item.curlCommand, "Curl command")}
                                       />
+                                      <Button
+                                        variant="destructive"
+                                        className="w-full"
+                                        onClick={() => handleDeletePrivateUpload(item.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                        Delete
+                                      </Button>
                                     </div>
                                   </div>
                                 ))}
@@ -649,7 +636,7 @@ export function DashboardPageClient() {
                     ];
                     return (
                       <motion.div
-                        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        className="grid grid-cols-1 gap-3 sm:grid-cols-2"
                         variants={staggerContainer}
                         initial="initial"
                         animate="animate"
@@ -724,18 +711,20 @@ function DashboardLinkButton({
   onCopy: () => void;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-      <span className="text-muted-foreground flex w-12 shrink-0 items-center gap-1 text-xs font-medium">
+    <div className="grid min-w-0 gap-1">
+      <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs font-medium">
         {icon}
         {label}
       </span>
-      <code className="min-w-0 flex-1 overflow-hidden border bg-muted px-2 py-1 text-xs text-ellipsis">
-        {value}
-      </code>
-      <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>
-        <Copy className="h-4 w-4" />
-        Copy
-      </Button>
+      <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <code className="min-w-0 overflow-hidden border bg-muted px-2 py-1 text-xs text-ellipsis">
+          {value}
+        </code>
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>
+          <Copy className="h-4 w-4" />
+          Copy
+        </Button>
+      </div>
     </div>
   );
 }

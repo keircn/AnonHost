@@ -15,13 +15,21 @@ import {
 } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon, Trash2, Copy } from "lucide-react";
+import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal, LinkIcon } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStorageStats } from "@/lib/upload";
 import { toast } from "sonner";
 import { LuMusic } from "react-icons/lu";
 import { formatFileSize } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface MediaItem {
   id: string;
@@ -51,6 +59,18 @@ interface PaginationInfo {
   pages: number;
 }
 
+interface PrivateUploadItem {
+  id: string;
+  filename: string;
+  size: number;
+  contentType: string;
+  oneUse: boolean;
+  createdAt: string;
+  webUrl: string;
+  terminalUrl: string;
+  curlCommand: string;
+}
+
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -74,6 +94,8 @@ export function DashboardPageClient() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("media");
+  const [privateUploads, setPrivateUploads] = useState<PrivateUploadItem[]>([]);
+  const [isPrivateLoading, setIsPrivateLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
     total: 0,
@@ -106,6 +128,22 @@ export function DashboardPageClient() {
     }
   };
 
+  const fetchPrivateUploads = async () => {
+    setIsPrivateLoading(true);
+    try {
+      const response = await fetch("/api/private-upload");
+      if (!response.ok) throw new Error("Failed to fetch private uploads");
+      const data = await response.json();
+      setPrivateUploads(data.uploads || []);
+    } catch (error) {
+      console.error("Failed to fetch private uploads:", error);
+      setPrivateUploads([]);
+      toast.error("Failed to fetch private uploads");
+    } finally {
+      setIsPrivateLoading(false);
+    }
+  };
+
   const handleDeleteMedia = async (id: string) => {
     try {
       const response = await fetch(`/api/media/${id}`, { method: "DELETE" });
@@ -133,6 +171,23 @@ export function DashboardPageClient() {
     }
   };
 
+  const copyValue = async (value: string, label: string) => {
+    await navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  };
+
+  const handleDeletePrivateUpload = async (id: string) => {
+    try {
+      const response = await fetch(`/api/private-upload/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete private upload");
+      setPrivateUploads((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Private upload deleted");
+    } catch (error) {
+      console.error("Failed to delete private upload:", error);
+      toast.error("Failed to delete private upload");
+    }
+  };
+
   useEffect(() => {
     if (status === "authenticated") {
       fetchMedia(currentPage);
@@ -145,9 +200,15 @@ export function DashboardPageClient() {
     }
 
     if (status === "authenticated") {
-      Promise.resolve([fetchMedia()]);
+      Promise.all([fetchMedia(), fetchPrivateUploads()]);
     }
   }, [status]);
+
+  useEffect(() => {
+    if (activeTab === "private" && privateUploads.length <= 1) {
+      setActiveTab("media");
+    }
+  }, [activeTab, privateUploads.length]);
 
   if (status === "loading") {
     return (
@@ -178,10 +239,13 @@ export function DashboardPageClient() {
         Dashboard
       </motion.h1>
 
-      <Tabs defaultValue="media" className="w-full" onValueChange={setActiveTab}>
+      <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <motion.div variants={fadeIn} initial="initial" animate="animate">
           <TabsList className="mb-4">
             <TabsTrigger value="media">My Media</TabsTrigger>
+            {privateUploads.length > 1 && (
+              <TabsTrigger value="private">Private Uploads</TabsTrigger>
+            )}
             <TabsTrigger value="stats">Stats</TabsTrigger>
           </TabsList>
         </motion.div>
@@ -367,6 +431,103 @@ export function DashboardPageClient() {
               )}
             </TabsContent>
 
+            {privateUploads.length > 1 && (
+              <TabsContent value="private" forceMount>
+                {activeTab === "private" && (
+                  <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
+                    <motion.div className="flex items-center justify-between" variants={fadeIn}>
+                      <div>
+                        <h2 className="text-xl font-semibold">Private Uploads</h2>
+                        <p className="text-muted-foreground text-sm">
+                          Current terminal links rotate after each successful use.
+                        </p>
+                      </div>
+                      <Link href="/upload">
+                        <Button>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload New
+                        </Button>
+                      </Link>
+                    </motion.div>
+
+                    <motion.div variants={fadeIn}>
+                      <Card>
+                        <CardContent className="p-0">
+                          {isPrivateLoading ? (
+                            <div className="py-8 text-center">Loading private uploads...</div>
+                          ) : (
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>File</TableHead>
+                                  <TableHead>Size</TableHead>
+                                  <TableHead>Created</TableHead>
+                                  <TableHead>Mode</TableHead>
+                                  <TableHead className="min-w-80">Links</TableHead>
+                                  <TableHead className="w-24 text-right">Actions</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {privateUploads.map((item) => (
+                                  <TableRow key={item.id}>
+                                    <TableCell>
+                                      <div className="flex min-w-56 items-center gap-2">
+                                        <Lock className="text-muted-foreground h-4 w-4 shrink-0" />
+                                        <div className="min-w-0">
+                                          <p className="truncate font-medium">{item.filename}</p>
+                                          <p className="text-muted-foreground text-xs">
+                                            {item.contentType}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>{formatFileSize(item.size)}</TableCell>
+                                    <TableCell>
+                                      {new Date(item.createdAt).toLocaleDateString("en-GB", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "2-digit",
+                                      })}
+                                    </TableCell>
+                                    <TableCell>{item.oneUse ? "One-use" : "Reusable"}</TableCell>
+                                    <TableCell>
+                                      <div className="grid max-w-xl gap-2">
+                                        <DashboardLinkButton
+                                          icon={<LinkIcon className="h-4 w-4" />}
+                                          label="Web"
+                                          value={item.webUrl}
+                                          onCopy={() => copyValue(item.webUrl, "Web URL")}
+                                        />
+                                        <DashboardLinkButton
+                                          icon={<Terminal className="h-4 w-4" />}
+                                          label="Curl"
+                                          value={item.curlCommand}
+                                          onCopy={() => copyValue(item.curlCommand, "Curl command")}
+                                        />
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => handleDeletePrivateUpload(item.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </TabsContent>
+            )}
+
             <TabsContent value="stats" forceMount>
               {activeTab === "stats" && (
                 <>
@@ -459,5 +620,32 @@ export function DashboardPageClient() {
         </AnimatePresence>
       </Tabs>
     </motion.div>
+  );
+}
+
+function DashboardLinkButton({
+  icon,
+  label,
+  value,
+  onCopy,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  onCopy: () => void;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span className="text-muted-foreground flex w-12 shrink-0 items-center gap-1 text-xs font-medium">
+        {icon}
+        {label}
+      </span>
+      <code className="bg-muted min-w-0 flex-1 overflow-hidden rounded border px-2 py-1 text-xs text-ellipsis">
+        {value}
+      </code>
+      <Button type="button" variant="outline" size="icon" onClick={onCopy}>
+        <Copy className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }

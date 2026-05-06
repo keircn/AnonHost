@@ -6,29 +6,56 @@ import { createPrivateUpload } from "@/lib/server/private-upload";
 import { db } from "@/lib/db";
 import { apiKeys } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { listPrivateUploadsForUser } from "@/lib/server/private-upload";
 
-export async function POST(request: NextRequest) {
+async function authenticatePrivateUploadRequest(request: NextRequest) {
   const session = await getServerSession(authOptions);
   const apiKey = request.headers.get("authorization")?.split("Bearer ")[1];
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return null;
   }
-
-  let userId: string;
-  let isPremium = false;
 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return null;
     }
-    userId = user.id.toString();
-    isPremium = Boolean(user.premium);
     await db.update(apiKeys).set({ lastUsed: new Date() }).where(eq(apiKeys.key, apiKey));
-  } else {
-    userId = session!.user.id.toString();
-    isPremium = Boolean(session!.user.premium);
+    return {
+      userId: user.id.toString(),
+      isPremium: Boolean(user.premium),
+    };
+  }
+
+  return {
+    userId: session!.user.id.toString(),
+    isPremium: Boolean(session!.user.premium),
+  };
+}
+
+export async function GET(request: NextRequest) {
+  const auth = await authenticatePrivateUploadRequest(request);
+
+  if (!auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    const uploads = await listPrivateUploadsForUser(auth.userId, baseUrl);
+    return NextResponse.json({ uploads, total: uploads.length });
+  } catch (error) {
+    console.error("Failed to list private uploads:", error);
+    return NextResponse.json({ error: "Failed to load private uploads" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await authenticatePrivateUploadRequest(request);
+
+  if (!auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -50,8 +77,8 @@ export async function POST(request: NextRequest) {
       originalName: (file as File).name || "private-upload",
       password,
       oneUse,
-      userId,
-      isPremium,
+      userId: auth.userId,
+      isPremium: auth.isPremium,
       baseUrl: process.env.NEXTAUTH_URL || request.nextUrl.origin,
     });
 

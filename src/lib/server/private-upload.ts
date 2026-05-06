@@ -36,6 +36,18 @@ export interface PrivateDownloadPayload {
   size: number;
 }
 
+export interface PrivateUploadListItem {
+  id: string;
+  filename: string;
+  size: number;
+  contentType: string;
+  oneUse: boolean;
+  createdAt: Date;
+  webUrl: string;
+  terminalUrl: string;
+  curlCommand: string;
+}
+
 function sanitizeFilename(filename: string): string {
   return path.basename(filename).replace(/[\r\n"]/g, "").slice(0, 255) || "private-upload";
 }
@@ -326,13 +338,16 @@ export async function downloadPrivateUploadWithPassword(input: {
 export async function downloadPrivateUploadWithToken(
   token: string,
 ): Promise<PrivateDownloadPayload> {
+  const nextDownloadToken = nanoid(40);
   const [row] = await db
     .update(privateUploads)
-    .set({ downloadTokenUsedAt: new Date() })
+    .set({
+      downloadToken: nextDownloadToken,
+      downloadTokenUsedAt: new Date(),
+    })
     .where(
       and(
         eq(privateUploads.downloadToken, token),
-        isNull(privateUploads.downloadTokenUsedAt),
         isNull(privateUploads.consumedAt),
       ),
     )
@@ -362,6 +377,56 @@ async function consumePrivateUpload(id: string, objectKey: string) {
     .set({ consumedAt: new Date() })
     .where(and(eq(privateUploads.id, id), isNull(privateUploads.consumedAt)));
   await deletePrivateObject(objectKey);
+}
+
+export async function listPrivateUploadsForUser(userId: string, baseUrl: string) {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, "");
+  const rows = await db
+    .select({
+      id: privateUploads.id,
+      filename: privateUploads.filename,
+      size: privateUploads.size,
+      contentType: privateUploads.contentType,
+      oneUse: privateUploads.oneUse,
+      downloadToken: privateUploads.downloadToken,
+      createdAt: privateUploads.createdAt,
+    })
+    .from(privateUploads)
+    .where(and(eq(privateUploads.userId, userId), isNull(privateUploads.consumedAt)));
+
+  return rows.map(
+    (row): PrivateUploadListItem => {
+      const webUrl = `${normalizedBaseUrl}/private/${row.id}`;
+      const terminalUrl = `${normalizedBaseUrl}/api/private-upload/token/${row.downloadToken}`;
+
+      return {
+        id: row.id,
+        filename: row.filename,
+        size: row.size,
+        contentType: row.contentType,
+        oneUse: row.oneUse,
+        createdAt: row.createdAt,
+        webUrl,
+        terminalUrl,
+        curlCommand: `curl -fL -OJ ${terminalUrl}`,
+      };
+    },
+  );
+}
+
+export async function deletePrivateUploadForUser(userId: string, id: string) {
+  const [row] = await db
+    .delete(privateUploads)
+    .where(and(eq(privateUploads.id, id), eq(privateUploads.userId, userId)))
+    .returning({
+      objectKey: privateUploads.objectKey,
+    });
+
+  if (!row) {
+    throw new Error("Private upload not found");
+  }
+
+  await deletePrivateObject(row.objectKey);
 }
 
 export { buildDownloadResponse };

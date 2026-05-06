@@ -2,14 +2,12 @@
 
 import type React from "react";
 import "@/app/globals.css";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/Layout/ThemeProvider";
 import { Navbar } from "@/components/Layout/Navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/Auth/AuthProvider";
 import { NavbarProvider } from "@/components/Layout/NavbarContext";
 import { ThemeProvider as RetroThemeProvider, defaultTheme } from "retro-react";
-const inter = Inter({ subsets: ["latin"] });
 
 const retroTheme = {
   ...defaultTheme,
@@ -48,7 +46,7 @@ const retroTheme = {
 export const Root = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -58,9 +56,9 @@ export const Root = ({ children }: { children: React.ReactNode }) => {
           <RetroThemeProvider theme={retroTheme}>
             <AuthProvider>
               <NavbarProvider>
-                <div className="relative flex min-h-screen flex-col">
+                <div className="relative flex min-h-screen min-w-0 flex-col overflow-x-hidden">
                   <Navbar />
-                  <div className="mx-auto flex w-full max-w-[2000px] flex-1 justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
+                  <div className="mx-auto flex w-full min-w-0 max-w-[2000px] flex-1 justify-center px-2 sm:px-4 lg:px-6">
                     {children}
                   </div>
                 </div>

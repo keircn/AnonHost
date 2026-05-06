@@ -225,7 +225,7 @@ export function DashboardPageClient() {
 
   return (
     <motion.main
-      className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10"
+      className="mx-auto w-full min-w-0 max-w-7xl px-2 py-4 sm:px-4 sm:py-6 lg:py-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -266,7 +266,7 @@ export function DashboardPageClient() {
                 <>
                   <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
                     <motion.div
-                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                       variants={fadeIn}
                     >
                       <div>
@@ -450,7 +450,7 @@ export function DashboardPageClient() {
                 {activeTab === "private" && (
                   <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
                     <motion.div
-                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                       variants={fadeIn}
                     >
                       <div>
@@ -485,7 +485,7 @@ export function DashboardPageClient() {
                                       <TableHead>Size</TableHead>
                                       <TableHead>Created</TableHead>
                                       <TableHead>Mode</TableHead>
-                                      <TableHead className="min-w-80">Links</TableHead>
+                                      <TableHead className="min-w-64">Links</TableHead>
                                       <TableHead className="w-24 text-right">Actions</TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -501,7 +501,7 @@ export function DashboardPageClient() {
                                           {item.oneUse ? "One-use" : "Reusable"}
                                         </TableCell>
                                         <TableCell>
-                                          <div className="grid max-w-xl gap-2">
+                                          <div className="grid min-w-0 max-w-xl gap-2">
                                             <DashboardLinkButton
                                               icon={<LinkIcon className="h-4 w-4" />}
                                               label="Web"
@@ -550,7 +550,7 @@ export function DashboardPageClient() {
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </div>
-                                    <div className="mb-3 grid grid-cols-3 gap-2 text-xs">
+                                    <div className="mb-3 grid gap-2 text-xs min-[420px]:grid-cols-3">
                                       <div>
                                         <p className="text-muted-foreground">Size</p>
                                         <p className="font-medium">{formatFileSize(item.size)}</p>
@@ -729,7 +729,7 @@ function DashboardLinkButton({
         {icon}
         {label}
       </span>
-      <code className="bg-muted min-w-0 flex-1 overflow-hidden rounded border px-2 py-1 text-xs text-ellipsis">
+      <code className="min-w-0 flex-1 overflow-hidden border bg-muted px-2 py-1 text-xs text-ellipsis">
         {value}
       </code>
       <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>

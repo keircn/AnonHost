@@ -493,7 +493,7 @@ export function UploadPageClient() {
 
   return (
     <motion.main
-      className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10"
+      className="mx-auto w-full min-w-0 max-w-7xl px-2 py-4 sm:px-4 sm:py-6 lg:py-8"
       variants={fadeIn}
       initial="initial"
       animate="animate"
@@ -611,8 +611,8 @@ export function UploadPageClient() {
                   animate="animate"
                   exit="exit"
                 >
-                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <motion.h3 className="text-lg font-semibold" variants={fadeIn}>
+                  <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <motion.h3 className="min-w-0 text-lg font-semibold" variants={fadeIn}>
                       Selected files ({files.length})
                     </motion.h3>
                     <Button
@@ -641,7 +641,7 @@ export function UploadPageClient() {
                           className="group relative"
                           layout
                         >
-                          <div className="overflow-hidden border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080]">
+                          <div className="min-w-0 overflow-hidden border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080]">
                             <div className="relative aspect-[4/3] bg-white shadow-[inset_1px_1px_0_#808080] sm:aspect-square">
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
@@ -810,7 +810,7 @@ function UploadLinkRow({
         {label}
       </div>
       <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
-        <code className="bg-muted min-w-0 flex-1 overflow-x-auto rounded-md border px-3 py-2 text-xs whitespace-nowrap">
+        <code className="max-w-full min-w-0 flex-1 overflow-x-auto border bg-muted px-3 py-2 text-xs whitespace-nowrap">
           {value}
         </code>
         <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={copy}>

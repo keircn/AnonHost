@@ -62,7 +62,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-b-zinc-700 bg-card shadow-[inset_0_1px_0_#ffffff]">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 xl:px-8">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-3 sm:px-4 xl:px-6">
         <div className="flex min-w-0 items-center gap-4 lg:gap-6">
           <Link
             href="/"
@@ -74,7 +74,7 @@ export function Navbar() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 lg:flex">
             <NavigationLinks />
           </nav>
         </div>
@@ -101,7 +101,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           >
@@ -111,8 +111,8 @@ export function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="border-t-2 border-t-zinc-700 bg-card md:hidden">
-          <nav className="container flex flex-col gap-1 px-4 py-4">
+        <div className="border-t-2 border-t-zinc-700 bg-card lg:hidden">
+          <nav className="flex flex-col gap-1 px-3 py-4 sm:px-4">
             <NavigationLinks />
             {isAuthenticated ? (
               <div className="mt-4 grid gap-2 border-t pt-4">

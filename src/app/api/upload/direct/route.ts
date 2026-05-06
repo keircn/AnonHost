@@ -11,6 +11,7 @@ type CreateDirectUploadBody = {
   fileName?: unknown;
   fileSize?: unknown;
   contentType?: unknown;
+  private?: unknown;
 };
 
 export async function POST(request: NextRequest) {
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
       fileName: body.fileName,
       fileSize: body.fileSize,
       contentType: body.contentType,
+      private: typeof body.private === "boolean" ? body.private : false,
     });
 
     return NextResponse.json({ ok: true, data });

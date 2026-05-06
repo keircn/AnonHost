@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { images, media, type MediaType } from "@/lib/db/schema";
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import { getR2Client, isR2Configured } from "@/lib/r2";
+import { createPrivateUploadRecord } from "@/lib/server/private-upload";
 
 const PRESIGNED_URL_TTL_SECONDS = 10 * 60;
 
@@ -15,6 +16,7 @@ export interface CreateDirectUploadInput {
   fileName: string;
   fileSize: number;
   contentType: string;
+  private?: boolean;
 }
 
 export interface CreateDirectUploadResponse {
@@ -32,12 +34,20 @@ export interface FinalizeDirectUploadInput {
   public?: boolean;
   disableEmbed?: boolean;
   domain?: string | null;
+  private?: boolean;
+  password?: string;
+  oneUse?: boolean;
+  baseUrl?: string;
 }
 
 export interface FinalizeDirectUploadResponse {
   imageId: string;
-  mediaId: string;
+  mediaId?: string;
+  privateId?: string;
   url: string;
+  webUrl?: string;
+  terminalUrl?: string;
+  curlCommand?: string;
 }
 
 function safeContentType(contentType: string): string {
@@ -119,7 +129,8 @@ export async function createDirectUploadForUser(
 
   const imageId = nanoid();
   const fileExtension = getFileExtension(fileName);
-  const objectKey = `${input.userId}/images/${imageId}${fileExtension}`;
+  const folder = input.private ? "private" : "images";
+  const objectKey = `${input.userId}/${folder}/${imageId}${fileExtension}`;
 
   await db.insert(images).values({
     id: imageId,
@@ -203,9 +214,52 @@ export async function finalizeDirectUploadForUser(
     throw new Error("Object not found in R2. Upload may have failed.");
   }
 
-  const finalUrl = buildPublicUrl(objectKey);
   const mediaId = nanoid(6);
   const normalizedDomain = input.domain?.trim();
+
+  if (input.private) {
+    if (!input.password) {
+      throw new Error("Password is required for private uploads");
+    }
+
+    const privateUpload = await createPrivateUploadRecord({
+      id: mediaId,
+      objectKey,
+      filename: pendingImage.fileName,
+      size: pendingImage.fileSize,
+      contentType: pendingImage.contentType,
+      password: input.password,
+      oneUse: Boolean(input.oneUse),
+      userId: input.userId,
+      baseUrl: input.baseUrl || process.env.NEXTAUTH_URL || "",
+    });
+
+    const [updatedImage] = await db
+      .update(images)
+      .set({
+        status: "ready",
+        url: privateUpload.webUrl,
+      })
+      .where(
+        and(eq(images.id, imageId), eq(images.userId, input.userId), eq(images.status, "pending")),
+      )
+      .returning({ id: images.id, url: images.url });
+
+    if (!updatedImage?.url) {
+      throw new Error("Upload could not be finalized");
+    }
+
+    return {
+      imageId: updatedImage.id,
+      privateId: privateUpload.id,
+      url: privateUpload.webUrl,
+      webUrl: privateUpload.webUrl,
+      terminalUrl: privateUpload.terminalUrl,
+      curlCommand: privateUpload.curlCommand,
+    };
+  }
+
+  const finalUrl = buildPublicUrl(objectKey);
 
   await db.insert(media).values({
     id: mediaId,

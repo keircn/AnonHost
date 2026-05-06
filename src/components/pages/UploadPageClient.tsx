@@ -8,13 +8,29 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Upload, X, Settings2, File, FileText, FileType, Code, Music } from "lucide-react";
+import {
+  Upload,
+  X,
+  Settings2,
+  File,
+  FileText,
+  FileType,
+  Code,
+  Music,
+  Lock,
+  Copy,
+  Terminal,
+  LinkIcon,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/Files/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
 import { formatFileSize } from "@/lib/utils";
 import pLimit from "p-limit";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -91,8 +107,19 @@ type ActionResult<T> =
 
 interface FinalizeDirectUploadData {
   imageId: string;
-  mediaId: string;
+  mediaId?: string;
+  privateId?: string;
   url: string;
+  webUrl?: string;
+  terminalUrl?: string;
+  curlCommand?: string;
+}
+
+interface UploadedLink {
+  filename: string;
+  webUrl: string;
+  terminalUrl?: string;
+  curlCommand?: string;
 }
 
 export function UploadPageClient() {
@@ -104,6 +131,10 @@ export function UploadPageClient() {
   const [fileSettings, setFileSettings] = useState<Record<number, FileSettings>>({});
   const [activeSettingsFile, setActiveSettingsFile] = useState<number | null>(null);
   const [uploadProgress, setUploadProgress] = useState<Record<number, UploadProgress>>({});
+  const [privateMode, setPrivateMode] = useState(false);
+  const [privatePassword, setPrivatePassword] = useState("");
+  const [privateOneUse, setPrivateOneUse] = useState(false);
+  const [uploadedLinks, setUploadedLinks] = useState<UploadedLink[]>([]);
 
   if (status === "unauthenticated") {
     redirect("/");
@@ -285,6 +316,7 @@ export function UploadPageClient() {
         fileName: file.name,
         fileSize: file.size,
         contentType: file.type || "application/octet-stream",
+        private: privateMode,
       }),
     });
 
@@ -329,6 +361,9 @@ export function UploadPageClient() {
         public: Boolean(settings.public),
         disableEmbed: Boolean(settings.disableEmbed),
         domain: settings.domain || null,
+        private: privateMode,
+        password: privateMode ? privatePassword : undefined,
+        oneUse: privateMode ? privateOneUse : undefined,
       }),
     });
 
@@ -360,7 +395,13 @@ export function UploadPageClient() {
       return;
     }
 
+    if (privateMode && privatePassword.trim().length < 8) {
+      toast.error("Private uploads need a password with at least 8 characters");
+      return;
+    }
+
     setIsUploading(true);
+    setUploadedLinks([]);
     console.log(`Starting upload of ${files.length} files...`);
 
     try {
@@ -408,7 +449,30 @@ export function UploadPageClient() {
             failed > 0 ? `. ${failed} file${failed > 1 ? "s" : ""} failed.` : ""
           }`,
         );
-        router.push("/dashboard");
+        const links = results
+          .map((result, index) => ({ result, file: files[index] }))
+          .filter(
+            (
+              item,
+            ): item is {
+              result: PromiseFulfilledResult<FinalizeDirectUploadData>;
+              file: File;
+            } => item.result.status === "fulfilled",
+          )
+          .map(({ result, file }) => ({
+            filename: file.name,
+            webUrl: result.value.webUrl || result.value.url,
+            terminalUrl: result.value.terminalUrl,
+            curlCommand: result.value.curlCommand,
+          }));
+
+        if (privateMode) {
+          setUploadedLinks(links);
+          setFiles([]);
+          setPrivatePassword("");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         toast.error("All files failed to upload");
       }
@@ -447,6 +511,48 @@ export function UploadPageClient() {
       <motion.div variants={fadeIn} initial="initial" animate="animate">
         <Card>
           <CardContent className="p-6 lg:p-8 xl:p-10">
+            <div className="mb-6 rounded-lg border p-4">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    <h2 className="font-semibold">Private upload</h2>
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    Password-protect these files and generate a one-use terminal download URL.
+                  </p>
+                </div>
+                <Switch checked={privateMode} onCheckedChange={setPrivateMode} />
+              </div>
+
+              {privateMode && (
+                <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                  <div className="space-y-2">
+                    <Label htmlFor="private-password">Password</Label>
+                    <Input
+                      id="private-password"
+                      type="password"
+                      value={privatePassword}
+                      minLength={8}
+                      onChange={(event) => setPrivatePassword(event.target.value)}
+                      disabled={isUploading}
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-4 rounded-md border px-3 py-2.5">
+                    <Label htmlFor="private-one-use" className="text-sm">
+                      Delete after web download
+                    </Label>
+                    <Switch
+                      id="private-one-use"
+                      checked={privateOneUse}
+                      onCheckedChange={setPrivateOneUse}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <motion.div
               className="rounded-lg border-2 border-dashed p-8 text-center sm:p-12 lg:p-16 xl:p-20"
               variants={dropZoneVariants}
@@ -630,9 +736,66 @@ export function UploadPageClient() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {uploadedLinks.length > 0 && (
+              <div className="mt-8 space-y-4 rounded-lg border p-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Private Links</h3>
+                  <p className="text-muted-foreground text-sm">
+                    The terminal URL is one-use. The web URL requires the password.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  {uploadedLinks.map((link) => (
+                    <div key={`${link.filename}-${link.webUrl}`} className="space-y-3 border-t pt-4">
+                      <p className="text-sm font-medium break-all">{link.filename}</p>
+                      <UploadLinkRow label="Web URL" value={link.webUrl} icon="web" />
+                      {link.terminalUrl && (
+                        <UploadLinkRow label="Terminal URL" value={link.terminalUrl} icon="terminal" />
+                      )}
+                      {link.curlCommand && (
+                        <UploadLinkRow label="Curl" value={link.curlCommand} icon="terminal" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
     </motion.div>
+  );
+}
+
+function UploadLinkRow({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon: "web" | "terminal";
+}) {
+  const copy = async () => {
+    await navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium uppercase">
+        {icon === "web" ? <LinkIcon className="h-4 w-4" /> : <Terminal className="h-4 w-4" />}
+        {label}
+      </div>
+      <div className="flex min-w-0 gap-2">
+        <code className="bg-muted min-w-0 flex-1 overflow-x-auto rounded-md border px-3 py-2 text-xs whitespace-nowrap">
+          {value}
+        </code>
+        <Button type="button" variant="outline" size="icon" onClick={copy}>
+          <Copy className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 }

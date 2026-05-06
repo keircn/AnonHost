@@ -221,6 +221,59 @@ export async function createPrivateUpload(input: {
   };
 }
 
+export async function createPrivateUploadRecord(input: {
+  id?: string;
+  objectKey: string;
+  filename: string;
+  size: number;
+  contentType: string;
+  password: string;
+  oneUse: boolean;
+  userId: string;
+  baseUrl: string;
+}): Promise<PrivateUploadResponse> {
+  const password = input.password.trim();
+
+  if (!password) {
+    throw new Error("Password is required");
+  }
+
+  if (password.length < 8) {
+    throw new Error("Password must be at least 8 characters");
+  }
+
+  const id = input.id ?? nanoid(12);
+  const downloadToken = nanoid(40);
+  const { salt, hash } = await hashPassword(password);
+
+  await db.insert(privateUploads).values({
+    id,
+    downloadToken,
+    objectKey: input.objectKey,
+    filename: sanitizeFilename(input.filename),
+    size: input.size,
+    contentType: input.contentType || "application/octet-stream",
+    passwordHash: hash,
+    passwordSalt: salt,
+    oneUse: input.oneUse,
+    userId: input.userId,
+  });
+
+  const baseUrl = input.baseUrl.replace(/\/$/, "");
+  const webUrl = `${baseUrl}/private/${id}`;
+  const terminalUrl = `${baseUrl}/api/private-upload/token/${downloadToken}`;
+
+  return {
+    id,
+    webUrl,
+    terminalUrl,
+    curlCommand: `curl -fL -OJ ${terminalUrl}`,
+    filename: sanitizeFilename(input.filename),
+    size: input.size,
+    oneUse: input.oneUse,
+  };
+}
+
 export async function getPrivateUploadPublicInfo(id: string) {
   const [row] = await db
     .select({

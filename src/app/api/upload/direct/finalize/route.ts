@@ -13,6 +13,9 @@ type FinalizeBody = {
   public?: unknown;
   disableEmbed?: unknown;
   domain?: unknown;
+  private?: unknown;
+  password?: unknown;
+  oneUse?: unknown;
 };
 
 export async function POST(request: NextRequest) {
@@ -58,6 +61,10 @@ export async function POST(request: NextRequest) {
       public: typeof body.public === "boolean" ? body.public : false,
       disableEmbed: typeof body.disableEmbed === "boolean" ? body.disableEmbed : false,
       domain: typeof body.domain === "string" ? body.domain : null,
+      private: typeof body.private === "boolean" ? body.private : false,
+      password: typeof body.password === "string" ? body.password : undefined,
+      oneUse: typeof body.oneUse === "boolean" ? body.oneUse : false,
+      baseUrl: process.env.NEXTAUTH_URL || request.nextUrl.origin,
     });
 
     return NextResponse.json({ ok: true, data });

@@ -20,7 +20,7 @@ const SIZE_MAP = {
 export function Logo({ className = "", size = "md", variant = "svg", forceColor }: LogoProps) {
   const { resolvedTheme } = useTheme();
   const dimensions = SIZE_MAP[size];
-  
+
   const isDark = forceColor === "dark" || (forceColor === undefined && resolvedTheme === "dark");
 
   if (variant === "image" || (variant === "auto" && isDark)) {
@@ -58,9 +58,7 @@ export function Logo({ className = "", size = "md", variant = "svg", forceColor 
 }
 
 export function LogoLink({ className = "", size = "md" }: LogoProps) {
-  return (
-    <Logo className={className} size={size} />
-  );
+  return <Logo className={className} size={size} />;
 }
 
 interface LogoTextProps {
@@ -72,15 +70,11 @@ export function LogoText({ className = "", showText = true }: LogoTextProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Logo variant="svg" size="md" />
-      {showText && (
-        <span className="text-lg font-bold">AnonHost</span>
-      )}
+      {showText && <span className="text-lg font-bold">AnonHost</span>}
     </div>
   );
 }
 
 export function LogoIcon({ className = "" }: { className?: string }) {
-  return (
-    <LuLink className={className} />
-  );
+  return <LuLink className={className} />;
 }

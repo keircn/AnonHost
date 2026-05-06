@@ -224,24 +224,26 @@ export function DashboardPageClient() {
   }
 
   return (
-    <motion.div
-      className="max-w-8xl container mx-auto py-8 sm:py-12 lg:py-16 xl:py-20"
+    <motion.main
+      className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <motion.h1
-        className="mb-6 text-3xl font-bold lg:mb-8 lg:text-4xl xl:text-5xl"
-        variants={fadeIn}
-        initial="initial"
-        animate="animate"
-      >
-        Dashboard
-      </motion.h1>
+      <motion.div className="mb-5" variants={fadeIn} initial="initial" animate="animate">
+        <div className="win95-titlebar border-2 border-b-0 border-t-white border-l-white border-r-zinc-700 px-3 py-2">
+          <h1 className="text-sm font-bold sm:text-base">Dashboard</h1>
+        </div>
+        <div className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-3 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080] sm:p-4">
+          <p className="text-sm">
+            Manage files, private transfers, storage usage, and account activity.
+          </p>
+        </div>
+      </motion.div>
 
       <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <motion.div variants={fadeIn} initial="initial" animate="animate">
-          <TabsList className="mb-4">
+          <TabsList className="mb-5 sm:mb-6">
             <TabsTrigger value="media">My Media</TabsTrigger>
             {privateUploads.length > 0 && (
               <TabsTrigger value="private">Private Uploads</TabsTrigger>
@@ -263,10 +265,18 @@ export function DashboardPageClient() {
               {activeTab === "media" && (
                 <>
                   <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
-                    <motion.div className="flex items-center justify-between" variants={fadeIn}>
-                      <h2 className="text-xl font-semibold">Your Files</h2>
+                    <motion.div
+                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                      variants={fadeIn}
+                    >
+                      <div>
+                        <h2 className="text-xl font-semibold">Your files</h2>
+                        <p className="text-muted-foreground text-sm">
+                          Recently uploaded media and documents.
+                        </p>
+                      </div>
                       <Link href="/upload">
-                        <Button>
+                        <Button className="w-full sm:w-auto">
                           <Upload className="mr-2 h-4 w-4" />
                           Upload New
                         </Button>
@@ -280,7 +290,7 @@ export function DashboardPageClient() {
                     ) : mediaItems.length === 0 ? (
                       <motion.div variants={fadeIn}>
                         <Card>
-                          <CardContent className="flex flex-col items-center justify-center py-12">
+                          <CardContent className="flex flex-col items-center justify-center px-4 py-12 text-center">
                             <ImageIcon className="text-muted-foreground mb-4 h-12 w-12" />
                             <p className="text-muted-foreground mb-4">
                               You haven&apos;t uploaded any files yet
@@ -296,13 +306,13 @@ export function DashboardPageClient() {
                       </motion.div>
                     ) : (
                       <motion.div
-                        className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+                        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                         variants={staggerContainer}
                       >
                         {mediaItems.map((item) => (
                           <motion.div key={item.id} variants={fadeIn} layoutId={item.id}>
-                            <Card className="h-full">
-                              <div className="relative aspect-square overflow-hidden">
+                            <Card className="h-full overflow-hidden py-0">
+                              <div className="relative aspect-[4/3] overflow-hidden bg-white shadow-[inset_1px_1px_0_#808080]">
                                 {(() => {
                                   switch (item.type) {
                                     case "VIDEO":
@@ -315,7 +325,7 @@ export function DashboardPageClient() {
                                       );
                                     case "AUDIO":
                                       return (
-                                        <div className="bg-muted/20 absolute inset-0 flex flex-col items-center justify-center p-4">
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white p-4">
                                           <LuMusic className="text-muted-foreground mb-4 h-16 w-16" />
                                           <audio controls className="w-full">
                                             <source src={item.url} type="audio/mpeg" />
@@ -334,9 +344,9 @@ export function DashboardPageClient() {
                                   }
                                 })()}
                               </div>
-                              <CardContent className="p-4 lg:p-6">
-                                <div className="flex items-center justify-between">
-                                  <div className="mr-2 truncate">
+                              <CardContent className="p-3 sm:p-4">
+                                <div className="flex min-w-0 items-center justify-between gap-3">
+                                  <div className="min-w-0 flex-1">
                                     <p className="truncate font-medium">{item.filename}</p>
                                     <p className="text-muted-foreground text-xs">
                                       {new Date(item.createdAt).toLocaleDateString("en-US", {
@@ -352,8 +362,12 @@ export function DashboardPageClient() {
                                       )}
                                     </p>
                                   </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Button size="icon" onClick={() => handleCopyUrl(item.id)}>
+                                  <div className="flex shrink-0 items-center gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleCopyUrl(item.id)}
+                                    >
                                       <Copy className="h-4 w-4" />
                                     </Button>
                                     <Button
@@ -435,7 +449,10 @@ export function DashboardPageClient() {
               <TabsContent value="private" forceMount>
                 {activeTab === "private" && (
                   <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>
-                    <motion.div className="flex items-center justify-between" variants={fadeIn}>
+                    <motion.div
+                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                      variants={fadeIn}
+                    >
                       <div>
                         <h2 className="text-xl font-semibold">Private Uploads</h2>
                         <p className="text-muted-foreground text-sm">
@@ -443,7 +460,7 @@ export function DashboardPageClient() {
                         </p>
                       </div>
                       <Link href="/upload">
-                        <Button>
+                        <Button className="w-full sm:w-auto">
                           <Upload className="mr-2 h-4 w-4" />
                           Upload New
                         </Button>
@@ -451,74 +468,124 @@ export function DashboardPageClient() {
                     </motion.div>
 
                     <motion.div variants={fadeIn}>
-                      <Card>
+                      <Card className="overflow-hidden p-0">
+                        <div className="win95-titlebar px-3 py-2 text-sm font-bold">
+                          Private Uploads
+                        </div>
                         <CardContent className="p-0">
                           {isPrivateLoading ? (
                             <div className="py-8 text-center">Loading private uploads...</div>
                           ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>File</TableHead>
-                                  <TableHead>Size</TableHead>
-                                  <TableHead>Created</TableHead>
-                                  <TableHead>Mode</TableHead>
-                                  <TableHead className="min-w-80">Links</TableHead>
-                                  <TableHead className="w-24 text-right">Actions</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
+                            <>
+                              <div className="hidden md:block">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>File</TableHead>
+                                      <TableHead>Size</TableHead>
+                                      <TableHead>Created</TableHead>
+                                      <TableHead>Mode</TableHead>
+                                      <TableHead className="min-w-80">Links</TableHead>
+                                      <TableHead className="w-24 text-right">Actions</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {privateUploads.map((item) => (
+                                      <TableRow key={item.id}>
+                                        <TableCell>
+                                          <PrivateFileSummary item={item} />
+                                        </TableCell>
+                                        <TableCell>{formatFileSize(item.size)}</TableCell>
+                                        <TableCell>{formatShortDate(item.createdAt)}</TableCell>
+                                        <TableCell>
+                                          {item.oneUse ? "One-use" : "Reusable"}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="grid max-w-xl gap-2">
+                                            <DashboardLinkButton
+                                              icon={<LinkIcon className="h-4 w-4" />}
+                                              label="Web"
+                                              value={item.webUrl}
+                                              onCopy={() => copyValue(item.webUrl, "Web URL")}
+                                            />
+                                            <DashboardLinkButton
+                                              icon={<Terminal className="h-4 w-4" />}
+                                              label="Curl"
+                                              value={item.curlCommand}
+                                              onCopy={() =>
+                                                copyValue(item.curlCommand, "Curl command")
+                                              }
+                                            />
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            onClick={() => handleDeletePrivateUpload(item.id)}
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+
+                              <div className="grid gap-3 p-3 md:hidden">
                                 {privateUploads.map((item) => (
-                                  <TableRow key={item.id}>
-                                    <TableCell>
-                                      <div className="flex min-w-56 items-center gap-2">
-                                        <Lock className="text-muted-foreground h-4 w-4 shrink-0" />
-                                        <div className="min-w-0">
-                                          <p className="truncate font-medium">{item.filename}</p>
-                                          <p className="text-muted-foreground text-xs">
-                                            {item.contentType}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>{formatFileSize(item.size)}</TableCell>
-                                    <TableCell>
-                                      {new Date(item.createdAt).toLocaleDateString("en-GB", {
-                                        year: "numeric",
-                                        month: "short",
-                                        day: "2-digit",
-                                      })}
-                                    </TableCell>
-                                    <TableCell>{item.oneUse ? "One-use" : "Reusable"}</TableCell>
-                                    <TableCell>
-                                      <div className="grid max-w-xl gap-2">
-                                        <DashboardLinkButton
-                                          icon={<LinkIcon className="h-4 w-4" />}
-                                          label="Web"
-                                          value={item.webUrl}
-                                          onCopy={() => copyValue(item.webUrl, "Web URL")}
-                                        />
-                                        <DashboardLinkButton
-                                          icon={<Terminal className="h-4 w-4" />}
-                                          label="Curl"
-                                          value={item.curlCommand}
-                                          onCopy={() => copyValue(item.curlCommand, "Curl command")}
-                                        />
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
+                                  <div
+                                    key={item.id}
+                                    className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-3 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080]"
+                                  >
+                                    <div className="mb-3 flex items-start justify-between gap-3">
+                                      <PrivateFileSummary item={item} />
                                       <Button
                                         variant="destructive"
                                         size="icon"
                                         onClick={() => handleDeletePrivateUpload(item.id)}
+                                        aria-label={`Delete ${item.filename}`}
                                       >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
-                                    </TableCell>
-                                  </TableRow>
+                                    </div>
+                                    <div className="mb-3 grid grid-cols-3 gap-2 text-xs">
+                                      <div>
+                                        <p className="text-muted-foreground">Size</p>
+                                        <p className="font-medium">{formatFileSize(item.size)}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">Created</p>
+                                        <p className="font-medium">
+                                          {formatShortDate(item.createdAt)}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground">Mode</p>
+                                        <p className="font-medium">
+                                          {item.oneUse ? "One-use" : "Reusable"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                      <DashboardLinkButton
+                                        icon={<LinkIcon className="h-4 w-4" />}
+                                        label="Web"
+                                        value={item.webUrl}
+                                        onCopy={() => copyValue(item.webUrl, "Web URL")}
+                                      />
+                                      <DashboardLinkButton
+                                        icon={<Terminal className="h-4 w-4" />}
+                                        label="Curl"
+                                        value={item.curlCommand}
+                                        onCopy={() => copyValue(item.curlCommand, "Curl command")}
+                                      />
+                                    </div>
+                                  </div>
                                 ))}
-                              </TableBody>
-                            </Table>
+                              </div>
+                            </>
                           )}
                         </CardContent>
                       </Card>
@@ -582,7 +649,7 @@ export function DashboardPageClient() {
                     ];
                     return (
                       <motion.div
-                        className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
                         variants={staggerContainer}
                         initial="initial"
                         animate="animate"
@@ -619,7 +686,29 @@ export function DashboardPageClient() {
           </motion.div>
         </AnimatePresence>
       </Tabs>
-    </motion.div>
+    </motion.main>
+  );
+}
+
+function formatShortDate(value: string) {
+  return new Date(value).toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+}
+
+function PrivateFileSummary({ item }: { item: PrivateUploadItem }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-secondary p-1.5">
+        <Lock className="h-4 w-4 shrink-0" />
+      </span>
+      <div className="min-w-0">
+        <p className="truncate font-medium">{item.filename}</p>
+        <p className="text-muted-foreground truncate text-xs">{item.contentType}</p>
+      </div>
+    </div>
   );
 }
 
@@ -635,7 +724,7 @@ function DashboardLinkButton({
   onCopy: () => void;
 }) {
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
       <span className="text-muted-foreground flex w-12 shrink-0 items-center gap-1 text-xs font-medium">
         {icon}
         {label}
@@ -643,8 +732,9 @@ function DashboardLinkButton({
       <code className="bg-muted min-w-0 flex-1 overflow-hidden rounded border px-2 py-1 text-xs text-ellipsis">
         {value}
       </code>
-      <Button type="button" variant="outline" size="icon" onClick={onCopy}>
+      <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>
         <Copy className="h-4 w-4" />
+        Copy
       </Button>
     </div>
   );

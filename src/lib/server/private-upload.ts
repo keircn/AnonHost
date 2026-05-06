@@ -49,11 +49,19 @@ export interface PrivateUploadListItem {
 }
 
 function sanitizeFilename(filename: string): string {
-  return path.basename(filename).replace(/[\r\n"]/g, "").slice(0, 255) || "private-upload";
+  return (
+    path
+      .basename(filename)
+      .replace(/[\r\n"]/g, "")
+      .slice(0, 255) || "private-upload"
+  );
 }
 
 function getFileExtension(filename: string): string {
-  return path.extname(filename).replace(/[^a-zA-Z0-9.]/g, "").toLowerCase();
+  return path
+    .extname(filename)
+    .replace(/[^a-zA-Z0-9.]/g, "")
+    .toLowerCase();
 }
 
 function getLocalPath(objectKey: string): string {
@@ -345,12 +353,7 @@ export async function downloadPrivateUploadWithToken(
       downloadToken: nextDownloadToken,
       downloadTokenUsedAt: new Date(),
     })
-    .where(
-      and(
-        eq(privateUploads.downloadToken, token),
-        isNull(privateUploads.consumedAt),
-      ),
-    )
+    .where(and(eq(privateUploads.downloadToken, token), isNull(privateUploads.consumedAt)))
     .returning();
 
   if (!row) {
@@ -394,24 +397,22 @@ export async function listPrivateUploadsForUser(userId: string, baseUrl: string)
     .from(privateUploads)
     .where(and(eq(privateUploads.userId, userId), isNull(privateUploads.consumedAt)));
 
-  return rows.map(
-    (row): PrivateUploadListItem => {
-      const webUrl = `${normalizedBaseUrl}/private/${row.id}`;
-      const terminalUrl = `${normalizedBaseUrl}/api/private-upload/token/${row.downloadToken}`;
+  return rows.map((row): PrivateUploadListItem => {
+    const webUrl = `${normalizedBaseUrl}/private/${row.id}`;
+    const terminalUrl = `${normalizedBaseUrl}/api/private-upload/token/${row.downloadToken}`;
 
-      return {
-        id: row.id,
-        filename: row.filename,
-        size: row.size,
-        contentType: row.contentType,
-        oneUse: row.oneUse,
-        createdAt: row.createdAt,
-        webUrl,
-        terminalUrl,
-        curlCommand: `curl -fL -OJ ${terminalUrl}`,
-      };
-    },
-  );
+    return {
+      id: row.id,
+      filename: row.filename,
+      size: row.size,
+      contentType: row.contentType,
+      oneUse: row.oneUse,
+      createdAt: row.createdAt,
+      webUrl,
+      terminalUrl,
+      curlCommand: `curl -fL -OJ ${terminalUrl}`,
+    };
+  });
 }
 
 export async function deletePrivateUploadForUser(userId: string, id: string) {

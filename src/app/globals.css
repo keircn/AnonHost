@@ -100,85 +100,80 @@
 
 @layer utilities {
   body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 75%;
+    --background: 180 100% 25%;
     --foreground: 0 0% 0%;
-    --card: 0 0% 85%;
+    --card: 0 0% 75%;
     --card-foreground: 0 0% 0%;
-    --popover: 0 0% 85%;
+    --popover: 0 0% 75%;
     --popover-foreground: 0 0% 0%;
-    --primary: 0 0% 0%;
+    --primary: 240 100% 25%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 80%;
+    --secondary: 0 0% 82%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 82%;
+    --muted: 0 0% 86%;
     --muted-foreground: 0 0% 28%;
-    --accent: 0 0% 72%;
+    --accent: 0 0% 70%;
     --accent-foreground: 0 0% 0%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 78% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 46%;
-    --input: 0 0% 46%;
-    --ring: 0 0% 0%;
-    --chart-1: 0 0% 0%;
-    --chart-2: 0 0% 28%;
-    --chart-3: 0 0% 46%;
-    --chart-4: 0 0% 66%;
-    --chart-5: 0 0% 82%;
+    --border: 0 0% 45%;
+    --input: 0 0% 100%;
+    --ring: 240 100% 25%;
+    --chart-1: 240 100% 25%;
+    --chart-2: 180 100% 25%;
+    --chart-3: 45 100% 45%;
+    --chart-4: 300 62% 35%;
+    --chart-5: 0 78% 42%;
     --radius: 0rem;
     --sidebar-background: 0 0% 75%;
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
+    --sidebar-primary: 240 100% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 80%;
+    --sidebar-accent: 0 0% 82%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 46%;
-    --sidebar-ring: 0 0% 0%;
-    --card-rgb: 217, 217, 217;
-    --background-rgb: 192, 192, 192;
+    --sidebar-border: 0 0% 45%;
+    --sidebar-ring: 240 100% 25%;
+    --card-rgb: 192, 192, 192;
+    --background-rgb: 0, 128, 128;
     --foreground-rgb: 0, 0, 0;
   }
 
   .dark {
-    --background: 0 0% 75%;
+    --background: 180 100% 25%;
     --foreground: 0 0% 0%;
-    --card: 0 0% 85%;
+    --card: 0 0% 75%;
     --card-foreground: 0 0% 0%;
-    --popover: 0 0% 85%;
+    --popover: 0 0% 75%;
     --popover-foreground: 0 0% 0%;
-    --primary: 0 0% 0%;
+    --primary: 240 100% 25%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 80%;
+    --secondary: 0 0% 82%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 82%;
+    --muted: 0 0% 86%;
     --muted-foreground: 0 0% 28%;
-    --accent: 0 0% 72%;
+    --accent: 0 0% 70%;
     --accent-foreground: 0 0% 0%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 78% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 46%;
-    --input: 0 0% 46%;
-    --ring: 0 0% 0%;
-    --chart-1: 0 0% 0%;
-    --chart-2: 0 0% 28%;
-    --chart-3: 0 0% 46%;
-    --chart-4: 0 0% 66%;
-    --chart-5: 0 0% 82%;
+    --border: 0 0% 45%;
+    --input: 0 0% 100%;
+    --ring: 240 100% 25%;
     --sidebar-background: 0 0% 75%;
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
+    --sidebar-primary: 240 100% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 80%;
+    --sidebar-accent: 0 0% 82%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 46%;
-    --sidebar-ring: 0 0% 0%;
-    --card-rgb: 217, 217, 217;
-    --background-rgb: 192, 192, 192;
+    --sidebar-border: 0 0% 45%;
+    --sidebar-ring: 240 100% 25%;
+    --card-rgb: 192, 192, 192;
+    --background-rgb: 0, 128, 128;
     --foreground-rgb: 0, 0, 0;
   }
 }
@@ -199,36 +194,57 @@
   body {
     @apply bg-background text-foreground;
     background:
-      linear-gradient(hsl(var(--foreground) / 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--foreground) / 0.08) 1px, transparent 1px),
+      radial-gradient(circle at top left, hsl(180 100% 33% / 0.5), transparent 32rem),
       hsl(var(--background));
-    background-size: 16px 16px, 16px 16px, auto;
     font-feature-settings:
       "ss01" on,
       "cv01" on;
-    font-family: "Courier New", Courier, monospace;
+    font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
   }
 }
 
 @layer components {
+  .win95-outset {
+    border: 2px solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    box-shadow:
+      inset 1px 1px 0 #dfdfdf,
+      inset -1px -1px 0 #808080;
+  }
+
+  .win95-inset {
+    border: 2px solid;
+    border-color: #404040 #ffffff #ffffff #404040;
+    box-shadow: inset 1px 1px 0 #808080;
+  }
+
+  .win95-titlebar {
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #ffffff;
+  }
+
   .surface-panel {
-    @apply border-2 bg-card;
-    border-color: hsl(var(--foreground)) hsl(var(--border)) hsl(var(--border))
-      hsl(var(--foreground));
-    box-shadow: 6px 6px 0 #808080;
+    @apply bg-card;
+    border: 2px solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    box-shadow:
+      inset 1px 1px 0 #dfdfdf,
+      inset -1px -1px 0 #808080;
   }
 
   .mono-kicker {
-    @apply text-muted-foreground font-mono text-xs tracking-normal uppercase;
+    @apply text-muted-foreground text-xs font-bold tracking-normal uppercase;
   }
 
   .retro-ui {
     border-radius: 0 !important;
-    font-family: "Courier New", Courier, monospace !important;
   }
 
   button.retro-ui {
-    text-transform: uppercase;
     letter-spacing: 0;
   }
 
@@ -237,11 +253,11 @@
   }
 
   .card-header {
-    background: #000000 !important;
+    background: linear-gradient(90deg, #000080, #1084d0) !important;
     color: #ffffff !important;
-    border-bottom: 2px solid #555 !important;
-    font-family: "Courier New", Courier, monospace !important;
-    font-size: 12px !important;
+    border-bottom: 2px solid #808080 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
   }
 
   .card-content {
@@ -250,16 +266,17 @@
 
   .retro-inset {
     border: 2px solid;
-    border-color: hsl(var(--border)) hsl(var(--foreground)) hsl(var(--foreground))
-      hsl(var(--border));
-    background: hsl(var(--background));
+    border-color: #404040 #ffffff #ffffff #404040;
+    background: #ffffff;
+    box-shadow: inset 1px 1px 0 #808080;
   }
 
   .retro-outset {
     border: 2px solid;
-    border-color: hsl(var(--foreground)) hsl(var(--border)) hsl(var(--border))
-      hsl(var(--foreground));
+    border-color: #ffffff #404040 #404040 #ffffff;
     background: hsl(var(--card));
-    box-shadow: 4px 4px 0 #808080;
+    box-shadow:
+      inset 1px 1px 0 #dfdfdf,
+      inset -1px -1px 0 #808080;
   }
 }

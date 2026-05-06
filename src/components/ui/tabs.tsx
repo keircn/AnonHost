@@ -20,7 +20,7 @@ function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimi
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "border-2 border-t-zinc-700 border-l-zinc-700 border-r-white border-b-white bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center p-[3px]",
+        "text-muted-foreground inline-flex h-10 w-full max-w-full items-center justify-start overflow-x-auto border-2 border-t-zinc-700 border-l-zinc-700 border-r-white border-b-white bg-muted p-1 sm:w-fit",
         className,
       )}
       {...props}
@@ -33,7 +33,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "data-[state=active]:border-t-white data-[state=active]:border-l-white data-[state=active]:border-r-zinc-700 data-[state=active]:border-b-zinc-700 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent px-2 py-1 font-mono text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-[state=active]:border-t-white data-[state=active]:border-l-white data-[state=active]:border-r-zinc-700 data-[state=active]:border-b-zinc-700 data-[state=active]:bg-card data-[state=active]:text-foreground text-muted-foreground inline-flex h-full flex-1 items-center justify-center gap-1.5 border border-transparent px-3 py-1 text-sm font-bold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:pointer-events-none disabled:opacity-50 sm:flex-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}

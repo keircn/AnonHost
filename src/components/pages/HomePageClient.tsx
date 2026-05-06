@@ -77,10 +77,10 @@ export function HomePageClient() {
   const storage = isLoading
     ? "..."
     : bytes(Math.max(0, stats?.storage ?? 0), {
-      unitSeparator: " ",
-      decimalPlaces: 1,
-      fixedDecimals: true,
-    }) || "0 B";
+        unitSeparator: " ",
+        decimalPlaces: 1,
+        fixedDecimals: true,
+      }) || "0 B";
 
   const handleCopy = async () => {
     try {

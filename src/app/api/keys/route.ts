@@ -19,13 +19,14 @@ export async function GET() {
   }
 
   const userId = session.user.id;
-  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+  const [existingUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
 
   if (!existingUser) {
-    return NextResponse.json(
-      { error: "Invalid session. Please sign in again." },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Invalid session. Please sign in again." }, { status: 401 });
   }
 
   const keys = await db
@@ -45,13 +46,14 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = session.user.id;
-  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+  const [existingUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
 
   if (!existingUser) {
-    return NextResponse.json(
-      { error: "Invalid session. Please sign in again." },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Invalid session. Please sign in again." }, { status: 401 });
   }
 
   try {

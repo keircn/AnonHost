@@ -295,11 +295,7 @@ export function UploadPageClient() {
     };
   }, [handlePaste]);
 
-  const uploadDirectFile = async (
-    file: File,
-    index: number,
-    settings: FileSettings,
-  ) => {
+  const uploadDirectFile = async (file: File, index: number, settings: FileSettings) => {
     console.log(`Starting direct upload for ${file.name} (${formatFileSize(file.size)})`);
 
     setUploadProgress((prev) => ({
@@ -367,7 +363,8 @@ export function UploadPageClient() {
       }),
     });
 
-    const finalizeResult = (await finalizeResponse.json()) as ActionResult<FinalizeDirectUploadData>;
+    const finalizeResult =
+      (await finalizeResponse.json()) as ActionResult<FinalizeDirectUploadData>;
 
     if (!finalizeResponse.ok || !finalizeResult.ok) {
       await fetch("/api/upload/direct/fail", {
@@ -495,38 +492,49 @@ export function UploadPageClient() {
   };
 
   return (
-    <motion.div
-      className="container mx-auto max-w-7xl py-8 sm:py-12 lg:py-16 xl:py-20"
+    <motion.main
+      className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:py-10"
       variants={fadeIn}
       initial="initial"
       animate="animate"
     >
-      <motion.h1
-        className="mb-6 text-3xl font-bold lg:mb-8 lg:text-4xl xl:text-5xl"
-        variants={fadeIn}
-      >
-        Upload Media
-      </motion.h1>
-
       <motion.div variants={fadeIn} initial="initial" animate="animate">
-        <Card>
-          <CardContent className="p-6 lg:p-8 xl:p-10">
-            <div className="mb-6 rounded-lg border p-4">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <Card className="overflow-hidden p-0">
+          <div className="win95-titlebar flex items-center justify-between px-3 py-2">
+            <div className="min-w-0">
+              <h1 className="truncate text-sm font-bold sm:text-base">Upload files</h1>
+              <p className="hidden text-xs text-white/90 sm:block">
+                Regular uploads or password-protected private transfers
+              </p>
+            </div>
+            <div className="flex gap-1">
+              <span className="h-4 w-4 border border-white/70 bg-card" />
+              <span className="h-4 w-4 border border-white/70 bg-card" />
+            </div>
+          </div>
+          <CardContent className="p-3 sm:p-5 lg:p-6">
+            <div className="mb-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-3 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080] sm:mb-5 sm:p-4">
+              <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    <h2 className="font-semibold">Private upload</h2>
+                    <span className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-secondary p-1.5">
+                      <Lock className="h-4 w-4" />
+                    </span>
+                    <h2 className="text-base font-semibold">Private upload</h2>
                   </div>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground max-w-2xl text-sm">
                     Password-protect these files and generate a one-use terminal download URL.
                   </p>
                 </div>
-                <Switch checked={privateMode} onCheckedChange={setPrivateMode} />
+                <Switch
+                  checked={privateMode}
+                  onCheckedChange={setPrivateMode}
+                  aria-label="Toggle private upload"
+                />
               </div>
 
               {privateMode && (
-                <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,auto)] lg:items-end">
                   <div className="space-y-2">
                     <Label htmlFor="private-password">Password</Label>
                     <Input
@@ -539,8 +547,8 @@ export function UploadPageClient() {
                       autoComplete="new-password"
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-md border px-3 py-2.5">
-                    <Label htmlFor="private-one-use" className="text-sm">
+                  <div className="flex min-h-9 items-center justify-between gap-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card px-3 py-2">
+                    <Label htmlFor="private-one-use" className="text-sm leading-tight">
                       Delete after web download
                     </Label>
                     <Switch
@@ -554,7 +562,7 @@ export function UploadPageClient() {
             </div>
 
             <motion.div
-              className="rounded-lg border-2 border-dashed p-8 text-center sm:p-12 lg:p-16 xl:p-20"
+              className="border-2 border-dashed border-zinc-700 bg-white p-6 text-center text-black shadow-[inset_1px_1px_0_#808080] transition-colors sm:p-10 lg:p-12"
               variants={dropZoneVariants}
               initial="initial"
               animate={isDragging ? "dragOver" : "animate"}
@@ -563,19 +571,17 @@ export function UploadPageClient() {
               onDrop={onDrop}
             >
               <motion.div
-                className="flex flex-col items-center justify-center space-y-6 lg:space-y-8"
+                className="flex flex-col items-center justify-center gap-5"
                 variants={staggerContainer}
                 initial="initial"
                 animate="animate"
               >
-                <motion.div className="bg-primary/10 rounded-full p-4 lg:p-6">
-                  <Upload className="text-primary h-8 w-8 lg:h-12 lg:w-12" />
+                <motion.div className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-4 text-black">
+                  <Upload className="h-8 w-8 sm:h-10 sm:w-10" />
                 </motion.div>
-                <motion.div className="space-y-2 lg:space-y-3" variants={fadeIn}>
-                  <h3 className="text-lg font-semibold lg:text-2xl">
-                    Drag and drop your files here
-                  </h3>
-                  <p className="text-muted-foreground text-sm lg:text-base">
+                <motion.div className="space-y-2" variants={fadeIn}>
+                  <h3 className="text-lg font-semibold sm:text-xl">Drop files here</h3>
+                  <p className="text-muted-foreground text-sm sm:text-base">
                     Click to browse from your device, or paste from your clipboard
                   </p>
                 </motion.div>
@@ -599,17 +605,30 @@ export function UploadPageClient() {
             <AnimatePresence mode="wait">
               {files.length > 0 && (
                 <motion.div
-                  className="mt-8 lg:mt-12"
+                  className="mt-6 sm:mt-8"
                   variants={fadeIn}
                   initial="initial"
                   animate="animate"
                   exit="exit"
                 >
-                  <motion.h3 className="mb-4 text-lg font-semibold" variants={fadeIn}>
-                    Selected Files ({files.length})
-                  </motion.h3>
+                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <motion.h3 className="text-lg font-semibold" variants={fadeIn}>
+                      Selected files ({files.length})
+                    </motion.h3>
+                    <Button
+                      onClick={handleUpload}
+                      disabled={isUploading}
+                      className="w-full sm:w-auto"
+                    >
+                      {isUploading
+                        ? "Uploading..."
+                        : privateMode
+                          ? "Create Private Uploads"
+                          : "Upload Files"}
+                    </Button>
+                  </div>
                   <motion.div
-                    className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+                    className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                     variants={staggerContainer}
                   >
                     <AnimatePresence>
@@ -622,8 +641,8 @@ export function UploadPageClient() {
                           className="group relative"
                           layout
                         >
-                          <div className="overflow-hidden rounded-lg border">
-                            <div className="bg-muted relative aspect-square">
+                          <div className="overflow-hidden border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080]">
+                            <div className="relative aspect-[4/3] bg-white shadow-[inset_1px_1px_0_#808080] sm:aspect-square">
                               <div className="absolute inset-0 flex items-center justify-center">
                                 {getFilePreview(file)}
                               </div>
@@ -639,10 +658,13 @@ export function UploadPageClient() {
                                   </div>
                                 )}
                             </div>{" "}
-                            <div className="space-y-1 p-2">
+                            <div className="space-y-2 p-3">
                               <motion.div className="truncate text-sm" variants={fadeIn}>
                                 {file.name}
                               </motion.div>
+                              <p className="text-muted-foreground text-xs">
+                                {formatFileSize(file.size)}
+                              </p>
                               {uploadProgress[index] && (
                                 <div className="bg-secondary h-1.5 w-full overflow-hidden rounded-full">
                                   <motion.div
@@ -725,20 +747,12 @@ export function UploadPageClient() {
                       ))}
                     </AnimatePresence>
                   </motion.div>
-
-                  <motion.div className="mt-6 flex justify-end" variants={fadeIn}>
-                    <motion.div>
-                      <Button onClick={handleUpload} disabled={isUploading}>
-                        {isUploading ? "Uploading..." : "Upload All Files"}
-                      </Button>
-                    </motion.div>
-                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {uploadedLinks.length > 0 && (
-              <div className="mt-8 space-y-4 rounded-lg border p-4">
+              <div className="mt-6 space-y-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-4 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080] sm:mt-8">
                 <div>
                   <h3 className="text-lg font-semibold">Private Links</h3>
                   <p className="text-muted-foreground text-sm">
@@ -747,11 +761,18 @@ export function UploadPageClient() {
                 </div>
                 <div className="space-y-4">
                   {uploadedLinks.map((link) => (
-                    <div key={`${link.filename}-${link.webUrl}`} className="space-y-3 border-t pt-4">
+                    <div
+                      key={`${link.filename}-${link.webUrl}`}
+                      className="space-y-3 border-2 border-t-zinc-700 border-l-zinc-700 border-r-white border-b-white bg-white p-3 text-black shadow-[inset_1px_1px_0_#808080]"
+                    >
                       <p className="text-sm font-medium break-all">{link.filename}</p>
                       <UploadLinkRow label="Web URL" value={link.webUrl} icon="web" />
                       {link.terminalUrl && (
-                        <UploadLinkRow label="Terminal URL" value={link.terminalUrl} icon="terminal" />
+                        <UploadLinkRow
+                          label="Terminal URL"
+                          value={link.terminalUrl}
+                          icon="terminal"
+                        />
                       )}
                       {link.curlCommand && (
                         <UploadLinkRow label="Curl" value={link.curlCommand} icon="terminal" />
@@ -764,7 +785,7 @@ export function UploadPageClient() {
           </CardContent>
         </Card>
       </motion.div>
-    </motion.div>
+    </motion.main>
   );
 }
 
@@ -788,12 +809,13 @@ function UploadLinkRow({
         {icon === "web" ? <LinkIcon className="h-4 w-4" /> : <Terminal className="h-4 w-4" />}
         {label}
       </div>
-      <div className="flex min-w-0 gap-2">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
         <code className="bg-muted min-w-0 flex-1 overflow-x-auto rounded-md border px-3 py-2 text-xs whitespace-nowrap">
           {value}
         </code>
-        <Button type="button" variant="outline" size="icon" onClick={copy}>
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={copy}>
           <Copy className="h-4 w-4" />
+          Copy
         </Button>
       </div>
     </div>

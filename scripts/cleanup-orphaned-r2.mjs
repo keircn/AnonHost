@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 
 import postgres from "postgres";
-import {
-  DeleteObjectsCommand,
-  ListObjectsV2Command,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 
 function parseArgs(argv) {
   const args = {

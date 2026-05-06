@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  buildDownloadResponse,
-  downloadPrivateUploadWithToken,
-} from "@/lib/server/private-upload";
+import { buildDownloadResponse, downloadPrivateUploadWithToken } from "@/lib/server/private-upload";
 
 export async function GET(_: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

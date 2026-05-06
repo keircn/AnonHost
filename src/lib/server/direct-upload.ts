@@ -285,7 +285,9 @@ export async function finalizeDirectUploadForUser(
       status: "ready",
       url: finalUrl,
     })
-    .where(and(eq(images.id, imageId), eq(images.userId, input.userId), eq(images.status, "pending")))
+    .where(
+      and(eq(images.id, imageId), eq(images.userId, input.userId), eq(images.status, "pending")),
+    )
     .returning({ id: images.id, url: images.url });
 
   if (!updatedImage?.url) {
@@ -299,7 +301,10 @@ export async function finalizeDirectUploadForUser(
   };
 }
 
-export async function markDirectUploadFailedForUser(userId: string, imageId: string): Promise<void> {
+export async function markDirectUploadFailedForUser(
+  userId: string,
+  imageId: string,
+): Promise<void> {
   const normalizedImageId = imageId.trim();
   if (!normalizedImageId) {
     throw new Error("imageId is required");

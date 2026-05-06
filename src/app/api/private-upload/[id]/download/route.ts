@@ -4,10 +4,7 @@ import {
   downloadPrivateUploadWithPassword,
 } from "@/lib/server/private-upload";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = (await request.json().catch(() => null)) as { password?: unknown } | null;
 

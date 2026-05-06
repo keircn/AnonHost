@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal, LinkIcon } from "lucide-react";
+import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStorageStats } from "@/lib/upload";
@@ -481,36 +481,42 @@ export function DashboardPageClient() {
                                 <Table>
                                   <TableHeader>
                                     <TableRow>
-                                      <TableHead>File</TableHead>
-                                      <TableHead>Size</TableHead>
-                                      <TableHead>Created</TableHead>
-                                      <TableHead>Mode</TableHead>
-                                      <TableHead className="min-w-64">Web Link</TableHead>
-                                      <TableHead className="w-32 text-right">Actions</TableHead>
+                                      <TableHead className="align-middle">File</TableHead>
+                                      <TableHead className="align-middle">Size</TableHead>
+                                      <TableHead className="align-middle">Created</TableHead>
+                                      <TableHead className="align-middle">Mode</TableHead>
+                                      <TableHead className="min-w-64 align-middle">
+                                        Web Link
+                                      </TableHead>
+                                      <TableHead className="w-32 text-right align-middle">
+                                        Actions
+                                      </TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
                                     {privateUploads.map((item) => (
                                       <TableRow key={item.id}>
-                                        <TableCell>
+                                        <TableCell className="align-middle">
                                           <PrivateFileSummary item={item} />
                                         </TableCell>
-                                        <TableCell>{formatFileSize(item.size)}</TableCell>
-                                        <TableCell>{formatShortDate(item.createdAt)}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="align-middle">
+                                          {formatFileSize(item.size)}
+                                        </TableCell>
+                                        <TableCell className="align-middle">
+                                          {formatShortDate(item.createdAt)}
+                                        </TableCell>
+                                        <TableCell className="align-middle">
                                           {item.oneUse ? "One-use" : "Reusable"}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="align-middle">
                                           <div className="grid min-w-0 max-w-xl gap-2">
                                             <DashboardLinkButton
-                                              icon={<LinkIcon className="h-4 w-4" />}
-                                              label="Web"
                                               value={item.webUrl}
                                               onCopy={() => copyValue(item.webUrl, "Web URL")}
                                             />
                                           </div>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right align-middle">
                                           <div className="flex justify-end gap-2">
                                             <Button
                                               variant="outline"
@@ -554,8 +560,6 @@ export function DashboardPageClient() {
                                     </div>
                                     <div className="grid gap-2">
                                       <DashboardLinkButton
-                                        icon={<LinkIcon className="h-4 w-4" />}
-                                        label="Web"
                                         value={item.webUrl}
                                         onCopy={() => copyValue(item.webUrl, "Web URL")}
                                       />
@@ -710,32 +714,16 @@ function PrivateFileSummary({ item }: { item: PrivateUploadItem }) {
   );
 }
 
-function DashboardLinkButton({
-  icon,
-  label,
-  value,
-  onCopy,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  onCopy: () => void;
-}) {
+function DashboardLinkButton({ value, onCopy }: { value: string; onCopy: () => void }) {
   return (
-    <div className="grid min-w-0 gap-1">
-      <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs font-medium">
-        {icon}
-        {label}
-      </span>
-      <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <code className="min-w-0 overflow-hidden border bg-muted px-2 py-1 text-xs text-ellipsis">
-          {value}
-        </code>
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>
-          <Copy className="h-4 w-4" />
-          Copy
-        </Button>
-      </div>
+    <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+      <code className="min-w-0 overflow-hidden border bg-muted px-2 py-1 text-xs leading-7 text-ellipsis">
+        {value}
+      </code>
+      <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>
+        <Copy className="h-4 w-4" />
+        Copy
+      </Button>
     </div>
   );
 }

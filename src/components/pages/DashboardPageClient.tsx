@@ -431,7 +431,7 @@ export function DashboardPageClient() {
               )}
             </TabsContent>
 
-            {privateUploads.length > 1 && (
+            {privateUploads.length !== 0 && (
               <TabsContent value="private" forceMount>
                 {activeTab === "private" && (
                   <motion.div className="grid gap-6 lg:gap-8" variants={staggerContainer}>

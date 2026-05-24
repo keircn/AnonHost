@@ -68,10 +68,13 @@
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3"
   },
-  "trustedDependencies": [
-    "@tailwindcss/oxide",
-    "protobufjs",
-    "sharp",
-    "unrs-resolver"
-  ]
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "esbuild",
+      "protobufjs",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
 }

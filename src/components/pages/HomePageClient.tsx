@@ -1,59 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  LuArchive,
-  LuCircleCheck,
-  LuCopy,
-  LuFile,
-  LuHardDrive,
-  LuImage,
-  LuKeyRound,
-  LuLink2,
-  LuLock,
-  LuMusic,
-  LuSettings,
-  LuShieldCheck,
-  LuTerminal,
-  LuUpload,
-  LuUsers,
-  LuVideo,
-} from "react-icons/lu";
 import bytes from "bytes";
 import useSWR from "swr";
 import { Stats } from "@/types/stats";
 
 const installCommand = "curl https://anonhost.cc/install | bash";
-
-const desktopShortcuts = [
-  { label: "Upload", hint: "drop files", icon: LuUpload, href: "/upload" },
-  { label: "Shorten", hint: "clean URLs", icon: LuLink2, href: "/shortener" },
-  { label: "Keys", hint: "API access", icon: LuKeyRound, href: "/settings" },
-  { label: "Settings", hint: "privacy", icon: LuSettings, href: "/settings" },
-];
-
-const transferRows = [
-  { name: "screenshot-0426.png", type: "image/png", progress: 100, status: "ready" },
-  { name: "demo-recording.mp4", type: "video/mp4", progress: 73, status: "uploading" },
-  { name: "release-build.zip", type: "application/zip", progress: 42, status: "queued" },
-];
-
-const fileTypes = [
-  { label: "PNG", icon: LuImage },
-  { label: "MP4", icon: LuVideo },
-  { label: "MP3", icon: LuMusic },
-  { label: "ZIP", icon: LuArchive },
-  { label: "TXT", icon: LuFile },
-];
-
-const privacyItems = [
-  "Private files by default",
-  "Embed controls per upload",
-  "Metadata stripping options",
-  "Custom domain routing",
+const curlExamples = [
+  { label: "Upload a screenshot via curl", cmd: 'curl -F "file=@screenshot.png" https://anonhost.cc/api/upload' },
+  { label: "Shorten a URL", cmd: "curl -X POST https://anonhost.cc/api/shortener -H \"Content-Type: application/json\" -d '{\"url\":\"https://example.com/long-url\"}'" },
 ];
 
 function formatNumber(value: number): string {
@@ -62,7 +18,6 @@ function formatNumber(value: number): string {
 
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
-  const router = useRouter();
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
   const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
     refreshInterval: 300000,
@@ -82,270 +37,98 @@ export function HomePageClient() {
       setIsCopied(true);
       toast.success("Install command copied");
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text:", err);
+    } catch {
       toast.error("Failed to copy install command");
     }
   };
 
   return (
-    <main className="w-full overflow-hidden">
-      <section className="container mx-auto max-w-7xl px-4 py-10 md:px-6 lg:py-14">
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)] sm:p-6">
-            <div className="space-y-4">
-              <div className="rounded-lg border bg-muted p-5 sm:p-6">
-                <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start">
-                  <div>
-                    <h1 className="max-w-4xl text-4xl font-black leading-[0.95] sm:text-6xl">
-                      A public drawer for files, links, and quick uploads.
-                    </h1>
-                  </div>
-                </div>
-                <p className="max-w-3xl text-base leading-7 text-muted-foreground">
-                  AnonHost gives you a small, direct place to put files, create short links, and
-                  wire uploads into ShareX, scripts, or the CLI.
-                </p>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-12 py-12 sm:py-20">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          AnonHost
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          File hosting. Short links. API access. No ads, no bullshit.
+        </p>
+      </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {desktopShortcuts.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => router.push(item.href)}
-                        className="rounded-lg border bg-card p-3 shadow-sm flex min-h-24 flex-col items-start justify-between text-left transition-transform active:translate-x-1 active:translate-y-1"
-                      >
-                        <Icon className="h-7 w-7" />
-                        <span>
-                          <span className="block text-sm font-bold">{item.label}</span>
-                          <span className="text-muted-foreground block text-xs">{item.hint}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="rounded-lg border bg-card p-3 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="font-bold">Transfer queue</span>
-                  <span className="font-mono text-xs text-muted-foreground">3 JOBS</span>
-                </div>
-                <div className="space-y-2">
-                  {transferRows.map((row) => (
-                    <TransferRow key={row.name} {...row} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-lg border bg-card p-3 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="font-bold">Instance counters</span>
-                  <LuHardDrive className="h-4 w-4" />
-                </div>
-                <div className="grid gap-2">
-                  <CounterLine
-                    icon={LuUsers}
-                    label="Users"
-                    value={isLoading ? "..." : formatNumber(stats?.users ?? 0)}
-                  />
-                  <CounterLine
-                    icon={LuImage}
-                    label="Uploads"
-                    value={isLoading ? "..." : formatNumber(stats?.uploads ?? 0)}
-                  />
-                  <CounterLine icon={LuHardDrive} label="Storage" value={storage} />
-                </div>
-              </div>
-
-              <div className="rounded-lg border bg-muted p-3">
-                <div className="mb-3 flex items-center gap-2">
-                  <LuTerminal className="h-4 w-4" />
-                  <span className="font-bold">Install CLI</span>
-                </div>
-                <code className="rounded-lg border bg-muted block overflow-x-auto whitespace-nowrap p-2 font-mono text-xs">
-                  {installCommand}
-                </code>
-                <button
-                  type="button"
-                  className="mt-3 w-full rounded-lg border bg-secondary px-4 py-2 text-sm font-medium hover:bg-secondary/80 transition-colors"
-                  onClick={handleCopy}
-                >
-                  {isCopied ? "Copied" : "Copy command"}
-                </button>
-              </div>
-            </div>
+      <div className="grid grid-cols-3 divide-x rounded-md border text-sm">
+        <div className="px-4 py-3">
+          <div className="font-mono text-lg font-bold tabular-nums">
+            {isLoading ? ".." : formatNumber(stats?.users ?? 0)}
           </div>
+          <div className="text-xs text-muted-foreground">users</div>
         </div>
-      </section>
-
-      <section className="py-8">
-        <div className="container mx-auto grid max-w-7xl w-full gap-4 px-2 md:grid-cols-[1.1fr_0.9fr] md:px-6">
-          <div className="rounded-lg border bg-card shadow-sm">
-            <div className="bg-primary text-primary-foreground px-3 py-2 font-semibold rounded-t-lg">
-              <WindowTitle title="SUPPORTED FILE TYPES" />
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                {fileTypes.map((type) => {
-                  const Icon = type.icon;
-                  return (
-                    <div key={type.label} className="rounded-lg border bg-muted p-4 text-center">
-                      <Icon className="mx-auto mb-3 h-7 w-7" />
-                      <span className="font-mono text-xs">{type.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+        <div className="px-4 py-3">
+          <div className="font-mono text-lg font-bold tabular-nums">
+            {isLoading ? ".." : formatNumber(stats?.uploads ?? 0)}
           </div>
-
-          <div className="rounded-lg border bg-card shadow-sm">
-            <div className="bg-primary text-primary-foreground px-3 py-2 font-semibold rounded-t-lg">
-              <WindowTitle title="UPLOAD DEFAULTS" />
-            </div>
-            <div className="p-4">
-              <div className="grid gap-2 sm:grid-cols-2">
-                {privacyItems.map((item) => (
-                  <div key={item} className="rounded-lg border bg-muted flex items-center gap-2 p-3 text-sm">
-                    <LuShieldCheck className="h-4 w-4 shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <div className="text-xs text-muted-foreground">files</div>
         </div>
-      </section>
-
-      <section className="container mx-auto grid max-w-7xl gap-4 px-4 py-8 md:grid-cols-3 md:px-6">
-        <SystemPanel
-          title="ShareX ready"
-          command="POST /api/upload"
-          body="Create API keys and point ShareX at AnonHost for fast screen captures."
-        />
-        <SystemPanel
-          title="Short links"
-          command="POST /api/shortener"
-          body="Make readable links with titles, expiry options, and click counts."
-        />
-        <SystemPanel
-          title="Direct storage"
-          command="PUT R2 OBJECT"
-          body="Large files use direct upload paths so the app stays responsive."
-        />
-      </section>
-    </main>
-  );
-}
-
-function WindowTitle({ title, right }: { title: string; right?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="truncate">{title}</span>
-      {right && <span className="flex shrink-0 items-center gap-2">{right}</span>}
-    </div>
-  );
-}
-
-function TransferRow({
-  name,
-  type,
-  progress,
-  status,
-}: {
-  name: string;
-  type: string;
-  progress: number;
-  status: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-muted grid gap-2 p-3">
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="truncate font-bold">{name}</span>
-        <span className="font-mono text-xs uppercase text-muted-foreground">{status}</span>
+        <div className="px-4 py-3">
+          <div className="font-mono text-lg font-bold tabular-nums">{storage}</div>
+          <div className="text-xs text-muted-foreground">stored</div>
+        </div>
       </div>
-      <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-        <span>{type}</span>
-        <span>{progress}%</span>
-      </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${progress < 100 ? 'bg-primary' : 'bg-green-500'}`}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
-function CounterLine({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof LuUsers;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-muted flex items-center justify-between gap-3 p-2">
-      <span className="flex min-w-0 items-center gap-2 text-sm">
-        <Icon className="h-4 w-4 shrink-0" />
-        <span className="truncate">{label}</span>
-      </span>
-      <span className="font-mono text-sm font-bold">{value}</span>
-    </div>
-  );
-}
-
-function SystemPanel({ title, command, body }: { title: string; command: string; body: string }) {
-  return (
-    <div className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-bold">{title}</h2>
-        <LuCircleCheck className="h-4 w-4" />
-      </div>
-      <code className="rounded-lg border bg-muted mb-3 block p-2 font-mono text-xs">{command}</code>
-      <p className="text-sm leading-6 text-muted-foreground">{body}</p>
-    </div>
-  );
-}
-
-function AccountSlot({
-  name,
-  price,
-  body,
-  action,
-  onClick,
-}: {
-  name: string;
-  price: string;
-  body: string;
-  action: string;
-  onClick: () => void;
-}) {
-  return (
-    <div className="rounded-lg border bg-muted p-4">
-      <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="space-y-6">
         <div>
-          <h3 className="font-bold">{name}</h3>
-          <p className="text-muted-foreground text-xs">ACCOUNT SLOT</p>
+          <h2 className="font-semibold">What this is</h2>
+          <div className="mt-2 space-y-2 text-sm text-muted-foreground leading-relaxed">
+            <p>
+              A place to dump files and share them. Upload an image, get a URL.
+              Works with ShareX, curl, or the web interface.
+            </p>
+            <p>
+              URLs can be shortlinks with titles and click tracking. Everything
+              has an API key if you want to wire it into something.
+            </p>
+          </div>
         </div>
-        <span className="font-mono text-sm font-bold">{price}</span>
+
+        <div>
+          <h2 className="font-semibold">CLI</h2>
+          <div className="mt-2 flex items-center gap-2">
+            <code className="flex-1 overflow-x-auto rounded-md border bg-muted px-3 py-2 font-mono text-sm whitespace-nowrap">
+              {installCommand}
+            </code>
+            <button
+              onClick={handleCopy}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy"
+            >
+              {isCopied ? (
+                <svg className="size-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              ) : (
+                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="font-semibold">Quick examples</h2>
+          <div className="mt-2 space-y-3 text-sm">
+            {curlExamples.map((ex) => (
+              <div key={ex.label} className="rounded-md border p-3">
+                <div className="text-xs text-muted-foreground mb-1">{ex.label}</div>
+                <code className="block font-mono text-xs">{ex.cmd}</code>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <p className="min-h-16 text-sm leading-6 text-muted-foreground">{body}</p>
-      <button
-        type="button"
-        className="mt-4 w-full rounded-lg border bg-secondary px-4 py-2 text-sm font-medium hover:bg-secondary/80 transition-colors"
-        onClick={onClick}
-      >
-        {action}
-      </button>
+
+      <div className="border-t pt-6 text-xs text-muted-foreground">
+        <div className="flex items-center gap-4">
+          <span>&copy; {new Date().getFullYear()} AnonHost</span>
+          <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
+          <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
+          <a href="https://ko-fi.com/qkeiran" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Support</a>
+          <a href="https://github.com/keiranst/anonhost" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+        </div>
+      </div>
     </div>
   );
 }

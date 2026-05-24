@@ -91,8 +91,8 @@ function buildConvertedFilename(originalName: string, settings: FileSettings): s
 export interface FinalizeUploadInput {
   file: File | Blob;
   originalName: string;
-  userId: string;
-  isPremium: boolean;
+  userId?: string;
+  isPremium?: boolean;
   baseUrl: string;
   rawSettings?: string | FileSettings | null;
   customDomain?: string | null;
@@ -100,14 +100,25 @@ export interface FinalizeUploadInput {
 }
 
 export async function finalizeUpload(input: FinalizeUploadInput) {
-  const userSettings = await prisma.settings.findUnique({
-    where: { userId: input.userId },
-    select: {
-      makeImagesPublic: true,
-      customDomain: true,
-      disableEmbedByDefault: true,
-    },
-  });
+  const isAnonymous = !input.userId;
+
+  let userSettings: {
+    makeImagesPublic: boolean;
+    customDomain: string | null;
+    disableEmbedByDefault: boolean;
+  } | null = null;
+
+  if (!isAnonymous) {
+    const result = await prisma.settings.findUnique({
+      where: { userId: input.userId! },
+      select: {
+        makeImagesPublic: true,
+        customDomain: true,
+        disableEmbedByDefault: true,
+      },
+    });
+    userSettings = result;
+  }
 
   const settings = parseSettings(input.rawSettings, {
     makeImagesPublic: userSettings?.makeImagesPublic ?? false,
@@ -122,9 +133,9 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
     throw new Error(`File too large. Maximum file size is ${limitInMb}MB for all users`);
   }
 
-  if (!input.isPremium) {
+  if (!input.isPremium && !isAnonymous) {
     const totalUsed = await prisma.media.aggregate({
-      where: { userId: input.userId },
+      where: { userId: input.userId! },
       _sum: { size: true },
     });
 
@@ -140,7 +151,8 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
 
   const processedFile = await processFile(input.file, settings);
   const fileId = input.fileId ?? nanoid(6);
-  const uploadResult = await uploadFile(processedFile, input.userId, filename, fileId);
+  const storageUserId = isAnonymous ? "anon" : input.userId!;
+  const uploadResult = await uploadFile(processedFile, storageUserId, filename, fileId);
 
   let archiveMetadata = null;
   let archiveType = null;
@@ -159,6 +171,8 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
 
   const isArchiveUpload = ArchiveProcessor.isArchive(input.originalName);
 
+  const deletionToken = isAnonymous ? nanoid(32) : null;
+
   const media = await prisma.media.create({
     data: {
       id: fileId,
@@ -169,7 +183,8 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
       height: uploadResult.height,
       duration: uploadResult.duration || null,
       type: (isArchiveUpload ? "ARCHIVE" : uploadResult.type.toUpperCase()) as MediaType,
-      userId: input.userId,
+      userId: input.userId ?? null,
+      deletionToken,
       public: Boolean(settings.public),
       disableEmbed: Boolean(settings.disableEmbed),
       domain: input.customDomain || null,
@@ -201,5 +216,6 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
     domain: media.domain,
     createdAt: media.createdAt,
     baseUrl: input.baseUrl,
+    deletionToken: deletionToken ?? undefined,
   };
 }

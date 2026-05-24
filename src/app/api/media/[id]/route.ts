@@ -10,35 +10,41 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
   const { id } = await context.params;
   const session = await getServerSession(authOptions);
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const deletionToken = req.nextUrl.searchParams.get("deletionToken");
 
-  if (!session && !apiKey) {
+  const hasAuth = session || apiKey;
+  const hasDeletionToken = typeof deletionToken === "string" && deletionToken.length > 0;
+
+  if (!hasAuth && !hasDeletionToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = apiKey
-    ? ((
-        await prisma.apiKey.findUnique({
-          where: { key: apiKey },
-          select: { userId: true },
-        })
-      )?.userId ?? "")
-    : session!.user.id;
+  let userId: string | null = null;
 
-  if (!userId) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+  if (apiKey) {
+    const key = await prisma.apiKey.findUnique({
+      where: { key: apiKey },
+      select: { userId: true },
+    });
+    userId = key?.userId ?? null;
+  } else if (session) {
+    userId = session.user.id;
   }
 
   try {
     const media = await prisma.media.findUnique({
       where: { id },
-      select: { userId: true, url: true, size: true },
+      select: { userId: true, url: true, size: true, deletionToken: true },
     });
 
     if (!media) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
     }
 
-    if (media.userId !== userId) {
+    const authorizedViaOwnership = userId && media.userId === userId;
+    const authorizedViaToken = hasDeletionToken && media.deletionToken === deletionToken;
+
+    if (!authorizedViaOwnership && !authorizedViaToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -51,16 +57,23 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
       ? deleteFromR2(media.url)
       : deleteFromLocalStorage(media.url);
 
-    await Promise.all([
+    const ops = [
       storageDeleteTask.catch((error) => {
         console.warn("Storage delete failed; continuing with DB delete:", error);
       }),
       prisma.media.delete({ where: { id } }),
-      prisma.user.update({
-        where: { id: userId.toString() },
-        data: { storageUsed: { decrement: media.size } },
-      }),
-    ]);
+    ];
+
+    if (authorizedViaOwnership && media.userId) {
+      ops.push(
+        prisma.user.update({
+          where: { id: media.userId },
+          data: { storageUsed: { decrement: media.size } },
+        }),
+      );
+    }
+
+    await Promise.all(ops);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -5,8 +5,32 @@ import prisma from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/auth";
 import { finalizeUpload } from "@/lib/server/upload-finalizer";
 
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 5;
+const rateLimitMap = new Map<string, { count: number; start: number }>();
+
 function isErrorWithCause(error: unknown): error is { cause: unknown } {
   return typeof error === "object" && error !== null && "cause" in error;
+}
+
+function getClientIp(req: NextRequest): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || req.headers.get("x-real-ip")
+    || "127.0.0.1";
+}
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  if (!record || now - record.start > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { count: 1, start: now });
+    return true;
+  }
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  record.count++;
+  return true;
 }
 
 export async function POST(req: NextRequest) {
@@ -14,11 +38,19 @@ export async function POST(req: NextRequest) {
   const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
   const baseUrl = process.env.NEXTAUTH_URL;
 
-  if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const isAnonymous = !session && !apiKey;
+
+  if (isAnonymous) {
+    const ip = getClientIp(req);
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 },
+      );
+    }
   }
 
-  let userId: string;
+  let userId: string | undefined;
   let isPremium = false;
 
   if (apiKey) {
@@ -33,9 +65,9 @@ export async function POST(req: NextRequest) {
       where: { key: apiKey },
       data: { lastUsed: new Date() },
     });
-  } else {
-    userId = session!.user.id.toString();
-    isPremium = session!.user.premium || false;
+  } else if (session) {
+    userId = session.user.id;
+    isPremium = session.user.premium || false;
   }
 
   try {

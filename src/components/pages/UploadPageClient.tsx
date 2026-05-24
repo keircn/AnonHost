@@ -3,7 +3,7 @@
 import type React from "react";
 import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,11 +89,14 @@ interface UploadedLink {
   webUrl: string;
   terminalUrl?: string;
   curlCommand?: string;
+  deletionUrl?: string;
+  deletionToken?: string;
 }
 
 export function UploadPageClient() {
   const { status } = useSession();
   const router = useRouter();
+  const isAnonymous = status === "unauthenticated";
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -104,10 +107,6 @@ export function UploadPageClient() {
   const [privatePassword, setPrivatePassword] = useState("");
   const [privateOneUse, setPrivateOneUse] = useState(false);
   const [uploadedLinks, setUploadedLinks] = useState<UploadedLink[]>([]);
-
-  if (status === "unauthenticated") {
-    redirect("/");
-  }
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -355,13 +354,42 @@ export function UploadPageClient() {
     return finalizeResult.data;
   };
 
+  const uploadFileStandard = async (file: File, index: number) => {
+    setUploadProgress((prev) => ({
+      ...prev,
+      [index]: { progress: 0, status: "uploading" },
+    }));
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: "Upload failed" }));
+      throw new Error(err.error || "Upload failed");
+    }
+
+    const data = await response.json();
+
+    setUploadProgress((prev) => ({
+      ...prev,
+      [index]: { progress: 100, status: "completed" },
+    }));
+
+    return data;
+  };
+
   const handleUpload = async () => {
     if (files.length === 0) {
       toast.error("No files selected");
       return;
     }
 
-    if (privateMode && privatePassword.trim().length < 8) {
+    if (!isAnonymous && privateMode && privatePassword.trim().length < 8) {
       toast.error("Private uploads need a password with at least 8 characters");
       return;
     }
@@ -379,8 +407,13 @@ export function UploadPageClient() {
         limit(async () => {
           const uploadStartTime = Date.now();
 
-          const settings = fileSettings[index] || defaultFileSettings;
-          const result = await uploadDirectFile(file, index, settings);
+          let result;
+          if (isAnonymous) {
+            result = await uploadFileStandard(file, index);
+          } else {
+            const settings = fileSettings[index] || defaultFileSettings;
+            result = await uploadDirectFile(file, index, settings);
+          }
 
           completedUploads++;
           const uploadDuration = (Date.now() - uploadStartTime) / 1000;
@@ -421,7 +454,7 @@ export function UploadPageClient() {
             (
               item,
             ): item is {
-              result: PromiseFulfilledResult<FinalizeDirectUploadData>;
+              result: PromiseFulfilledResult<any>;
               file: File;
             } => item.result.status === "fulfilled",
           )
@@ -430,12 +463,16 @@ export function UploadPageClient() {
             webUrl: result.value.webUrl || result.value.url,
             terminalUrl: result.value.terminalUrl,
             curlCommand: result.value.curlCommand,
+            deletionUrl: result.value.deletionToken
+              ? `${window.location.origin}/api/media/${result.value.id}?deletionToken=${result.value.deletionToken}`
+              : undefined,
+            deletionToken: result.value.deletionToken,
           }));
 
-        if (privateMode) {
+        if (privateMode || isAnonymous) {
           setUploadedLinks(links);
           setFiles([]);
-          setPrivatePassword("");
+          if (privateMode) setPrivatePassword("");
         } else {
           router.push("/dashboard");
         }
@@ -466,9 +503,13 @@ export function UploadPageClient() {
         <Card className="overflow-hidden p-0">
           <div className="bg-primary text-primary-foreground flex items-center justify-between px-3 py-2">
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold sm:text-base">Upload files</h1>
+              <h1 className="truncate text-sm font-bold sm:text-base">
+                {isAnonymous ? "Anonymous upload" : "Upload files"}
+              </h1>
               <p className="hidden text-xs text-white/90 sm:block">
-                Regular uploads or password-protected private transfers
+                {isAnonymous
+                  ? "Files are publicly accessible. Save the deletion URL to remove them."
+                  : "Regular uploads or password-protected private transfers"}
               </p>
             </div>
             <div className="flex gap-1">
@@ -477,53 +518,55 @@ export function UploadPageClient() {
             </div>
           </div>
           <CardContent className="space-y-4 p-3 sm:p-5">
-            <div className="mb-4 rounded-lg border bg-card p-3 shadow-sm sm:mb-5 sm:p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-lg border bg-secondary p-1.5">
-                      <Lock className="h-4 w-4" />
-                    </span>
-                    <h2 className="text-base font-semibold">Private upload</h2>
+            {!isAnonymous && (
+              <div className="mb-4 rounded-lg border bg-card p-3 shadow-sm sm:mb-5 sm:p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-lg border bg-secondary p-1.5">
+                        <Lock className="h-4 w-4" />
+                      </span>
+                      <h2 className="text-base font-semibold">Private upload</h2>
+                    </div>
+                    <p className="text-muted-foreground max-w-2xl text-sm">
+                      Password-protect these files and generate a one-use terminal download URL.
+                    </p>
                   </div>
-                  <p className="text-muted-foreground max-w-2xl text-sm">
-                    Password-protect these files and generate a one-use terminal download URL.
-                  </p>
+                  <Switch
+                    checked={privateMode}
+                    onCheckedChange={setPrivateMode}
+                    aria-label="Toggle private upload"
+                  />
                 </div>
-                <Switch
-                  checked={privateMode}
-                  onCheckedChange={setPrivateMode}
-                  aria-label="Toggle private upload"
-                />
-              </div>
 
-              {privateMode && (
-                <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,auto)] lg:items-end">
-                  <div className="space-y-2">
-                    <Label htmlFor="private-password">Password</Label>
-                    <Input
-                      id="private-password"
-                      type="password"
-                      value={privatePassword}
-                      minLength={8}
-                      onChange={(event) => setPrivatePassword(event.target.value)}
-                      disabled={isUploading}
-                      autoComplete="new-password"
-                    />
+                {privateMode && (
+                  <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,auto)] lg:items-end">
+                    <div className="space-y-2">
+                      <Label htmlFor="private-password">Password</Label>
+                      <Input
+                        id="private-password"
+                        type="password"
+                        value={privatePassword}
+                        minLength={8}
+                        onChange={(event) => setPrivatePassword(event.target.value)}
+                        disabled={isUploading}
+                        autoComplete="new-password"
+                      />
+                    </div>
+                    <div className="flex min-h-9 items-center justify-between gap-4 rounded-lg border bg-card px-3 py-2">
+                      <Label htmlFor="private-one-use" className="text-sm leading-tight">
+                        Delete after web download
+                      </Label>
+                      <Switch
+                        id="private-one-use"
+                        checked={privateOneUse}
+                        onCheckedChange={setPrivateOneUse}
+                      />
+                    </div>
                   </div>
-                  <div className="flex min-h-9 items-center justify-between gap-4 rounded-lg border bg-card px-3 py-2">
-                    <Label htmlFor="private-one-use" className="text-sm leading-tight">
-                      Delete after web download
-                    </Label>
-                    <Switch
-                      id="private-one-use"
-                      checked={privateOneUse}
-                      onCheckedChange={setPrivateOneUse}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             <div
               className={`rounded-lg border-2 border-dashed p-5 text-center transition-colors sm:p-8 ${
@@ -542,7 +585,9 @@ export function UploadPageClient() {
                 <div className="space-y-2">
                   <h3 className="text-base font-semibold sm:text-lg">Drop files here</h3>
                   <p className="text-muted-foreground text-sm sm:text-base">
-                    Click to browse from your device, or paste from your clipboard
+                    {isAnonymous
+                      ? "Files will be public. You will receive a deletion URL."
+                      : "Click to browse from your device, or paste from your clipboard"}
                   </p>
                 </div>
                 <input
@@ -575,9 +620,11 @@ export function UploadPageClient() {
                   >
                     {isUploading
                       ? "Uploading..."
-                      : privateMode
-                        ? "Create Private Uploads"
-                        : "Upload Files"}
+                      : isAnonymous
+                        ? "Upload Anonymously"
+                        : privateMode
+                          ? "Create Private Uploads"
+                          : "Upload Files"}
                   </Button>
                 </div>
                 <div className="grid gap-2">
@@ -643,10 +690,18 @@ export function UploadPageClient() {
             {uploadedLinks.length > 0 && (
               <div className="mt-6 space-y-4 rounded-lg border bg-card p-4 shadow-sm sm:mt-8">
                 <div>
-                  <h3 className="text-lg font-semibold">Private Links</h3>
-                  <p className="text-muted-foreground text-sm">
-                    The terminal URL is one-use. The web URL requires the password.
-                  </p>
+                  <h3 className="text-lg font-semibold">
+                    {isAnonymous ? "Upload Complete" : "Private Links"}
+                  </h3>
+                  {isAnonymous ? (
+                    <p className="text-muted-foreground text-sm">
+                      Save the deletion URL to remove this file later. It is only shown once.
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      The terminal URL is one-use. The web URL requires the password.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-4">
                   {uploadedLinks.map((link) => (
@@ -656,6 +711,13 @@ export function UploadPageClient() {
                     >
                       <p className="text-sm font-medium break-all">{link.filename}</p>
                       <UploadLinkRow label="Web URL" value={link.webUrl} icon="web" />
+                      {isAnonymous && link.deletionUrl && (
+                        <UploadLinkRow
+                          label="Deletion URL"
+                          value={link.deletionUrl}
+                          icon="terminal"
+                        />
+                      )}
                       {link.terminalUrl && (
                         <UploadLinkRow
                           label="Terminal URL"

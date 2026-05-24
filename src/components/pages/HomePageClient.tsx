@@ -2,34 +2,11 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import bytes from "bytes";
-import useSWR from "swr";
-import { Stats } from "@/types/stats";
 
 const installCommand = "curl https://anonhost.cc/install | bash";
-const curlExamples = [
-  { label: "Upload a screenshot via curl", cmd: 'curl -F "file=@screenshot.png" https://anonhost.cc/api/upload' },
-  { label: "Shorten a URL", cmd: "curl -X POST https://anonhost.cc/api/shortener -H \"Content-Type: application/json\" -d '{\"url\":\"https://example.com/long-url\"}'" },
-];
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US").format(Math.max(0, value));
-}
 
 export function HomePageClient() {
   const [isCopied, setIsCopied] = useState(false);
-  const fetcher = (url: string) => fetch(url).then((r) => r.json());
-  const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
-    refreshInterval: 300000,
-  });
-
-  const storage = isLoading
-    ? "..."
-    : bytes(Math.max(0, stats?.storage ?? 0), {
-        unitSeparator: " ",
-        decimalPlaces: 1,
-        fixedDecimals: true,
-      }) || "0 B";
 
   const handleCopy = async () => {
     try {
@@ -53,24 +30,7 @@ export function HomePageClient() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 divide-x rounded-md border text-sm">
-        <div className="px-4 py-3">
-          <div className="font-mono text-lg font-bold tabular-nums">
-            {isLoading ? ".." : formatNumber(stats?.users ?? 0)}
-          </div>
-          <div className="text-xs text-muted-foreground">users</div>
-        </div>
-        <div className="px-4 py-3">
-          <div className="font-mono text-lg font-bold tabular-nums">
-            {isLoading ? ".." : formatNumber(stats?.uploads ?? 0)}
-          </div>
-          <div className="text-xs text-muted-foreground">files</div>
-        </div>
-        <div className="px-4 py-3">
-          <div className="font-mono text-lg font-bold tabular-nums">{storage}</div>
-          <div className="text-xs text-muted-foreground">stored</div>
-        </div>
-      </div>
+      <img src="/haruhi-suzumiya-plotting.gif" alt="" className="w-72 self-center" />
 
       <div className="space-y-6">
         <div>
@@ -96,7 +56,7 @@ export function HomePageClient() {
             <button
               onClick={handleCopy}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground hover:text-foreground transition-colors"
-              title="Copy"
+              title="Copy install command"
             >
               {isCopied ? (
                 <svg className="size-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
@@ -107,28 +67,8 @@ export function HomePageClient() {
           </div>
         </div>
 
-        <div>
-          <h2 className="font-semibold">Quick examples</h2>
-          <div className="mt-2 space-y-3 text-sm">
-            {curlExamples.map((ex) => (
-              <div key={ex.label} className="rounded-md border p-3">
-                <div className="text-xs text-muted-foreground mb-1">{ex.label}</div>
-                <code className="block font-mono text-xs">{ex.cmd}</code>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
-      <div className="border-t pt-6 text-xs text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <span>&copy; {new Date().getFullYear()} AnonHost</span>
-          <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-          <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-          <a href="https://ko-fi.com/qkeiran" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Support</a>
-          <a href="https://github.com/keiranst/anonhost" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
-        </div>
-      </div>
     </div>
   );
 }

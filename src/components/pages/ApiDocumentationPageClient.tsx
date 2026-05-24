@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
+import bytes from "bytes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { endpoints } from "@/lib/endpoints";
 import { EndpointCard } from "@/components/Docs/EndpointCard";
 import { CodeBlock } from "@/components/Docs/CodeBlock";
+import { Stats } from "@/types/stats";
 
 const uploadJavaScript = `const file = fileInput.files[0];
 
@@ -144,6 +147,23 @@ export function ApiDocumentationPageClient() {
     setExpandedSection((prev) => (prev === section ? null : section));
   };
 
+  function formatNumber(value: number): string {
+    return new Intl.NumberFormat("en-US").format(Math.max(0, value));
+  }
+
+  const fetcher = (url: string) => fetch(url).then((r) => r.json());
+  const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
+    refreshInterval: 300000,
+  });
+
+  const storage = isLoading
+    ? "..."
+    : bytes(Math.max(0, stats?.storage ?? 0), {
+        unitSeparator: " ",
+        decimalPlaces: 1,
+        fixedDecimals: true,
+      }) || "0 B";
+
   const examples = [
     {
       title: "Upload an Image",
@@ -206,6 +226,25 @@ export function ApiDocumentationPageClient() {
                   </div>
                 </CardContent>
               </Card>
+
+              <div className="grid grid-cols-3 divide-x rounded-md border text-sm">
+                <div className="px-4 py-3">
+                  <div className="font-mono text-lg font-bold tabular-nums">
+                    {isLoading ? ".." : formatNumber(stats?.users ?? 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">users</div>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="font-mono text-lg font-bold tabular-nums">
+                    {isLoading ? ".." : formatNumber(stats?.uploads ?? 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">files</div>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="font-mono text-lg font-bold tabular-nums">{storage}</div>
+                  <div className="text-xs text-muted-foreground">stored</div>
+                </div>
+              </div>
             </div>
           </TabsContent>
 

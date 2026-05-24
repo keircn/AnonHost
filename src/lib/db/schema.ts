@@ -91,9 +91,8 @@ export const media = pgTable("Media", {
   height: integer("height"),
   duration: integer("duration"),
   type: mediaTypeEnum("type").notNull().default("IMAGE"),
-  userId: uuid("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  deletionToken: varchar("deletionToken", { length: 64 }),
   public: boolean("public").notNull().default(false),
   disableEmbed: boolean("disableEmbed").notNull().default(false),
   domain: varchar("domain", { length: 253 }),

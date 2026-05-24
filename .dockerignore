@@ -4,4 +4,7 @@
 node_modules
 uploads
 .env
+.env.*
 *.log
+*.md
+.gitignore

@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { UserMenuProps } from "@/types/user-menu-props";
+import { Upload, Settings, LogOut, Menu, X, ExternalLink, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useNavbar } from "@/components/Layout/NavbarContext";
+import { Logo } from "@/components/Brand/Logo";
+import { ModeToggle } from "@/components/Layout/ModeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,18 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Settings, LogOut, Menu, X, ExternalLink } from "lucide-react";
-import { useState } from "react";
-import { useNavbar } from "@/components/Layout/NavbarContext";
-import { Logo } from "@/components/Brand/Logo";
 
 export function Navbar() {
-  interface NavLink {
-    href: string;
-    label: string;
-  }
-
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
@@ -33,164 +27,169 @@ export function Navbar() {
 
   if (!showNavbar) return null;
 
-  const NavigationLinks = () => (
-    <>
-      {[
-        isAuthenticated && { href: "/dashboard", label: "Dashboard" },
-        isAuthenticated && { href: "/upload", label: "Upload" },
-        isAuthenticated && { href: "/shortener", label: "Shortener" },
-        { href: "/api", label: "API" },
-        session?.user?.admin && { href: "/admin", label: "Admin" },
-      ]
-        .filter((link): link is NavLink => Boolean(link))
-        .map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`border px-3 py-2 text-sm font-bold transition-colors ${
-              pathname === link.href
-                ? "border-t-zinc-700 border-l-zinc-700 border-r-white border-b-white bg-white text-foreground shadow-[inset_1px_1px_0_#808080]"
-                : "border-transparent text-foreground hover:border-t-white hover:border-l-white hover:border-r-zinc-700 hover:border-b-zinc-700 hover:bg-secondary"
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            {link.label}
-          </Link>
-        ))}
-    </>
-  );
+  const navLinks = [
+    ...(isAuthenticated ? [{ href: "/dashboard", label: "Dashboard" }] : []),
+    ...(isAuthenticated ? [{ href: "/upload", label: "Upload" }] : []),
+    ...(isAuthenticated ? [{ href: "/shortener", label: "Shortener" }] : []),
+    { href: "/api", label: "API" },
+    ...(session?.user?.admin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
+
+  const NavLink = ({ href, label }: { href: string; label: string }) => {
+    const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+    return (
+      <Link
+        href={href}
+        className={cn(
+          "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+          isActive
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent",
+        )}
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-2 border-b-zinc-700 bg-card shadow-[inset_0_1px_0_#ffffff]">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-3 sm:px-4 xl:px-6">
-        <div className="flex min-w-0 items-center gap-4 lg:gap-6">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="-ml-2 flex min-w-0 items-center gap-2 border border-transparent px-2 py-2 transition-colors hover:border-t-white hover:border-l-white hover:border-r-zinc-700 hover:border-b-zinc-700 hover:bg-secondary"
+            className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <Logo variant="image" size="sm" />
-            <span className="truncate text-sm font-bold transition-colors lg:text-base">
-              AnonHost
-            </span>
+            <Logo variant="svg" size="sm" />
+            <span className="font-bold text-base tracking-tight">AnonHost</span>
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            <NavigationLinks />
+          <nav className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
           </nav>
         </div>
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-4 lg:gap-6">
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+
           <div className="hidden md:block">
             {isLoading ? (
-              <Button variant="ghost" size="sm" disabled>
-                Loading...
-              </Button>
+              <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
             ) : isAuthenticated ? (
-              <UserMenu session={session} />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
+                    {session?.user?.name?.charAt(0)?.toUpperCase() || <User className="size-4" />}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{session?.user?.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/upload" className="flex items-center gap-2 cursor-pointer">
+                      <Upload className="size-4" />
+                      <span>Upload</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center gap-2 cursor-pointer">
+                      <Settings className="size-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => signOut({ callbackUrl: "/" })}>
+                    <LogOut className="size-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Link href="/register">
-                <Button size="sm" className="px-4">
-                  Log in
-                </Button>
+              <Link
+                href="/register"
+                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              >
+                Sign In
               </Link>
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
+          <button
+            className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+            {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
         </div>
       </div>
 
       {isMobileMenuOpen && (
-        <div className="border-t-2 border-t-zinc-700 bg-card lg:hidden">
-          <nav className="flex flex-col gap-1 px-3 py-4 sm:px-4">
-            <NavigationLinks />
-            {isAuthenticated ? (
-              <div className="mt-4 grid gap-2 border-t pt-4">
-                <Link href="/settings" className="block" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full justify-start">
-                    <Settings className="h-4 w-4" />
+        <div className="border-t md:hidden bg-background animate-slide-down">
+          <nav className="flex flex-col gap-1 px-4 py-3">
+            {navLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
+            <div className="mt-3 border-t pt-3 space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-3 px-3 py-2 text-sm">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                      {session?.user?.name?.charAt(0)?.toUpperCase() || <User className="size-4" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{session?.user?.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Settings className="size-4" />
                     Settings
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Log out
-                </Button>
-              </div>
-            ) : (
-              <div className="mt-4 space-y-3 border-t pt-4">
-                <Link href="/register" className="block">
-                  <Button className="w-full">Sign In</Button>
-                </Link>
-                <a
-                  href="https://ko-fi.com/qkeiran"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <Button variant="outline" className="w-full gap-2">
+                  </Link>
+                  <button
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                  >
+                    <LogOut className="size-4" />
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className="flex w-full items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <a
+                    href="https://ko-fi.com/qkeiran"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                  >
                     Support Us
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </a>
-              </div>
-            )}
+                    <ExternalLink className="size-4" />
+                  </a>
+                </>
+              )}
+            </div>
           </nav>
         </div>
       )}
     </header>
-  );
-}
-
-function UserMenu({ session }: UserMenuProps) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 lg:h-10 lg:w-10">
-          <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
-            <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
-            <AvatarFallback>{session?.user?.name?.charAt(0) || "U"}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 lg:w-64" align="end" forceMount>
-        <div className="flex flex-col p-2 lg:p-3">
-          <p className="text-sm font-medium lg:text-base">{session?.user?.name}</p>
-          <p className="text-muted-foreground mt-1 text-xs lg:text-sm">{session?.user?.email}</p>
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/upload" className="flex w-full cursor-pointer">
-            <Upload className="mr-2 h-4 w-4" />
-            <span>Upload</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex w-full cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onClick={() => signOut({ callbackUrl: "/" })}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

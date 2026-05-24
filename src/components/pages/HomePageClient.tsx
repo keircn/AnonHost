@@ -5,12 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  Badge as RetroBadge,
-  Button as RetroButton,
-  Card as RetroCard,
-  ProgressBar,
-} from "retro-react";
-import {
   LuArchive,
   LuCircleCheck,
   LuCopy,
@@ -97,10 +91,10 @@ export function HomePageClient() {
   return (
     <main className="w-full overflow-hidden">
       <section className="container mx-auto max-w-7xl px-4 py-10 md:px-6 lg:py-14">
-        <RetroCard sx={windowSx}>
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+        <div className="rounded-lg border bg-card shadow-sm">
+          <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)] sm:p-6">
             <div className="space-y-4">
-              <div className="retro-inset p-5 sm:p-6">
+              <div className="rounded-lg border bg-muted p-5 sm:p-6">
                 <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start">
                   <div>
                     <h1 className="max-w-4xl text-4xl font-black leading-[0.95] sm:text-6xl">
@@ -121,7 +115,7 @@ export function HomePageClient() {
                         key={item.label}
                         type="button"
                         onClick={() => router.push(item.href)}
-                        className="retro-outset flex min-h-24 flex-col items-start justify-between p-3 text-left transition-transform active:translate-x-1 active:translate-y-1"
+                        className="rounded-lg border bg-card p-3 shadow-sm flex min-h-24 flex-col items-start justify-between text-left transition-transform active:translate-x-1 active:translate-y-1"
                       >
                         <Icon className="h-7 w-7" />
                         <span>
@@ -134,7 +128,7 @@ export function HomePageClient() {
                 </div>
               </div>
 
-              <div className="retro-outset p-3">
+              <div className="rounded-lg border bg-card p-3 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-bold">Transfer queue</span>
                   <span className="font-mono text-xs text-muted-foreground">3 JOBS</span>
@@ -148,7 +142,7 @@ export function HomePageClient() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="retro-outset p-3">
+              <div className="rounded-lg border bg-card p-3 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-bold">Instance counters</span>
                   <LuHardDrive className="h-4 w-4" />
@@ -168,54 +162,63 @@ export function HomePageClient() {
                 </div>
               </div>
 
-              <div className="retro-inset p-3">
+              <div className="rounded-lg border bg-muted p-3">
                 <div className="mb-3 flex items-center gap-2">
                   <LuTerminal className="h-4 w-4" />
                   <span className="font-bold">Install CLI</span>
                 </div>
-                <code className="retro-inset block overflow-x-auto whitespace-nowrap p-2 font-mono text-xs">
+                <code className="rounded-lg border bg-muted block overflow-x-auto whitespace-nowrap p-2 font-mono text-xs">
                   {installCommand}
                 </code>
-                <RetroButton
-                  className="mt-3 w-full"
-                  variant="secondary"
-                  size="small"
+                <button
+                  type="button"
+                  className="mt-3 w-full rounded-lg border bg-secondary px-4 py-2 text-sm font-medium hover:bg-secondary/80 transition-colors"
                   onClick={handleCopy}
                 >
                   {isCopied ? "Copied" : "Copy command"}
-                </RetroButton>
+                </button>
               </div>
             </div>
           </div>
-        </RetroCard>
+        </div>
       </section>
 
       <section className="py-8">
         <div className="container mx-auto grid max-w-7xl w-full gap-4 px-2 md:grid-cols-[1.1fr_0.9fr] md:px-6">
-          <RetroCard header={<WindowTitle title="SUPPORTED FILE TYPES" />} sx={windowSx}>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {fileTypes.map((type) => {
-                const Icon = type.icon;
-                return (
-                  <div key={type.label} className="retro-inset p-4 text-center">
-                    <Icon className="mx-auto mb-3 h-7 w-7" />
-                    <span className="font-mono text-xs">{type.label}</span>
-                  </div>
-                );
-              })}
+          <div className="rounded-lg border bg-card shadow-sm">
+            <div className="bg-primary text-primary-foreground px-3 py-2 font-semibold rounded-t-lg">
+              <WindowTitle title="SUPPORTED FILE TYPES" />
             </div>
-          </RetroCard>
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {fileTypes.map((type) => {
+                  const Icon = type.icon;
+                  return (
+                    <div key={type.label} className="rounded-lg border bg-muted p-4 text-center">
+                      <Icon className="mx-auto mb-3 h-7 w-7" />
+                      <span className="font-mono text-xs">{type.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
-          <RetroCard header={<WindowTitle title="UPLOAD DEFAULTS" />} sx={windowSx}>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {privacyItems.map((item) => (
-                <div key={item} className="retro-inset flex items-center gap-2 p-3 text-sm">
-                  <LuShieldCheck className="h-4 w-4 shrink-0" />
-                  <span>{item}</span>
-                </div>
-              ))}
+          <div className="rounded-lg border bg-card shadow-sm">
+            <div className="bg-primary text-primary-foreground px-3 py-2 font-semibold rounded-t-lg">
+              <WindowTitle title="UPLOAD DEFAULTS" />
             </div>
-          </RetroCard>
+            <div className="p-4">
+              <div className="grid gap-2 sm:grid-cols-2">
+                {privacyItems.map((item) => (
+                  <div key={item} className="rounded-lg border bg-muted flex items-center gap-2 p-3 text-sm">
+                    <LuShieldCheck className="h-4 w-4 shrink-0" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -240,13 +243,6 @@ export function HomePageClient() {
   );
 }
 
-const windowSx = {
-  background: "#d8d8d8",
-  color: "#000000",
-  borderColor: "#fff #555 #555 #fff",
-  boxShadow: "8px 8px 0 #808080",
-};
-
 function WindowTitle({ title, right }: { title: string; right?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -268,7 +264,7 @@ function TransferRow({
   status: string;
 }) {
   return (
-    <div className="retro-inset grid gap-2 p-3">
+    <div className="rounded-lg border bg-muted grid gap-2 p-3">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="truncate font-bold">{name}</span>
         <span className="font-mono text-xs uppercase text-muted-foreground">{status}</span>
@@ -277,7 +273,12 @@ function TransferRow({
         <span>{type}</span>
         <span>{progress}%</span>
       </div>
-      <ProgressBar value={progress} animated={progress < 100} />
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${progress < 100 ? 'bg-primary' : 'bg-green-500'}`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -292,7 +293,7 @@ function CounterLine({
   value: string;
 }) {
   return (
-    <div className="retro-inset flex items-center justify-between gap-3 p-2">
+    <div className="rounded-lg border bg-muted flex items-center justify-between gap-3 p-2">
       <span className="flex min-w-0 items-center gap-2 text-sm">
         <Icon className="h-4 w-4 shrink-0" />
         <span className="truncate">{label}</span>
@@ -304,12 +305,12 @@ function CounterLine({
 
 function SystemPanel({ title, command, body }: { title: string; command: string; body: string }) {
   return (
-    <div className="surface-panel p-4">
+    <div className="rounded-lg border bg-card p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="font-bold">{title}</h2>
         <LuCircleCheck className="h-4 w-4" />
       </div>
-      <code className="retro-inset mb-3 block p-2 font-mono text-xs">{command}</code>
+      <code className="rounded-lg border bg-muted mb-3 block p-2 font-mono text-xs">{command}</code>
       <p className="text-sm leading-6 text-muted-foreground">{body}</p>
     </div>
   );
@@ -329,7 +330,7 @@ function AccountSlot({
   onClick: () => void;
 }) {
   return (
-    <div className="retro-inset p-4">
+    <div className="rounded-lg border bg-muted p-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 className="font-bold">{name}</h3>
@@ -338,9 +339,13 @@ function AccountSlot({
         <span className="font-mono text-sm font-bold">{price}</span>
       </div>
       <p className="min-h-16 text-sm leading-6 text-muted-foreground">{body}</p>
-      <RetroButton className="mt-4 w-full" variant="secondary" onClick={onClick}>
+      <button
+        type="button"
+        className="mt-4 w-full rounded-lg border bg-secondary px-4 py-2 text-sm font-medium hover:bg-secondary/80 transition-colors"
+        onClick={onClick}
+      >
         {action}
-      </RetroButton>
+      </button>
     </div>
   );
 }

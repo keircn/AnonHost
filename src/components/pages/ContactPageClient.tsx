@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -70,12 +69,7 @@ export function ContactPageClient() {
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
-            <motion.div
-              className="flex flex-col items-center justify-center space-y-4 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                 Need Help? We&apos;re Here
               </h1>
@@ -83,16 +77,11 @@ export function ContactPageClient() {
                 Choose how you&apos;d like to get in touch. We&apos;re here to help with any
                 questions about our services.
               </p>
-            </motion.div>
+            </div>
 
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3">
               {contactMethods.map((method, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
+                <div key={index}>
                   <Link href={method.href} target={method.external ? "_blank" : undefined}>
                     <Card className="hover:border-primary h-full transition-colors">
                       <CardHeader>
@@ -106,16 +95,11 @@ export function ContactPageClient() {
                       </CardContent>
                     </Card>
                   </Link>
-                </motion.div>
+                </div>
               ))}
             </div>
 
-            <motion.div
-              className="mx-auto max-w-3xl space-y-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+            <div className="mx-auto max-w-3xl space-y-8">
               <div className="text-center">
                 <h2 className="text-2xl font-bold tracking-tighter">Frequently Asked Questions</h2>
                 <p className="text-muted-foreground mt-2">Find quick answers to common questions</p>
@@ -141,7 +125,7 @@ export function ContactPageClient() {
                   </Button>
                 </Link>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
       </main>

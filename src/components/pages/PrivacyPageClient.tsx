@@ -1,14 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Server, Lock, Key } from "lucide-react";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
-};
 
 const sections = [
   {
@@ -44,25 +37,14 @@ const sections = [
 export function PrivacyPageClient() {
   return (
     <div className="container py-8 md:py-12">
-      <motion.div
-        className="space-y-8"
-        initial="initial"
-        animate="animate"
-        variants={{
-          animate: {
-            transition: {
-              staggerChildren: 0.1,
-            },
-          },
-        }}
-      >
-        <motion.div className="space-y-4 text-center" variants={fadeIn}>
+      <div className="space-y-8">
+        <div className="space-y-4 text-center">
           <h1 className="text-4xl font-bold tracking-tight">We take your privacy seriously</h1>
-        </motion.div>
+        </div>
 
-        <motion.div className="grid gap-6 md:grid-cols-3" variants={fadeIn}>
+        <div className="grid gap-6 md:grid-cols-3">
           {sections.map((section) => (
-            <motion.div key={section.title} variants={fadeIn} transition={{ duration: 0.2 }}>
+            <div key={section.title}>
               <Card className="h-full transition-shadow hover:shadow-lg">
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-center gap-4">
@@ -79,11 +61,11 @@ export function PrivacyPageClient() {
                   </ul>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.div className="bg-primary/5 mx-auto max-w-3xl rounded-lg p-6" variants={fadeIn}>
+        <div className="bg-primary/5 mx-auto max-w-3xl rounded-lg p-6">
           <h3 className="mb-3 text-center text-lg font-semibold">Our Encryption Promise</h3>
           <p className="text-muted-foreground text-center text-sm">
             Every file is encrypted using AES-256 encryption before storage, with keys secured using
@@ -91,12 +73,9 @@ export function PrivacyPageClient() {
             zero-knowledge architecture means even we cannot access your encrypted data without your
             explicit permission.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="text-muted-foreground mx-auto max-w-2xl space-y-4 text-center text-sm"
-          variants={fadeIn}
-        >
+        <div className="text-muted-foreground mx-auto max-w-2xl space-y-4 text-center text-sm">
           <p>
             To exercise your privacy rights or ask questions about our privacy practices, please
             contact us at <span className="text-primary">support@anonhost.cc</span>
@@ -105,8 +84,8 @@ export function PrivacyPageClient() {
             Last updated: April 2, 2025. AnonHost is committed to protecting your privacy and
             maintaining the security of your personal information.
           </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

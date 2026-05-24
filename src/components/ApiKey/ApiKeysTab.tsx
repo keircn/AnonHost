@@ -1,23 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApiKeys } from "@/hooks/use-api-keys";
 import { useSettings } from "@/hooks/use-settings";
 import { ApiKeyCreator } from "@/components/ApiKey/ApiKeyCreator";
 import { ApiKeysList } from "@/components/ApiKey/ApiKeysList";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
-
-const staggerContainer = {
-  animate: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
 
 export function ApiKeysTab() {
   const { apiKeys, isLoading, refreshApiKeys, createApiKey, deleteApiKey } = useApiKeys();
@@ -28,15 +15,15 @@ export function ApiKeysTab() {
   };
 
   return (
-    <motion.div variants={staggerContainer} initial="initial" animate="animate">
+    <div>
       <Card>
         <CardHeader>
-          <motion.div variants={fadeIn}>
+          <div>
             <CardTitle>API Keys</CardTitle>
             <CardDescription>
               Manage API keys for integrating with your applications
             </CardDescription>
-          </motion.div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <ApiKeyCreator onCreate={createApiKey} onKeyCreated={handleChange} />
@@ -49,6 +36,6 @@ export function ApiKeysTab() {
           />
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

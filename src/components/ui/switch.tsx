@@ -1,27 +1,31 @@
-"use client";
-
-import * as React from "react";
-import * as SwitchPrimitive from "@radix-ui/react-switch";
-
 import { cn } from "@/lib/utils";
 
-function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+interface SwitchProps extends Omit<React.ComponentProps<"button">, "checked" | "onCheckedChange"> {
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+}
+
+function Switch({ className, checked, onCheckedChange, disabled, ...props }: SwitchProps) {
   return (
-    <SwitchPrimitive.Root
-      data-slot="switch"
+    <button
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
       className={cn(
-        "peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-white inline-flex h-6 w-11 shrink-0 items-center border-2 border-t-zinc-700 border-l-zinc-700 border-r-white border-b-white shadow-[inset_1px_1px_0_#808080] transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:cursor-not-allowed disabled:opacity-50",
+        "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+        checked ? "bg-primary" : "bg-input",
         className,
       )}
+      onClick={() => onCheckedChange?.(!checked)}
       {...props}
     >
-      <SwitchPrimitive.Thumb
-        data-slot="switch-thumb"
+      <span
         className={cn(
-          "data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080] ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0.5",
+          "pointer-events-none block size-4 rounded-full bg-background shadow-lg ring-0 transition-transform",
+          checked ? "translate-x-4" : "translate-x-0",
         )}
       />
-    </SwitchPrimitive.Root>
+    </button>
   );
 }
 

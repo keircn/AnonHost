@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 
 function LoadingCard() {
@@ -22,16 +21,11 @@ function LoadingCard() {
 export function VerifyPageClient() {
   return (
     <div className="flex min-h-[80vh] items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
+      <div className="w-full max-w-md">
         <Suspense fallback={<LoadingCard />}>
           <VerifyForm />
         </Suspense>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -96,22 +90,13 @@ function VerifyForm() {
   return (
     <Card>
       <CardHeader>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-2 text-center"
-        >
+        <div className="space-y-2 text-center">
           <h1 className="text-2xl font-bold tracking-tight">Verify Your Email</h1>
           <p className="text-muted-foreground text-sm">We sent a code to {email}</p>
-        </motion.div>
+        </div>
       </CardHeader>
       <CardContent>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div>
           <form onSubmit={handleVerify} className="space-y-4">
             <Input
               type="text"
@@ -126,7 +111,7 @@ function VerifyForm() {
               {isVerifying ? "Verifying..." : "Verify"}
             </Button>
           </form>
-        </motion.div>
+        </div>
       </CardContent>
     </Card>
   );

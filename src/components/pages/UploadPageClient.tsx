@@ -22,7 +22,6 @@ import {
   Terminal,
   LinkIcon,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { FileSettingsModal } from "@/components/Files/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
 import { BLOCKED_TYPES, FILE_SIZE_LIMITS } from "@/lib/upload";
@@ -31,36 +30,6 @@ import pLimit from "p-limit";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
-
-const staggerContainer = {
-  animate: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const dropZoneVariants = {
-  initial: {
-    opacity: 0,
-    scale: 0.95,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  dragOver: {
-    scale: 1.02,
-    borderColor: "rgba(var(--primary),1)",
-    backgroundColor: "rgba(var(--primary),0.1)",
-  },
-};
 
 const defaultFileSettings: FileSettings = {
   public: false,
@@ -492,15 +461,10 @@ export function UploadPageClient() {
   };
 
   return (
-    <motion.main
-      className="mx-auto w-full min-w-0 max-w-4xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7"
-      variants={fadeIn}
-      initial="initial"
-      animate="animate"
-    >
-      <motion.div variants={fadeIn} initial="initial" animate="animate">
+    <main className="mx-auto w-full min-w-0 max-w-4xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7">
+      <div>
         <Card className="overflow-hidden p-0">
-          <div className="win95-titlebar flex items-center justify-between px-3 py-2">
+          <div className="bg-primary text-primary-foreground flex items-center justify-between px-3 py-2">
             <div className="min-w-0">
               <h1 className="truncate text-sm font-bold sm:text-base">Upload files</h1>
               <p className="hidden text-xs text-white/90 sm:block">
@@ -513,11 +477,11 @@ export function UploadPageClient() {
             </div>
           </div>
           <CardContent className="space-y-4 p-3 sm:p-5">
-            <div className="mb-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-3 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080] sm:mb-5 sm:p-4">
+            <div className="mb-4 rounded-lg border bg-card p-3 shadow-sm sm:mb-5 sm:p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-secondary p-1.5">
+                    <span className="rounded-lg border bg-secondary p-1.5">
                       <Lock className="h-4 w-4" />
                     </span>
                     <h2 className="text-base font-semibold">Private upload</h2>
@@ -547,7 +511,7 @@ export function UploadPageClient() {
                       autoComplete="new-password"
                     />
                   </div>
-                  <div className="flex min-h-9 items-center justify-between gap-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card px-3 py-2">
+                  <div className="flex min-h-9 items-center justify-between gap-4 rounded-lg border bg-card px-3 py-2">
                     <Label htmlFor="private-one-use" className="text-sm leading-tight">
                       Delete after web download
                     </Label>
@@ -561,30 +525,26 @@ export function UploadPageClient() {
               )}
             </div>
 
-            <motion.div
-              className="border-2 border-dashed border-zinc-700 bg-white p-5 text-center text-black shadow-[inset_1px_1px_0_#808080] transition-colors sm:p-8"
-              variants={dropZoneVariants}
-              initial="initial"
-              animate={isDragging ? "dragOver" : "animate"}
+            <div
+              className={`rounded-lg border-2 border-dashed p-5 text-center transition-colors sm:p-8 ${
+                isDragging
+                  ? "border-primary bg-primary/10"
+                  : "border-muted-foreground/25 bg-card"
+              }`}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
             >
-              <motion.div
-                className="flex flex-col items-center justify-center gap-4"
-                variants={staggerContainer}
-                initial="initial"
-                animate="animate"
-              >
-                <motion.div className="border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-3 text-black">
+              <div className="flex flex-col items-center justify-center gap-4">
+                <div className="rounded-lg border bg-card p-3">
                   <Upload className="h-7 w-7 sm:h-8 sm:w-8" />
-                </motion.div>
-                <motion.div className="space-y-2" variants={fadeIn}>
+                </div>
+                <div className="space-y-2">
                   <h3 className="text-base font-semibold sm:text-lg">Drop files here</h3>
                   <p className="text-muted-foreground text-sm sm:text-base">
                     Click to browse from your device, or paste from your clipboard
                   </p>
-                </motion.div>
+                </div>
                 <input
                   type="file"
                   id="file-upload"
@@ -592,118 +552,96 @@ export function UploadPageClient() {
                   multiple
                   onChange={handleFileChange}
                 />
-                <motion.div>
+                <div>
                   <Button asChild variant="outline" disabled={isUploading}>
                     <label htmlFor="file-upload" className="cursor-pointer">
                       Browse Files
                     </label>
                   </Button>
-                </motion.div>
-              </motion.div>
-            </motion.div>
+                </div>
+              </div>
+            </div>
 
-            <AnimatePresence mode="wait">
-              {files.length > 0 && (
-                <motion.div
-                  className="mt-6 sm:mt-8"
-                  variants={fadeIn}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <motion.h3 className="min-w-0 text-lg font-semibold" variants={fadeIn}>
-                      Selected files ({files.length})
-                    </motion.h3>
-                    <Button
-                      onClick={handleUpload}
-                      disabled={isUploading}
-                      className="w-full sm:w-auto"
-                    >
-                      {isUploading
-                        ? "Uploading..."
-                        : privateMode
-                          ? "Create Private Uploads"
-                          : "Upload Files"}
-                    </Button>
-                  </div>
-                  <motion.div className="grid gap-2" variants={staggerContainer}>
-                    <AnimatePresence>
-                      {files.map((file, index) => (
-                        <motion.div
-                          key={`${file.name}-${index}`}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                          className="group relative"
-                          layout
-                        >
-                          <div className="flex min-w-0 items-center gap-3 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-2 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080]">
-                            <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-white shadow-[inset_1px_1px_0_#808080]">
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                {getFilePreview(file)}
-                              </div>
-                            </div>
-                            <div className="min-w-0 flex-1 space-y-1">
-                              <motion.div
-                                className="truncate text-sm font-semibold"
-                                variants={fadeIn}
-                              >
-                                {file.name}
-                              </motion.div>
-                              <p className="text-muted-foreground text-xs">
-                                {formatFileSize(file.size)}
-                              </p>
-                              {uploadProgress[index] && (
-                                <div className="h-1.5 w-full overflow-hidden bg-white shadow-[inset_1px_1px_0_#808080]">
-                                  <motion.div
-                                    className="h-full bg-primary"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${uploadProgress[index].progress}%` }}
-                                    transition={{ duration: 0.2 }}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => removeFile(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => setActiveSettingsFile(index)}
-                            >
-                              <Settings2 className="h-4 w-4" />
-                            </Button>
-
-                            {activeSettingsFile === index && (
-                              <FileSettingsModal
-                                isOpen={true}
-                                onClose={() => setActiveSettingsFile(null)}
-                                fileName={files[activeSettingsFile].name}
-                                settings={fileSettings[activeSettingsFile] || defaultFileSettings}
-                                onSettingsChange={(newSettings) => {
-                                  updateFileSettings(activeSettingsFile, newSettings);
-                                }}
-                              />
-                            )}
+            {files.length > 0 && (
+              <div className="mt-6 sm:mt-8">
+                <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="min-w-0 text-lg font-semibold">
+                    Selected files ({files.length})
+                  </h3>
+                  <Button
+                    onClick={handleUpload}
+                    disabled={isUploading}
+                    className="w-full sm:w-auto"
+                  >
+                    {isUploading
+                      ? "Uploading..."
+                      : privateMode
+                        ? "Create Private Uploads"
+                        : "Upload Files"}
+                  </Button>
+                </div>
+                <div className="grid gap-2">
+                  {files.map((file, index) => (
+                    <div key={`${file.name}-${index}`}>
+                      <div className="flex min-w-0 items-center gap-3 rounded-lg border bg-card p-2 shadow-sm">
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            {getFilePreview(file)}
                           </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="truncate text-sm font-semibold">
+                            {file.name}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            {formatFileSize(file.size)}
+                          </p>
+                          {uploadProgress[index] && (
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-primary transition-all duration-200"
+                                style={{ width: `${uploadProgress[index].progress}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => removeFile(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setActiveSettingsFile(index)}
+                        >
+                          <Settings2 className="h-4 w-4" />
+                        </Button>
+
+                        {activeSettingsFile === index && (
+                          <FileSettingsModal
+                            isOpen={true}
+                            onClose={() => setActiveSettingsFile(null)}
+                            fileName={files[activeSettingsFile].name}
+                            settings={fileSettings[activeSettingsFile] || defaultFileSettings}
+                            onSettingsChange={(newSettings) => {
+                              updateFileSettings(activeSettingsFile, newSettings);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {uploadedLinks.length > 0 && (
-              <div className="mt-6 space-y-4 border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-card p-4 shadow-[inset_1px_1px_0_#dfdfdf,inset_-1px_-1px_0_#808080] sm:mt-8">
+              <div className="mt-6 space-y-4 rounded-lg border bg-card p-4 shadow-sm sm:mt-8">
                 <div>
                   <h3 className="text-lg font-semibold">Private Links</h3>
                   <p className="text-muted-foreground text-sm">
@@ -714,7 +652,7 @@ export function UploadPageClient() {
                   {uploadedLinks.map((link) => (
                     <div
                       key={`${link.filename}-${link.webUrl}`}
-                      className="space-y-3 border-2 border-t-zinc-700 border-l-zinc-700 border-r-white border-b-white bg-white p-3 text-black shadow-[inset_1px_1px_0_#808080]"
+                      className="space-y-3 rounded-lg border bg-muted p-3"
                     >
                       <p className="text-sm font-medium break-all">{link.filename}</p>
                       <UploadLinkRow label="Web URL" value={link.webUrl} icon="web" />
@@ -735,8 +673,8 @@ export function UploadPageClient() {
             )}
           </CardContent>
         </Card>
-      </motion.div>
-    </motion.main>
+      </div>
+    </main>
   );
 }
 

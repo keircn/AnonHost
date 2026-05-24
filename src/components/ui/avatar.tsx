@@ -1,16 +1,10 @@
-"use client";
-
-import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
-
 import { cn } from "@/lib/utils";
 
-function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+function Avatar({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
+    <div
       className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden border-2 border-t-white border-l-white border-r-zinc-700 border-b-zinc-700 bg-secondary",
+        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
         className,
       )}
       {...props}
@@ -18,24 +12,22 @@ function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimi
   );
 }
 
-function AvatarImage({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+function AvatarImage({ className, ...props }: React.ComponentProps<"img">) {
   return (
-    <AvatarPrimitive.Image
-      data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
+    <img
+      className={cn("aspect-square size-full object-cover", className)}
       {...props}
     />
   );
 }
 
-function AvatarFallback({
-  className,
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+function AvatarFallback({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <AvatarPrimitive.Fallback
-      data-slot="avatar-fallback"
-      className={cn("bg-muted flex size-full items-center justify-center font-mono", className)}
+    <div
+      className={cn(
+        "flex size-full items-center justify-center rounded-full bg-muted text-xs font-medium",
+        className,
+      )}
       {...props}
     />
   );

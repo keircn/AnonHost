@@ -1,18 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ApiKey } from "@/types/settings";
 import { toast } from "sonner";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
 
 interface ApiKeyCreatorProps {
   onCreate: (name: string) => Promise<ApiKey>;
@@ -45,7 +38,7 @@ export function ApiKeyCreator({ onCreate, onKeyCreated }: ApiKeyCreatorProps) {
   };
 
   return (
-    <motion.div className="flex items-end gap-4" variants={fadeIn}>
+    <div className="flex items-end gap-4">
       <div className="grid w-full gap-1.5">
         <Label htmlFor="key-name">New API Key Name</Label>
         <Input
@@ -58,6 +51,6 @@ export function ApiKeyCreator({ onCreate, onKeyCreated }: ApiKeyCreatorProps) {
       <Button onClick={handleCreateApiKey} disabled={isGeneratingKey}>
         {isGeneratingKey ? "Generating..." : "Generate Key"}
       </Button>
-    </motion.div>
+    </div>
   );
 }

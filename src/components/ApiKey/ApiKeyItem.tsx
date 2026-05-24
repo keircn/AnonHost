@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
@@ -8,12 +7,6 @@ import { toast } from "sonner";
 import type { ApiKey } from "@/types/settings";
 import { ShareXConfigDialog } from "@/components/Files/ShareXConfigDialog";
 import { DeleteApiKeyDialog } from "@/components/ApiKey/DeleteApiKeyDialog";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
 
 interface ApiKeyItemProps {
   apiKey: ApiKey;
@@ -34,14 +27,7 @@ export function ApiKeyItem({ apiKey, customDomain, onDelete, onDeleted }: ApiKey
   };
 
   return (
-    <motion.div
-      variants={fadeIn}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      layout
-      layoutId={apiKey.id}
-    >
+    <div>
       <Card className="bg-card/80 border-border/70">
         <CardContent className="p-4">
           <div className="flex flex-col space-y-4">
@@ -58,7 +44,7 @@ export function ApiKeyItem({ apiKey, customDomain, onDelete, onDeleted }: ApiKey
                 )}
               </div>
               <div className="flex gap-2">
-                <motion.div>
+                <div>
                   <Button
                     variant="outline"
                     size="icon"
@@ -67,13 +53,13 @@ export function ApiKeyItem({ apiKey, customDomain, onDelete, onDeleted }: ApiKey
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
-                </motion.div>
-                <motion.div>
+                </div>
+                <div>
                   <ShareXConfigDialog apiKey={apiKey} customDomain={customDomain} />
-                </motion.div>
-                <motion.div>
+                </div>
+                <div>
                   <DeleteApiKeyDialog apiKey={apiKey} onDelete={onDelete} onDeleted={onDeleted} />
-                </motion.div>
+                </div>
               </div>
             </div>
             <div className="bg-muted/60 overflow-x-auto rounded-md border p-2 font-mono text-sm">
@@ -82,6 +68,6 @@ export function ApiKeyItem({ apiKey, customDomain, onDelete, onDeleted }: ApiKey
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

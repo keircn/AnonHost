@@ -1,14 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Lock, Ban, Scale } from "lucide-react";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
-};
 
 const sections = [
   {
@@ -56,29 +49,18 @@ const sections = [
 export function TermsPageClient() {
   return (
     <div className="container py-8 md:py-12">
-      <motion.div
-        className="space-y-8"
-        initial="initial"
-        animate="animate"
-        variants={{
-          animate: {
-            transition: {
-              staggerChildren: 0.1,
-            },
-          },
-        }}
-      >
-        <motion.div className="space-y-4 text-center" variants={fadeIn}>
+      <div className="space-y-8">
+        <div className="space-y-4 text-center">
           <h1 className="text-4xl font-bold tracking-tight">Terms of Service</h1>
           <p className="text-muted-foreground mx-auto max-w-2xl">
             Welcome to AnonHost. By using our service, you agree to these terms. Please read them
             carefully.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div className="grid gap-6 md:grid-cols-2" variants={fadeIn}>
+        <div className="grid gap-6 md:grid-cols-2">
           {sections.map((section) => (
-            <motion.div key={section.title} variants={fadeIn} transition={{ duration: 0.2 }}>
+            <div key={section.title}>
               <Card className="h-full">
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-center gap-4">
@@ -95,14 +77,11 @@ export function TermsPageClient() {
                   </ul>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="text-muted-foreground mx-auto max-w-2xl text-center text-sm"
-          variants={fadeIn}
-        >
+        <div className="text-muted-foreground mx-auto max-w-2xl text-center text-sm">
           <p className="mb-4">
             These terms were last updated on April 2, 2025. If you have any questions about these
             terms, please contact us at <span className="text-primary">support@anonhost.cc</span>
@@ -111,8 +90,8 @@ export function TermsPageClient() {
             AnonHost reserves the right to update these terms at any time. Continued use of the
             service constitutes acceptance of any changes.
           </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

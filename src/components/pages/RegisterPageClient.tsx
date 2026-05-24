@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { FaDiscord as Discord } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -55,32 +54,18 @@ export function RegisterPageClient() {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div>
         <Card className="w-full max-w-md">
           <CardHeader>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-2 text-center"
-            >
+            <div className="space-y-2 text-center">
               <h1 className="text-2xl font-bold tracking-tight">Create an Account or Login</h1>
               <p className="text-muted-foreground text-sm">
                 Join thousands of users already using AnonHost
               </p>
-            </motion.div>
+            </div>
           </CardHeader>
           <CardContent>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               <form onSubmit={handleEmailSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Input
@@ -125,10 +110,10 @@ export function RegisterPageClient() {
                 </Link>
                 .
               </p>
-            </motion.div>
+            </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,17 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Settings } from "@/lib/settings";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
 
 interface EmbedSettingsSectionProps {
   settings: Settings;
@@ -20,7 +13,7 @@ interface EmbedSettingsSectionProps {
 
 export function EmbedSettingsSection({ settings, onFieldChange }: EmbedSettingsSectionProps) {
   return (
-    <motion.div className="space-y-4" variants={fadeIn}>
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="disable-embed-default">Image-Only Links</Label>
@@ -81,6 +74,6 @@ export function EmbedSettingsSection({ settings, onFieldChange }: EmbedSettingsS
       <p className="text-muted-foreground text-xs">
         Available variables: {"{{filename}}"}, {"{{uploader}}"}, {"{{size}}"}, {"{{uploadedAt}}"}
       </p>
-    </motion.div>
+    </div>
   );
 }

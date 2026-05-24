@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,22 +14,13 @@ export function PricingPageClient() {
 
   return (
     <div className="container mx-auto max-w-6xl space-y-12 py-16 md:mt-24">
-      <motion.div
-        className="space-y-4 text-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="space-y-4 text-center">
         <h1 className="text-4xl font-bold">Simple, Transparent Pricing</h1>
         <p className="text-muted-foreground text-lg">Choose the plan that works for you</p>
-      </motion.div>
+      </div>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div>
           <Card className="h-full">
             <CardHeader className="mb-6 space-y-1">
               <Badge variant="secondary" className="w-fit">
@@ -58,13 +48,9 @@ export function PricingPageClient() {
               </Button>
             </CardFooter>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <div>
           <Card className="border-primary relative h-full overflow-hidden">
             <div className="bg-primary text-primary-foreground absolute top-0 right-0 rounded-bl px-3 py-1 text-sm flex items-center gap-1">
               <LuSparkles className="h-3 w-3" />
@@ -137,21 +123,16 @@ export function PricingPageClient() {
               </p>
             </CardFooter>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
-      <motion.div
-        className="text-muted-foreground text-center text-sm"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
+      <div className="text-muted-foreground text-center text-sm">
         <p>
           All plans include GDPR compliance, EU hosting, and 99.9% uptime guarantee.
           <br />
           Cancel anytime. No questions asked.
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

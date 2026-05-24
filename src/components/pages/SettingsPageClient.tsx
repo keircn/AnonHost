@@ -4,28 +4,10 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion, AnimatePresence } from "framer-motion";
 import { GeneralSettingsTab } from "@/components/Settings/GeneralSettingsTab";
 import { ApiKeysTab } from "@/components/ApiKey/ApiKeysTab";
 import { useSettings } from "@/hooks/use-settings";
 import { useApiKeys } from "@/hooks/use-api-keys";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
-
-const slideAnimation = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -16 },
-};
-
-const contentTransition = {
-  duration: 0.2,
-  ease: "easeOut" as const,
-};
 
 export function SettingsPageClient() {
   const { status } = useSession();
@@ -41,55 +23,36 @@ export function SettingsPageClient() {
 
   if (status === "loading" || isSettingsLoading || isApiKeysLoading) {
     return (
-      <motion.div
-        className="container flex min-h-[calc(100vh-4rem)] items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
+      <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-center">Loading...</div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div className="container py-8" variants={fadeIn} initial="initial" animate="animate">
-      <motion.h1
-        className="mb-6 text-3xl font-bold"
-        variants={fadeIn}
-        initial="initial"
-        animate="animate"
-      >
+    <div className="container py-8">
+      <h1 className="mb-6 text-3xl font-bold">
         Account Settings
-      </motion.h1>
+      </h1>
 
       <Tabs defaultValue="general" className="w-full" onValueChange={setActiveTab}>
-        <motion.div variants={fadeIn} initial="initial" animate="animate">
+        <div>
           <TabsList className="mb-4">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="api-keys">API Keys</TabsTrigger>
           </TabsList>
-        </motion.div>
+        </div>
 
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={activeTab}
-            variants={slideAnimation}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={contentTransition}
-          >
-            <TabsContent value="general" forceMount>
-              {activeTab === "general" && <GeneralSettingsTab />}
-            </TabsContent>
+        <div>
+          <TabsContent value="general" forceMount>
+            {activeTab === "general" && <GeneralSettingsTab />}
+          </TabsContent>
 
-            <TabsContent value="api-keys" forceMount>
-              {activeTab === "api-keys" && <ApiKeysTab />}
-            </TabsContent>
-          </motion.div>
-        </AnimatePresence>
+          <TabsContent value="api-keys" forceMount>
+            {activeTab === "api-keys" && <ApiKeysTab />}
+          </TabsContent>
+        </div>
       </Tabs>
-    </motion.div>
+    </div>
   );
 }

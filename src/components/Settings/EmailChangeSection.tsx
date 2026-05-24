@@ -1,18 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { changeEmail } from "@/lib/settings";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
 
 export function EmailChangeSection() {
   const [newEmail, setNewEmail] = useState("");
@@ -41,7 +34,7 @@ export function EmailChangeSection() {
   };
 
   return (
-    <motion.div className="space-y-2" variants={fadeIn}>
+    <div className="space-y-2">
       <Label htmlFor="email">Email Address</Label>
       <p className="text-muted-foreground mb-2 text-sm">
         Change your email address (requires verification)
@@ -58,6 +51,6 @@ export function EmailChangeSection() {
           {isChangingEmail ? "Changing..." : "Change"}
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }

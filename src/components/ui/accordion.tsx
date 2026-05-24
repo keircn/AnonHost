@@ -1,63 +1,118 @@
 "use client";
 
-import * as React from "react";
-import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { ChevronDownIcon } from "lucide-react";
-
+import { createContext, useContext, useState, useCallback } from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function Accordion({ ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
+type AccordionContextType = {
+  expandedValue: string | null;
+  toggleValue: (value: string) => void;
+  collapsible: boolean;
+};
+
+const AccordionContext = createContext<AccordionContextType | null>(null);
+
+function useAccordion() {
+  const ctx = useContext(AccordionContext);
+  if (!ctx) throw new Error("Accordion components must be used within an Accordion");
+  return ctx;
 }
 
-function AccordionItem({
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
-  return (
-    <AccordionPrimitive.Item
-      data-slot="accordion-item"
-      className={cn("border-b last:border-b-0", className)}
-      {...props}
-    />
-  );
+type ItemContextType = {
+  value: string;
+};
+
+const ItemContext = createContext<ItemContextType | null>(null);
+
+function useItem() {
+  const ctx = useContext(ItemContext);
+  if (!ctx) throw new Error("AccordionItem context not found");
+  return ctx;
 }
 
-function AccordionTrigger({
+function Accordion({
+  type = "single",
+  collapsible = false,
   className,
   children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: {
+  type?: "single";
+  collapsible?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const [expandedValue, setExpandedValue] = useState<string | null>(null);
+
+  const toggleValue = useCallback(
+    (value: string) => {
+      setExpandedValue((prev) => (prev === value ? (collapsible ? null : prev) : value));
+    },
+    [collapsible],
+  );
+
   return (
-    <AccordionPrimitive.Header className="flex">
-      <AccordionPrimitive.Trigger
-        data-slot="accordion-trigger"
+    <AccordionContext.Provider value={{ expandedValue, toggleValue, collapsible }}>
+      <div className={cn("w-full", className)} {...props}>
+        {children}
+      </div>
+    </AccordionContext.Provider>
+  );
+}
+
+function AccordionItem({ className, value, ...props }: React.ComponentProps<"div"> & { value: string }) {
+  const { expandedValue } = useAccordion();
+  const isExpanded = expandedValue === value;
+
+  return (
+    <ItemContext.Provider value={{ value }}>
+      <div
+        className={cn("border-b last:border-b-0", className)}
+        data-state={isExpanded ? "open" : "closed"}
+        {...props}
+      />
+    </ItemContext.Provider>
+  );
+}
+
+function AccordionTrigger({ className, children, ...props }: React.ComponentProps<"button">) {
+  const { toggleValue } = useAccordion();
+  const { value } = useItem();
+  const { expandedValue } = useAccordion();
+  const isExpanded = expandedValue === value;
+
+  return (
+    <h3 className="flex">
+      <button
         className={cn(
-          "focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180",
+          "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180",
           className,
         )}
+        onClick={() => toggleValue(value)}
+        data-state={isExpanded ? "open" : "closed"}
         {...props}
       >
         {children}
-        <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
-      </AccordionPrimitive.Trigger>
-    </AccordionPrimitive.Header>
+        <ChevronDown className="size-4 shrink-0 transition-transform duration-200" />
+      </button>
+    </h3>
   );
 }
 
-function AccordionContent({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+function AccordionContent({ className, children, ...props }: React.ComponentProps<"div">) {
+  const { expandedValue } = useAccordion();
+  const { value } = useItem();
+  const isExpanded = expandedValue === value;
+
+  if (!isExpanded) return null;
+
   return (
-    <AccordionPrimitive.Content
-      data-slot="accordion-content"
-      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
+    <div
+      className={cn("overflow-hidden text-sm animate-slide-down", className)}
       {...props}
     >
-      <div className={cn("pt-0 pb-4", className)}>{children}</div>
-    </AccordionPrimitive.Content>
+      <div className="pb-4 pt-0">{children}</div>
+    </div>
   );
 }
 

@@ -24,7 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import { Link, ExternalLink, Copy, Trash2, Clock, BarChart } from "lucide-react";
 
 interface Shortlink {
@@ -37,18 +36,6 @@ interface Shortlink {
   createdAt: string;
   expireAt: string | null;
 }
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
-
-const staggerContainer = {
-  animate: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
 
 export function ShortenerPageClient() {
   const { status } = useSession();
@@ -160,30 +147,15 @@ export function ShortenerPageClient() {
   const renderContent = () => {
     if (status === "loading") {
       return (
-        <motion.div
-          className="container flex min-h-[calc(100vh-4rem)] items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center">
           <div className="text-center">Loading...</div>
-        </motion.div>
+        </div>
       );
     }
 
     return (
-      <motion.div
-        className="container py-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <motion.div
-          className="mb-6 flex items-center justify-between"
-          variants={fadeIn}
-          initial="initial"
-          animate="animate"
-        >
+      <div className="container py-8">
+        <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">URL Shortener</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -249,20 +221,15 @@ export function ShortenerPageClient() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="space-y-6"
-        >
+        <div className="space-y-6">
           {isLoading ? (
-            <motion.div className="py-8 text-center" variants={fadeIn}>
+            <div className="py-8 text-center">
               Loading your shortlinks...
-            </motion.div>
+            </div>
           ) : shortlinks.length === 0 ? (
-            <motion.div variants={fadeIn}>
+            <div>
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Link className="text-muted-foreground mb-4 h-12 w-12" />
@@ -275,103 +242,94 @@ export function ShortenerPageClient() {
                   </Button>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ) : (
-            <AnimatePresence>
-              <div className="grid gap-4">
-                {shortlinks.map((link) => (
-                  <motion.div
-                    key={link.id}
-                    variants={fadeIn}
-                    layout
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                  >
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col space-y-4">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-1">
-                              <h4 className="text-lg font-medium">
-                                {link.title || "Untitled Link"}
-                              </h4>
-                              <div className="text-muted-foreground flex items-center">
-                                <BarChart className="mr-1 h-4 w-4" />
-                                <span className="text-sm">{link.clicks} clicks</span>
-                                {link.expireAt && (
-                                  <>
-                                    <span className="mx-2">•</span>
-                                    <Clock className="mr-1 h-4 w-4" />
-                                    <span className="text-sm">
-                                      Expires: {new Date(link.expireAt).toLocaleDateString()}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => copyToClipboard(link.shortUrl)}
-                                title="Copy shortlink"
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => window.open(link.shortUrl, "_blank")}
-                                title="Open shortlink"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                onClick={() => handleDeleteShortlink(link.id)}
-                                title="Delete shortlink"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+            <div className="grid gap-4">
+              {shortlinks.map((link) => (
+                <div key={link.id}>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex flex-col space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <h4 className="text-lg font-medium">
+                              {link.title || "Untitled Link"}
+                            </h4>
+                            <div className="text-muted-foreground flex items-center">
+                              <BarChart className="mr-1 h-4 w-4" />
+                              <span className="text-sm">{link.clicks} clicks</span>
+                              {link.expireAt && (
+                                <>
+                                  <span className="mx-2">•</span>
+                                  <Clock className="mr-1 h-4 w-4" />
+                                  <span className="text-sm">
+                                    Expires: {new Date(link.expireAt).toLocaleDateString()}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
 
-                          <div className="grid gap-2 text-sm">
-                            {link.shortUrl ? (
-                              <div className="flex flex-col">
-                                <span className="font-medium">Short URL:</span>
-                                <a
-                                  href={link.shortUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline"
-                                >
-                                  {link.shortUrl}
-                                </a>
-                              </div>
-                            ) : (
-                              <></>
-                            )}
-                            <div className="flex flex-col">
-                              <span className="font-medium">Original URL:</span>
-                              <span className="text-muted-foreground truncate">
-                                {link.originalUrl}
-                              </span>
-                            </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => copyToClipboard(link.shortUrl)}
+                              title="Copy shortlink"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => window.open(link.shortUrl, "_blank")}
+                              title="Open shortlink"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => handleDeleteShortlink(link.id)}
+                              title="Delete shortlink"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </AnimatePresence>
+
+                        <div className="grid gap-2 text-sm">
+                          {link.shortUrl ? (
+                            <div className="flex flex-col">
+                              <span className="font-medium">Short URL:</span>
+                              <a
+                                href={link.shortUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                {link.shortUrl}
+                              </a>
+                            </div>
+                          ) : (
+                            <></>
+                          )}
+                          <div className="flex flex-col">
+                            <span className="font-medium">Original URL:</span>
+                            <span className="text-muted-foreground truncate">
+                              {link.originalUrl}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     );
   };
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -12,18 +11,6 @@ import { EmailChangeSection } from "@/components/Settings/EmailChangeSection";
 import { CustomDomainSettings } from "@/components/Settings/CustomDomainSettings";
 import { ImagePrivacySettings } from "@/components/Settings/ImagePrivacySettings";
 import { EmbedSettingsSection } from "@/components/Settings/EmbedSettingsSection";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
-
-const staggerContainer = {
-  animate: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
 
 export function GeneralSettingsTab() {
   const { settings, updateSettings, updateSettingsField, isLoading } = useSettings();
@@ -47,31 +34,31 @@ export function GeneralSettingsTab() {
   }
 
   return (
-    <motion.div variants={staggerContainer} initial="initial" animate="animate">
+    <div>
       <Card>
         <CardHeader>
-          <motion.div variants={fadeIn}>
+          <div>
             <CardTitle>General Settings</CardTitle>
             <CardDescription>Manage your account preferences and settings</CardDescription>
-          </motion.div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <motion.div className="space-y-4" variants={staggerContainer}>
+          <div className="space-y-4">
             <NotificationSettings settings={settings} onFieldChange={updateSettingsField} />
             <DirectLinksSettings settings={settings} onFieldChange={updateSettingsField} />
             <ImagePrivacySettings settings={settings} onFieldChange={updateSettingsField} />
             <CustomDomainSettings settings={settings} onFieldChange={updateSettingsField} />
             <EmbedSettingsSection settings={settings} onFieldChange={updateSettingsField} />
             <EmailChangeSection />
-          </motion.div>
+          </div>
 
-          <motion.div className="flex justify-end" variants={fadeIn}>
+          <div className="flex justify-end">
             <Button onClick={handleSaveSettings} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save Settings"}
             </Button>
-          </motion.div>
+          </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

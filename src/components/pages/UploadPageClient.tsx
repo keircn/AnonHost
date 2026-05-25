@@ -501,55 +501,7 @@ export function UploadPageClient() {
     <main className="mx-auto w-full min-w-0 max-w-4xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7">
       <div>
         <div className="space-y-4">
-          {!isAnonymous && (
-              <div className="mb-4 rounded-lg border bg-card p-3 shadow-sm sm:mb-5 sm:p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-lg border bg-secondary p-1.5">
-                        <Lock className="h-4 w-4" />
-                      </span>
-                      <h2 className="text-base font-semibold">Private upload</h2>
-                    </div>
-                    <p className="text-muted-foreground max-w-2xl text-sm">
-                      Password-protect these files and generate a one-use terminal download URL.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={privateMode}
-                    onCheckedChange={setPrivateMode}
-                    aria-label="Toggle private upload"
-                  />
-                </div>
 
-                {privateMode && (
-                  <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,auto)] lg:items-end">
-                    <div className="space-y-2">
-                      <Label htmlFor="private-password">Password</Label>
-                      <Input
-                        id="private-password"
-                        type="password"
-                        value={privatePassword}
-                        minLength={8}
-                        onChange={(event) => setPrivatePassword(event.target.value)}
-                        disabled={isUploading}
-                        autoComplete="new-password"
-                      />
-                    </div>
-                    <div className="flex min-h-9 items-center justify-between gap-4 rounded-lg border bg-card px-3 py-2">
-                      <Label htmlFor="private-one-use" className="text-sm leading-tight">
-                        Delete after web download
-                      </Label>
-                      <Switch
-                        id="private-one-use"
-                        checked={privateOneUse}
-                        onCheckedChange={setPrivateOneUse}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             <div
               className={`rounded-lg border-2 border-dashed p-5 text-center transition-colors sm:p-8 ${
@@ -596,20 +548,63 @@ export function UploadPageClient() {
                   <h3 className="min-w-0 text-lg font-semibold">
                     Selected files ({files.length})
                   </h3>
-                  <Button
-                    onClick={handleUpload}
-                    disabled={isUploading}
-                    className="w-full sm:w-auto"
-                  >
-                    {isUploading
-                      ? "Uploading..."
-                      : isAnonymous
-                        ? "Upload Anonymously"
-                        : privateMode
-                          ? "Create Private Uploads"
-                          : "Upload Files"}
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {!isAnonymous && (
+                      <button
+                        type="button"
+                        onClick={() => setPrivateMode(!privateMode)}
+                        className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                          privateMode
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-muted-foreground/30 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Lock className="h-3.5 w-3.5" />
+                        {privateMode ? "Private" : "Password protect?"}
+                      </button>
+                    )}
+                    <Button
+                      onClick={handleUpload}
+                      disabled={isUploading}
+                      className="w-full sm:w-auto"
+                    >
+                      {isUploading
+                        ? "Uploading..."
+                        : isAnonymous
+                          ? "Upload Anonymously"
+                          : privateMode
+                            ? "Create Private Uploads"
+                            : "Upload Files"}
+                    </Button>
+                  </div>
                 </div>
+
+                {!isAnonymous && privateMode && (
+                  <div className="mb-4 grid gap-3 rounded-lg border bg-card p-3 sm:grid-cols-[1fr_auto] sm:p-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="private-password" className="text-xs">Password</Label>
+                      <Input
+                        id="private-password"
+                        type="password"
+                        value={privatePassword}
+                        minLength={8}
+                        onChange={(event) => setPrivatePassword(event.target.value)}
+                        disabled={isUploading}
+                        autoComplete="new-password"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 rounded-md border bg-muted/50 px-3 py-2 sm:self-end">
+                      <Label htmlFor="private-one-use" className="text-xs leading-tight">
+                        Delete after download
+                      </Label>
+                      <Switch
+                        id="private-one-use"
+                        checked={privateOneUse}
+                        onCheckedChange={setPrivateOneUse}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="grid gap-2">
                   {files.map((file, index) => (
                     <div key={`${file.name}-${index}`}>

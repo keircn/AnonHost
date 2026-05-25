@@ -500,8 +500,17 @@ export function UploadPageClient() {
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7">
       <div>
-        <div className="space-y-4">
-
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-xl font-bold sm:text-2xl">
+              {isAnonymous ? "Anonymous upload" : "Upload files"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {isAnonymous
+                ? "Files are public. You will receive a deletion URL after uploading."
+                : "Drop files or paste from clipboard"}
+            </p>
+          </div>
 
             <div
               className={`rounded-lg border-2 border-dashed p-5 text-center transition-colors sm:p-8 ${
@@ -638,14 +647,16 @@ export function UploadPageClient() {
                         >
                           <X className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setActiveSettingsFile(index)}
-                        >
-                          <Settings2 className="h-4 w-4" />
-                        </Button>
+                        {!isAnonymous && (
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setActiveSettingsFile(index)}
+                          >
+                            <Settings2 className="h-4 w-4" />
+                          </Button>
+                        )}
 
                         {activeSettingsFile === index && (
                           <FileSettingsModal

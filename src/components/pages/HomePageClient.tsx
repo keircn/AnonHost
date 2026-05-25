@@ -1,5 +1,6 @@
 "use client";
 
+import { Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,6 +32,14 @@ export function HomePageClient() {
       </div>
 
       <img src="/haruhi-suzumiya-plotting.gif" alt="" className="w-72 self-center" />
+
+      <a
+        href="/upload"
+        className="self-center inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+      >
+        <Upload className="h-4 w-4" />
+        Upload a file
+      </a>
 
       <div className="space-y-6">
         <div>

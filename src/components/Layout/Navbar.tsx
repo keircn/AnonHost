@@ -28,8 +28,8 @@ export function Navbar() {
   if (!showNavbar) return null;
 
   const navLinks = [
+    { href: "/upload", label: "Upload" },
     ...(isAuthenticated ? [{ href: "/dashboard", label: "Dashboard" }] : []),
-    ...(isAuthenticated ? [{ href: "/upload", label: "Upload" }] : []),
     ...(isAuthenticated ? [{ href: "/shortener", label: "Shortener" }] : []),
     { href: "/api", label: "API" },
     ...(session?.user?.admin ? [{ href: "/admin", label: "Admin" }] : []),

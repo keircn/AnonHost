@@ -500,25 +500,8 @@ export function UploadPageClient() {
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7">
       <div>
-        <Card className="overflow-hidden p-0">
-          <div className="bg-primary text-primary-foreground flex items-center justify-between px-3 py-2">
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold sm:text-base">
-                {isAnonymous ? "Anonymous upload" : "Upload files"}
-              </h1>
-              <p className="hidden text-xs text-white/90 sm:block">
-                {isAnonymous
-                  ? "Files are publicly accessible. Save the deletion URL to remove them."
-                  : "Regular uploads or password-protected private transfers"}
-              </p>
-            </div>
-            <div className="flex gap-1">
-              <span className="h-4 w-4 border border-white/70 bg-card" />
-              <span className="h-4 w-4 border border-white/70 bg-card" />
-            </div>
-          </div>
-          <CardContent className="space-y-4 p-3 sm:p-5">
-            {!isAnonymous && (
+        <div className="space-y-4">
+          {!isAnonymous && (
               <div className="mb-4 rounded-lg border bg-card p-3 shadow-sm sm:mb-5 sm:p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
@@ -733,8 +716,7 @@ export function UploadPageClient() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </main>
   );

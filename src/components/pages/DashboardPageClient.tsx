@@ -201,17 +201,6 @@ export function DashboardPageClient() {
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl px-1 py-3 sm:px-3 sm:py-5 lg:py-7">
-      <div className="mb-5">
-        <div className="bg-primary text-primary-foreground rounded-t-lg border px-3 py-2">
-          <h1 className="text-sm font-bold sm:text-base">Dashboard</h1>
-        </div>
-        <div className="rounded-b-lg border bg-card p-3 shadow-sm sm:p-4">
-          <p className="text-sm">
-            Manage files, private transfers, storage usage, and account activity.
-          </p>
-        </div>
-      </div>
-
       <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <div>
           <TabsList className="mb-5 sm:mb-6">
@@ -423,7 +412,7 @@ export function DashboardPageClient() {
 
                   <div>
                     <Card className="overflow-hidden p-0">
-                      <div className="bg-primary text-primary-foreground px-3 py-2 text-sm font-bold">
+                      <div className="px-3 py-2 text-sm font-bold">
                         Private Uploads
                       </div>
                       <CardContent className="p-0">

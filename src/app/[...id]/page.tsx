@@ -203,7 +203,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       title: embedTitle,
       description,
       ...(media.type === "IMAGE" && { images: [media.url] }),
-      creator: media.user.name ?? undefined,
+      creator: media.user?.name ?? undefined,
     },
   };
 }

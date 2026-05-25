@@ -1,43 +1,32 @@
 # AnonHost
 
-`"The free, open source, private image host"`
+File hosting without the bullshit.
 
-## Live instance
+## Official instance
 
-[Roxyproxy](https://anonhost.cc)
+[anonhost.cc](https://anonhost.cc)
 
-## Installation (Docker Compose)
-
-Copy env template and fill required values:
+## Quick start (Docker Compose)
 
 ```bash
-cp .env.example .env
-```
-
-Required at minimum:
-
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL` (your public URL)
-- `DISCORD_CLIENT_ID`
-- `DISCORD_CLIENT_SECRET`
-- `SMTP_*`
-
-Start containers:
-
-```bash
+cp .env.example .env # some are optional, most aren't
 docker compose up -d --build
 ```
 
-This starts:
+Bind/port can be changed via `ANONHOST_BIND_IP` and `ANONHOST_PORT` in `.env`.
 
-- `anonhost-postgres` (Postgres 17)
-- `anonhost-app` (Next.js app on internal port `1984`)
+You can run it manually but I don't recommend it at all lol
 
-By default, app binds to loopback only for safe reverse proxying:
+## CLI
 
-- `127.0.0.1:1984`
+```bash
+curl https://anonhost.cc/install | bash
+```
 
-You can change bind/port via `.env`:
+## Stuff I use
 
-- `ANONHOST_BIND_IP`
-- `ANONHOST_PORT`
+- Next.js 16
+- Postgres + Drizzle
+- Cloudflare R2
+- Tailwind CSS
+- NextAuth

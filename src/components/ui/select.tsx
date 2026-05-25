@@ -66,7 +66,7 @@ function SelectTrigger({
   id,
   ...props
 }: React.ComponentProps<'button'> & { id?: string }) {
-  const { open, setOpen, value } = useSelect();
+  const { open, setOpen, } = useSelect();
   return (
     <button
       id={id}

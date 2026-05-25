@@ -147,7 +147,7 @@ const listCurl = `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
 
 export function ApiDocumentationPageClient() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [,setActiveTab] = useState('overview');
 
   const toggleSection = (section: string) => {
     setExpandedSection((prev) => (prev === section ? null : section));
@@ -269,7 +269,7 @@ export function ApiDocumentationPageClient() {
 
           <TabsContent value="endpoints">
             <div className="space-y-6">
-              {endpoints.map((endpoint, index) => (
+              {endpoints.map((endpoint) => (
                 <div key={endpoint.id}>
                   <EndpointCard
                     endpoint={endpoint}
@@ -291,7 +291,7 @@ export function ApiDocumentationPageClient() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {examples.map((example, index) => (
+                  {examples.map((example) => (
                     <div key={example.title}>
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold">

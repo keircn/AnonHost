@@ -651,7 +651,7 @@ export function DashboardPageClient() {
                   ];
                   return (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {statsData.map((stat, index) => (
+                      {statsData.map((stat) => (
                         <div key={stat.title}>
                           <Card className="h-full">
                             <CardHeader>

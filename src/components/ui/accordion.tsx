@@ -32,13 +32,11 @@ function useItem() {
 }
 
 function Accordion({
-  type = 'single',
   collapsible = false,
   className,
   children,
   ...props
 }: {
-  type?: 'single';
   collapsible?: boolean;
   className?: string;
   children: React.ReactNode;

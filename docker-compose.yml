@@ -42,7 +42,6 @@ services:
       - uploads_data:/app/uploads
     ports:
       - "${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984"
-    command: ["sh", "-c", "pnpm exec drizzle-kit push --force && pnpm run start"]
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:1984/api/stats"]
       interval: 30s

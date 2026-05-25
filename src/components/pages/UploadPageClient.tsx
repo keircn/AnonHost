@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -104,6 +104,7 @@ export function UploadPageClient() {
   const [privatePassword, setPrivatePassword] = useState("");
   const [privateOneUse, setPrivateOneUse] = useState(false);
   const [uploadedLinks, setUploadedLinks] = useState<UploadedLink[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -166,8 +167,10 @@ export function UploadPageClient() {
         return;
       }
 
+      setUploadedLinks([]);
       setFiles((prev) => [...prev, ...newFiles]);
     }
+    e.target.value = "";
   };
 
   const removeFile = (index: number) => {
@@ -534,6 +537,7 @@ export function UploadPageClient() {
                 <input
                   type="file"
                   id="file-upload"
+                  ref={fileInputRef}
                   className="hidden"
                   multiple
                   onChange={handleFileChange}
@@ -677,7 +681,7 @@ export function UploadPageClient() {
                   <div key={`${link.filename}-${link.webUrl}`} className="rounded-lg border bg-card p-4">
                     <p className="mb-3 text-sm font-medium">{link.filename}</p>
                     <div className="space-y-2">
-                      <UrlRow label="URL" value={link.webUrl} />
+                        <UrlRow label="File URL" value={link.webUrl} />
                       {isAnonymous && link.deletionUrl && (
                         <UrlRow label="Deletion URL (save this)" value={link.deletionUrl} />
                       )}
@@ -686,9 +690,6 @@ export function UploadPageClient() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" className="w-full" onClick={() => { setUploadedLinks([]); setFiles([]); }}>
-                  Upload another
-                </Button>
               </div>
             )}
         </div>

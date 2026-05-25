@@ -1,13 +1,13 @@
-import prisma from "@/lib/prisma";
-import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
-import { uploadFile } from "@/lib/server/upload-file";
-import { sendDiscordWebhook } from "@/lib/discord";
-import { processFile } from "@/lib/process-file";
-import { ArchiveProcessor } from "@/lib/archive-processor";
-import { ServerArchiveProcessor } from "@/lib/server-archive-processor";
-import { MediaType } from "@/lib/db/schema";
-import type { FileSettings } from "@/types/file-settings";
-import { nanoid } from "nanoid";
+import prisma from '@/lib/prisma';
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from '@/lib/upload';
+import { uploadFile } from '@/lib/server/upload-file';
+import { sendDiscordWebhook } from '@/lib/discord';
+import { processFile } from '@/lib/process-file';
+import { ArchiveProcessor } from '@/lib/archive-processor';
+import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
+import { MediaType } from '@/lib/db/schema';
+import type { FileSettings } from '@/types/file-settings';
+import { nanoid } from 'nanoid';
 
 function getDefaultSettings(userDefaults: {
   makeImagesPublic: boolean;
@@ -31,14 +31,14 @@ function getDefaultSettings(userDefaults: {
       width: undefined,
       height: undefined,
       maintainAspectRatio: true,
-      fit: "inside",
+      fit: 'inside',
     },
   };
 }
 
 function parseSettings(
   rawSettings: string | FileSettings | null | undefined,
-  userDefaults: { makeImagesPublic: boolean; disableEmbedByDefault: boolean },
+  userDefaults: { makeImagesPublic: boolean; disableEmbedByDefault: boolean }
 ): FileSettings {
   const defaults = getDefaultSettings(userDefaults);
 
@@ -47,7 +47,8 @@ function parseSettings(
   }
 
   try {
-    const parsed = typeof rawSettings === "string" ? JSON.parse(rawSettings) : rawSettings;
+    const parsed =
+      typeof rawSettings === 'string' ? JSON.parse(rawSettings) : rawSettings;
 
     return {
       conversion: {
@@ -67,19 +68,23 @@ function parseSettings(
         width: parsed?.resize?.width ?? undefined,
         height: parsed?.resize?.height ?? undefined,
         maintainAspectRatio: parsed?.resize?.maintainAspectRatio ?? true,
-        fit: parsed?.resize?.fit ?? "inside",
+        fit: parsed?.resize?.fit ?? 'inside',
       },
     };
   } catch (error) {
-    console.warn("Failed to parse file settings:", error);
+    console.warn('Failed to parse file settings:', error);
     return defaults;
   }
 }
 
-function buildConvertedFilename(originalName: string, settings: FileSettings): string {
-  const dotIndex = originalName.lastIndexOf(".");
-  const basename = dotIndex > 0 ? originalName.slice(0, dotIndex) : originalName;
-  const originalExt = dotIndex > 0 ? originalName.slice(dotIndex + 1) : "";
+function buildConvertedFilename(
+  originalName: string,
+  settings: FileSettings
+): string {
+  const dotIndex = originalName.lastIndexOf('.');
+  const basename =
+    dotIndex > 0 ? originalName.slice(0, dotIndex) : originalName;
+  const originalExt = dotIndex > 0 ? originalName.slice(dotIndex + 1) : '';
   const targetExt =
     settings.conversion.enabled && settings.conversion.format
       ? settings.conversion.format
@@ -127,10 +132,14 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
 
   const filename = buildConvertedFilename(input.originalName, settings);
 
-  const sizeLimit = input.isPremium ? FILE_SIZE_LIMITS.PREMIUM : FILE_SIZE_LIMITS.FREE;
+  const sizeLimit = input.isPremium
+    ? FILE_SIZE_LIMITS.PREMIUM
+    : FILE_SIZE_LIMITS.FREE;
   if (input.file.size > sizeLimit) {
     const limitInMb = sizeLimit / (1024 * 1024);
-    throw new Error(`File too large. Maximum file size is ${limitInMb}MB for all users`);
+    throw new Error(
+      `File too large. Maximum file size is ${limitInMb}MB for all users`
+    );
   }
 
   if (!input.isPremium && !isAnonymous) {
@@ -141,18 +150,25 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
 
     const currentUsage = Number(totalUsed._sum?.size || 0);
     if (currentUsage + input.file.size > STORAGE_LIMITS.FREE) {
-      throw new Error("Storage limit reached. Upgrade to premium for unlimited storage.");
+      throw new Error(
+        'Storage limit reached. Upgrade to premium for unlimited storage.'
+      );
     }
   }
 
   if (BLOCKED_TYPES.includes(input.file.type)) {
-    throw new Error("This file type is not allowed for security reasons.");
+    throw new Error('This file type is not allowed for security reasons.');
   }
 
   const processedFile = await processFile(input.file, settings);
   const fileId = input.fileId ?? nanoid(6);
-  const storageUserId = isAnonymous ? "anon" : input.userId!;
-  const uploadResult = await uploadFile(processedFile, storageUserId, filename, fileId);
+  const storageUserId = isAnonymous ? 'anon' : input.userId!;
+  const uploadResult = await uploadFile(
+    processedFile,
+    storageUserId,
+    filename,
+    fileId
+  );
 
   let archiveMetadata = null;
   let archiveType = null;
@@ -161,11 +177,14 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
   if (ServerArchiveProcessor.supportsPreview(input.originalName)) {
     try {
       const buffer = Buffer.from(await input.file.arrayBuffer());
-      archiveMetadata = await ServerArchiveProcessor.processArchive(buffer, input.originalName);
+      archiveMetadata = await ServerArchiveProcessor.processArchive(
+        buffer,
+        input.originalName
+      );
       archiveType = archiveMetadata.archiveType;
       fileCount = archiveMetadata.totalFiles;
     } catch (error) {
-      console.warn("Failed to process archive metadata:", error);
+      console.warn('Failed to process archive metadata:', error);
     }
   }
 
@@ -182,7 +201,9 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
       width: uploadResult.width,
       height: uploadResult.height,
       duration: uploadResult.duration || null,
-      type: (isArchiveUpload ? "ARCHIVE" : uploadResult.type.toUpperCase()) as MediaType,
+      type: (isArchiveUpload
+        ? 'ARCHIVE'
+        : uploadResult.type.toUpperCase()) as MediaType,
       userId: input.userId ?? null,
       deletionToken,
       public: Boolean(settings.public),

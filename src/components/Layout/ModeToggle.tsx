@@ -1,7 +1,7 @@
-"use client";
-import { Sun, Moon, Monitor } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useState, useEffect } from "react";
+'use client';
+import { Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useState, useEffect } from 'react';
 
 export function ModeToggle() {
   const { setTheme, theme, resolvedTheme } = useTheme();
@@ -20,13 +20,21 @@ export function ModeToggle() {
     );
   }
 
-  const nextTheme = theme === "system"
-    ? resolvedTheme === "dark" ? "light" : "dark"
-    : theme === "dark" ? "light" : "system";
+  const nextTheme =
+    theme === 'system'
+      ? resolvedTheme === 'dark'
+        ? 'light'
+        : 'dark'
+      : theme === 'dark'
+        ? 'light'
+        : 'system';
 
-  const cycleLabel = theme === "system"
-    ? `Currently system (${resolvedTheme}) — next: ${resolvedTheme === "dark" ? "light" : "dark"}`
-    : theme === "dark" ? "Next: system" : "Next: dark";
+  const cycleLabel =
+    theme === 'system'
+      ? `Currently system (${resolvedTheme}) — next: ${resolvedTheme === 'dark' ? 'light' : 'dark'}`
+      : theme === 'dark'
+        ? 'Next: system'
+        : 'Next: dark';
 
   return (
     <button
@@ -35,9 +43,9 @@ export function ModeToggle() {
       title={cycleLabel}
       aria-label={cycleLabel}
     >
-      {theme === "system" ? (
+      {theme === 'system' ? (
         <Monitor className="h-4 w-4" />
-      ) : theme === "dark" ? (
+      ) : theme === 'dark' ? (
         <Moon className="h-4 w-4" />
       ) : (
         <Sun className="h-4 w-4" />

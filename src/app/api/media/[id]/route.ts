@@ -1,22 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
-import { promises as fs } from "fs";
-import path from "path";
-import { deleteFromR2Key, isR2Configured } from "@/lib/r2";
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { deleteFromR2Key, isR2Configured } from '@/lib/r2';
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   const { id } = await context.params;
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const deletionToken = req.nextUrl.searchParams.get("deletionToken");
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+  const deletionToken = req.nextUrl.searchParams.get('deletionToken');
 
   const hasAuth = session || apiKey;
-  const hasDeletionToken = typeof deletionToken === "string" && deletionToken.length > 0;
+  const hasDeletionToken =
+    typeof deletionToken === 'string' && deletionToken.length > 0;
 
   if (!hasAuth && !hasDeletionToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string | null = null;
@@ -38,14 +42,15 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
     });
 
     if (!media) {
-      return NextResponse.json({ error: "Media not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Media not found' }, { status: 404 });
     }
 
     const authorizedViaOwnership = userId && media.userId === userId;
-    const authorizedViaToken = hasDeletionToken && media.deletionToken === deletionToken;
+    const authorizedViaToken =
+      hasDeletionToken && media.deletionToken === deletionToken;
 
     if (!authorizedViaOwnership && !authorizedViaToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const shouldDeleteFromR2 =
@@ -59,7 +64,10 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
 
     const ops = [
       storageDeleteTask.catch((error) => {
-        console.warn("Storage delete failed; continuing with DB delete:", error);
+        console.warn(
+          'Storage delete failed; continuing with DB delete:',
+          error
+        );
       }),
       prisma.media.delete({ where: { id } }),
     ];
@@ -69,7 +77,7 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         prisma.user.update({
           where: { id: media.userId },
           data: { storageUsed: { decrement: media.size } },
-        }),
+        })
       );
     }
 
@@ -77,38 +85,45 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Delete error:", error);
-    return NextResponse.json({ error: "Failed to delete media" }, { status: 500 });
+    console.error('Delete error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete media' },
+      { status: 500 }
+    );
   }
 }
 
 async function deleteFromR2(mediaUrl: string) {
   const publicUrl = process.env.R2_PUBLIC_URL!;
-  const key = mediaUrl.replace(`${publicUrl}/`, "");
+  const key = mediaUrl.replace(`${publicUrl}/`, '');
   await deleteFromR2Key(key);
 }
 
 async function deleteFromLocalStorage(mediaUrl: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
   const pathname = new URL(mediaUrl, baseUrl).pathname;
 
   let relativePath: string | null = null;
-  if (pathname.startsWith("/api/upload/storage/")) {
-    relativePath = pathname.replace("/api/upload/storage/", "");
-  } else if (pathname.startsWith("/uploads/")) {
-    relativePath = pathname.replace("/uploads/", "");
+  if (pathname.startsWith('/api/upload/storage/')) {
+    relativePath = pathname.replace('/api/upload/storage/', '');
+  } else if (pathname.startsWith('/uploads/')) {
+    relativePath = pathname.replace('/uploads/', '');
   }
 
   if (!relativePath) {
     return;
   }
 
-  const fullPath = path.join(process.cwd(), "uploads", ...relativePath.split("/"));
+  const fullPath = path.join(
+    process.cwd(),
+    'uploads',
+    ...relativePath.split('/')
+  );
   const normalizedPath = path.normalize(fullPath);
-  const uploadDir = path.join(process.cwd(), "uploads");
+  const uploadDir = path.join(process.cwd(), 'uploads');
 
   if (!normalizedPath.startsWith(uploadDir)) {
-    throw new Error("Invalid local media path");
+    throw new Error('Invalid local media path');
   }
 
   try {
@@ -116,9 +131,9 @@ async function deleteFromLocalStorage(mediaUrl: string) {
   } catch (error: unknown) {
     if (
       error &&
-      typeof error === "object" &&
-      "code" in error &&
-      (error as { code: string }).code === "ENOENT"
+      typeof error === 'object' &&
+      'code' in error &&
+      (error as { code: string }).code === 'ENOENT'
     ) {
       return;
     }

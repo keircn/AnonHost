@@ -1,20 +1,20 @@
-import path from "path";
-import { promises as fs } from "fs";
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { nanoid } from "nanoid";
-import { db } from "@/lib/db";
-import { privateUploads } from "@/lib/db/schema";
-import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from "@/lib/upload";
+import path from 'path';
+import { promises as fs } from 'fs';
+import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
+import { and, eq, isNull, sql } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
+import { db } from '@/lib/db';
+import { privateUploads } from '@/lib/db/schema';
+import { BLOCKED_TYPES, FILE_SIZE_LIMITS, STORAGE_LIMITS } from '@/lib/upload';
 import {
   checkR2Connection,
   deleteFromR2Key,
   getR2Client,
   isR2Configured,
   readFromR2Key,
-} from "@/lib/r2";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+} from '@/lib/r2';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 const scrypt = promisify(scryptCallback);
 const PASSWORD_KEY_LENGTH = 64;
@@ -52,42 +52,46 @@ function sanitizeFilename(filename: string): string {
   return (
     path
       .basename(filename)
-      .replace(/[\r\n"]/g, "")
-      .slice(0, 255) || "private-upload"
+      .replace(/[\r\n"]/g, '')
+      .slice(0, 255) || 'private-upload'
   );
 }
 
 function getFileExtension(filename: string): string {
   return path
     .extname(filename)
-    .replace(/[^a-zA-Z0-9.]/g, "")
+    .replace(/[^a-zA-Z0-9.]/g, '')
     .toLowerCase();
 }
 
 function getLocalPath(objectKey: string): string {
-  return path.join(process.cwd(), "uploads", ...objectKey.split("/"));
+  return path.join(process.cwd(), 'uploads', ...objectKey.split('/'));
 }
 
 function assertSafeLocalPath(filePath: string) {
-  const uploadsRoot = path.join(process.cwd(), "uploads");
+  const uploadsRoot = path.join(process.cwd(), 'uploads');
   const normalized = path.normalize(filePath);
   if (!normalized.startsWith(uploadsRoot)) {
-    throw new Error("Unsafe storage path");
+    throw new Error('Unsafe storage path');
   }
 }
 
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("base64url");
+  const salt = randomBytes(16).toString('base64url');
   const hash = (await scrypt(password, salt, PASSWORD_KEY_LENGTH)) as Buffer;
   return {
     salt,
-    hash: hash.toString("base64url"),
+    hash: hash.toString('base64url'),
   };
 }
 
-async function verifyPassword(password: string, salt: string, expectedHash: string) {
+async function verifyPassword(
+  password: string,
+  salt: string,
+  expectedHash: string
+) {
   const hash = (await scrypt(password, salt, PASSWORD_KEY_LENGTH)) as Buffer;
-  const expected = Buffer.from(expectedHash, "base64url");
+  const expected = Buffer.from(expectedHash, 'base64url');
 
   if (hash.length !== expected.length) {
     return false;
@@ -100,7 +104,7 @@ async function savePrivateBuffer(
   buffer: Buffer,
   objectKey: string,
   contentType: string,
-  userId: string,
+  userId: string
 ) {
   if (isR2Configured() && (await checkR2Connection())) {
     await getR2Client().send(
@@ -111,10 +115,10 @@ async function savePrivateBuffer(
         ContentType: contentType,
         Metadata: {
           userId,
-          private: "true",
+          private: 'true',
           uploadedAt: new Date().toISOString(),
         },
-      }),
+      })
     );
     return;
   }
@@ -149,11 +153,11 @@ async function deletePrivateObject(objectKey: string) {
 function buildDownloadResponse(payload: PrivateDownloadPayload) {
   return {
     headers: {
-      "Content-Type": payload.contentType,
-      "Content-Length": String(payload.size),
-      "Content-Disposition": `attachment; filename="${sanitizeFilename(payload.filename)}"`,
-      "Cache-Control": "no-store",
-      "X-Content-Type-Options": "nosniff",
+      'Content-Type': payload.contentType,
+      'Content-Length': String(payload.size),
+      'Content-Disposition': `attachment; filename="${sanitizeFilename(payload.filename)}"`,
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
     },
     body: new Uint8Array(payload.buffer),
   };
@@ -169,35 +173,43 @@ export async function createPrivateUpload(input: {
   baseUrl: string;
 }): Promise<PrivateUploadResponse> {
   const filename = sanitizeFilename(input.originalName);
-  const contentType = input.file.type || "application/octet-stream";
+  const contentType = input.file.type || 'application/octet-stream';
   const password = input.password.trim();
 
   if (!password) {
-    throw new Error("Password is required");
+    throw new Error('Password is required');
   }
 
   if (password.length < 8) {
-    throw new Error("Password must be at least 8 characters");
+    throw new Error('Password must be at least 8 characters');
   }
 
-  const sizeLimit = input.isPremium ? FILE_SIZE_LIMITS.PREMIUM : FILE_SIZE_LIMITS.FREE;
+  const sizeLimit = input.isPremium
+    ? FILE_SIZE_LIMITS.PREMIUM
+    : FILE_SIZE_LIMITS.FREE;
   if (input.file.size > sizeLimit) {
-    throw new Error(`File too large. Maximum file size is ${sizeLimit / (1024 * 1024)}MB`);
+    throw new Error(
+      `File too large. Maximum file size is ${sizeLimit / (1024 * 1024)}MB`
+    );
   }
 
   if (!input.isPremium) {
     const [usage] = await db
-      .select({ total: sql<number>`coalesce(sum(${privateUploads.size}), 0)::int` })
+      .select({
+        total: sql<number>`coalesce(sum(${privateUploads.size}), 0)::int`,
+      })
       .from(privateUploads)
       .where(eq(privateUploads.userId, input.userId));
     const currentPrivateUsage = Number(usage?.total || 0);
     if (currentPrivateUsage + input.file.size > STORAGE_LIMITS.FREE) {
-      throw new Error("Storage limit reached. Upgrade to premium for unlimited storage.");
+      throw new Error(
+        'Storage limit reached. Upgrade to premium for unlimited storage.'
+      );
     }
   }
 
   if (BLOCKED_TYPES.includes(contentType)) {
-    throw new Error("This file type is not allowed for security reasons.");
+    throw new Error('This file type is not allowed for security reasons.');
   }
 
   const id = nanoid(12);
@@ -226,7 +238,7 @@ export async function createPrivateUpload(input: {
     throw error;
   }
 
-  const baseUrl = input.baseUrl.replace(/\/$/, "");
+  const baseUrl = input.baseUrl.replace(/\/$/, '');
   const webUrl = `${baseUrl}/private/${id}`;
   const terminalUrl = `${baseUrl}/api/private-upload/token/${downloadToken}`;
 
@@ -255,11 +267,11 @@ export async function createPrivateUploadRecord(input: {
   const password = input.password.trim();
 
   if (!password) {
-    throw new Error("Password is required");
+    throw new Error('Password is required');
   }
 
   if (password.length < 8) {
-    throw new Error("Password must be at least 8 characters");
+    throw new Error('Password must be at least 8 characters');
   }
 
   const id = input.id ?? nanoid(12);
@@ -272,14 +284,14 @@ export async function createPrivateUploadRecord(input: {
     objectKey: input.objectKey,
     filename: sanitizeFilename(input.filename),
     size: input.size,
-    contentType: input.contentType || "application/octet-stream",
+    contentType: input.contentType || 'application/octet-stream',
     passwordHash: hash,
     passwordSalt: salt,
     oneUse: input.oneUse,
     userId: input.userId,
   });
 
-  const baseUrl = input.baseUrl.replace(/\/$/, "");
+  const baseUrl = input.baseUrl.replace(/\/$/, '');
   const webUrl = `${baseUrl}/private/${id}`;
   const terminalUrl = `${baseUrl}/api/private-upload/token/${downloadToken}`;
 
@@ -318,15 +330,19 @@ export async function downloadPrivateUploadWithPassword(input: {
   const [row] = await db
     .select()
     .from(privateUploads)
-    .where(and(eq(privateUploads.id, input.id), isNull(privateUploads.consumedAt)))
+    .where(
+      and(eq(privateUploads.id, input.id), isNull(privateUploads.consumedAt))
+    )
     .limit(1);
 
   if (!row) {
-    throw new Error("Private upload not found");
+    throw new Error('Private upload not found');
   }
 
-  if (!(await verifyPassword(input.password, row.passwordSalt, row.passwordHash))) {
-    throw new Error("Invalid password");
+  if (
+    !(await verifyPassword(input.password, row.passwordSalt, row.passwordHash))
+  ) {
+    throw new Error('Invalid password');
   }
 
   const buffer = await readPrivateBuffer(row.objectKey);
@@ -344,7 +360,7 @@ export async function downloadPrivateUploadWithPassword(input: {
 }
 
 export async function downloadPrivateUploadWithToken(
-  token: string,
+  token: string
 ): Promise<PrivateDownloadPayload> {
   const nextDownloadToken = nanoid(40);
   const [row] = await db
@@ -353,11 +369,16 @@ export async function downloadPrivateUploadWithToken(
       downloadToken: nextDownloadToken,
       downloadTokenUsedAt: new Date(),
     })
-    .where(and(eq(privateUploads.downloadToken, token), isNull(privateUploads.consumedAt)))
+    .where(
+      and(
+        eq(privateUploads.downloadToken, token),
+        isNull(privateUploads.consumedAt)
+      )
+    )
     .returning();
 
   if (!row) {
-    throw new Error("Private download link not found or already used");
+    throw new Error('Private download link not found or already used');
   }
 
   const buffer = await readPrivateBuffer(row.objectKey);
@@ -382,8 +403,11 @@ async function consumePrivateUpload(id: string, objectKey: string) {
   await deletePrivateObject(objectKey);
 }
 
-export async function listPrivateUploadsForUser(userId: string, baseUrl: string) {
-  const normalizedBaseUrl = baseUrl.replace(/\/$/, "");
+export async function listPrivateUploadsForUser(
+  userId: string,
+  baseUrl: string
+) {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
   const rows = await db
     .select({
       id: privateUploads.id,
@@ -395,7 +419,9 @@ export async function listPrivateUploadsForUser(userId: string, baseUrl: string)
       createdAt: privateUploads.createdAt,
     })
     .from(privateUploads)
-    .where(and(eq(privateUploads.userId, userId), isNull(privateUploads.consumedAt)));
+    .where(
+      and(eq(privateUploads.userId, userId), isNull(privateUploads.consumedAt))
+    );
 
   return rows.map((row): PrivateUploadListItem => {
     const webUrl = `${normalizedBaseUrl}/private/${row.id}`;
@@ -424,7 +450,7 @@ export async function deletePrivateUploadForUser(userId: string, id: string) {
     });
 
   if (!row) {
-    throw new Error("Private upload not found");
+    throw new Error('Private upload not found');
   }
 
   await deletePrivateObject(row.objectKey);

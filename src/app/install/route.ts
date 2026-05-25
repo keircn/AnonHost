@@ -1,12 +1,12 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 
-const SCRIPT_NAME = "anonhost";
-const INSTALL_DIR = "$HOME/.local/bin";
+const SCRIPT_NAME = 'anonhost';
+const INSTALL_DIR = '$HOME/.local/bin';
 
 const actualScriptContent = fs.readFileSync(
-  path.join(process.cwd(), "src/lib/install.sh"),
-  "utf-8",
+  path.join(process.cwd(), 'src/lib/install.sh'),
+  'utf-8'
 );
 
 const installerScriptTemplate = `#!/bin/bash
@@ -68,7 +68,7 @@ echo_green "Installation complete!"
 export async function GET() {
   return new Response(installerScriptTemplate, {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
+      'Content-Type': 'text/plain; charset=utf-8',
     },
   });
 }

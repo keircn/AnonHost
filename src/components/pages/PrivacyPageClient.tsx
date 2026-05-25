@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export function PrivacyPageClient() {
   return (
@@ -23,10 +23,13 @@ export function PrivacyPageClient() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-foreground font-semibold">What we don&apos;t collect</h2>
+            <h2 className="text-foreground font-semibold">
+              What we don&apos;t collect
+            </h2>
             <p>
-              We don&apos;t use tracking cookies, analytics scripts, or third-party
-              trackers. We don&apos;t sell your data. We don&apos;t read your files.
+              We don&apos;t use tracking cookies, analytics scripts, or
+              third-party trackers. We don&apos;t sell your data. We don&apos;t
+              read your files.
             </p>
           </section>
 
@@ -51,8 +54,13 @@ export function PrivacyPageClient() {
           <section className="space-y-2">
             <h2 className="text-foreground font-semibold">Contact</h2>
             <p>
-              For privacy questions:{" "}
-              <a href="mailto:support@anonhost.cc" className="text-foreground hover:underline">support@anonhost.cc</a>
+              For privacy questions:{' '}
+              <a
+                href="mailto:support@anonhost.cc"
+                className="text-foreground hover:underline"
+              >
+                support@anonhost.cc
+              </a>
             </p>
           </section>
         </div>

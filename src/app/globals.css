@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @source '../../*.{js,ts,jsx,tsx,mdx}';
 
@@ -35,16 +35,32 @@
   --animate-slide-down: slide-down 0.2s ease-out;
 
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   @keyframes slide-down {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -105,7 +121,9 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-200;
-    font-feature-settings: "ss01" on, "cv01" on;
+    font-feature-settings:
+      'ss01' on,
+      'cv01' on;
   }
   html {
     -webkit-text-size-adjust: 100%;
@@ -116,7 +134,11 @@
     max-width: 100%;
     overflow-x: hidden;
   }
-  button, [role="button"], [type="button"], [type="reset"], [type="submit"] {
+  button,
+  [role='button'],
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
     cursor: pointer;
   }
 }

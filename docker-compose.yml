@@ -15,7 +15,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-anonhost} -d ${POSTGRES_DB:-anonhost}"]
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-anonhost} -d ${POSTGRES_DB:-anonhost}',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -41,9 +45,9 @@ services:
     volumes:
       - uploads_data:/app/uploads
     ports:
-      - "${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984"
+      - '${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984'
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:1984/api/stats"]
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:1984/api/stats']
       interval: 30s
       timeout: 10s
       retries: 3

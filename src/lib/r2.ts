@@ -4,14 +4,14 @@ import {
   HeadBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
-} from "@aws-sdk/client-s3";
+} from '@aws-sdk/client-s3';
 
 const REQUIRED_R2_ENV_VARS = [
-  "R2_ACCOUNT_ID",
-  "R2_ACCESS_KEY_ID",
-  "R2_SECRET_ACCESS_KEY",
-  "R2_BUCKET_NAME",
-  "R2_PUBLIC_URL",
+  'R2_ACCOUNT_ID',
+  'R2_ACCESS_KEY_ID',
+  'R2_SECRET_ACCESS_KEY',
+  'R2_BUCKET_NAME',
+  'R2_PUBLIC_URL',
 ] as const;
 
 let cachedConnectionStatus: boolean | null = null;
@@ -24,11 +24,11 @@ export function isR2Configured(): boolean {
 
 export function getR2Client() {
   if (!isR2Configured()) {
-    throw new Error("R2 is not fully configured");
+    throw new Error('R2 is not fully configured');
   }
 
   return new S3Client({
-    region: "auto",
+    region: 'auto',
     endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -69,14 +69,17 @@ export async function uploadToR2({
 
     return `${process.env.R2_PUBLIC_URL}/${key}`;
   } catch (error) {
-    console.error("R2 upload error:", error);
-    throw new Error("Failed to upload to R2");
+    console.error('R2 upload error:', error);
+    throw new Error('Failed to upload to R2');
   }
 }
 
 export async function checkR2Connection(): Promise<boolean> {
   const now = Date.now();
-  if (cachedConnectionStatus !== null && now - lastConnectionCheckAt < CONNECTION_CHECK_TTL_MS) {
+  if (
+    cachedConnectionStatus !== null &&
+    now - lastConnectionCheckAt < CONNECTION_CHECK_TTL_MS
+  ) {
     return cachedConnectionStatus;
   }
 
@@ -91,7 +94,7 @@ export async function checkR2Connection(): Promise<boolean> {
     lastConnectionCheckAt = now;
     return true;
   } catch (error) {
-    console.error("R2 connection error:", error);
+    console.error('R2 connection error:', error);
     cachedConnectionStatus = false;
     lastConnectionCheckAt = now;
     return false;
@@ -102,7 +105,7 @@ export function generateR2Key(
   userId: string,
   fileId: string,
   fileExt: string,
-  type?: string,
+  type?: string
 ): string {
   if (type) {
     return `${userId}/${type}s/${fileId}${fileExt}`;
@@ -117,7 +120,7 @@ export async function deleteFromR2Key(key: string): Promise<void> {
     new DeleteObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
-    }),
+    })
   );
 }
 
@@ -127,18 +130,18 @@ export async function readFromR2Key(key: string): Promise<Buffer> {
     new GetObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
-    }),
+    })
   );
 
   if (!result.Body) {
-    throw new Error("R2 object has no body");
+    throw new Error('R2 object has no body');
   }
 
   const body = result.Body as unknown as {
     transformToByteArray?: () => Promise<Uint8Array>;
   };
 
-  if (typeof body.transformToByteArray === "function") {
+  if (typeof body.transformToByteArray === 'function') {
     return Buffer.from(await body.transformToByteArray());
   }
 

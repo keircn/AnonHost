@@ -1,11 +1,17 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LuCheck, LuSparkles } from "react-icons/lu";
-import Link from "next/link";
-import { PLAN_DETAILS, getPremiumCheckoutUrls } from "@/lib/plans";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { LuCheck, LuSparkles } from 'react-icons/lu';
+import Link from 'next/link';
+import { PLAN_DETAILS, getPremiumCheckoutUrls } from '@/lib/plans';
 
 const { free, premium } = PLAN_DETAILS;
 
@@ -16,7 +22,9 @@ export function PricingPageClient() {
     <div className="container mx-auto max-w-6xl space-y-12 py-16 md:mt-24">
       <div className="space-y-4 text-center">
         <h1 className="text-4xl font-bold">Simple, Transparent Pricing</h1>
-        <p className="text-muted-foreground text-lg">Choose the plan that works for you</p>
+        <p className="text-muted-foreground text-lg">
+          Choose the plan that works for you
+        </p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -29,7 +37,9 @@ export function PricingPageClient() {
               <CardTitle className="text-2xl">{free.name}</CardTitle>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold">{free.priceLabel}</span>
-                <span className="text-muted-foreground">{free.intervalLabel}</span>
+                <span className="text-muted-foreground">
+                  {free.intervalLabel}
+                </span>
               </div>
             </CardHeader>
             <CardContent>
@@ -63,18 +73,31 @@ export function PricingPageClient() {
               <CardTitle className="text-2xl">{premium.name}</CardTitle>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">{premium.monthlyPriceLabel}</span>
-                  <span className="text-muted-foreground">{premium.monthlyIntervalLabel}</span>
+                  <span className="text-3xl font-bold">
+                    {premium.monthlyPriceLabel}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {premium.monthlyIntervalLabel}
+                  </span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-semibold">{premium.yearlyPriceLabel}</span>
-                  <span className="text-muted-foreground">{premium.yearlyIntervalLabel}</span>
-                  <Badge variant="outline" className="ml-1 text-green-500 border-green-500">
+                  <span className="text-xl font-semibold">
+                    {premium.yearlyPriceLabel}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {premium.yearlyIntervalLabel}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="ml-1 text-green-500 border-green-500"
+                  >
                     {premium.savingsLabel}
                   </Badge>
                 </div>
               </div>
-              <p className="text-muted-foreground text-sm pt-1">{premium.heroSubtitle}</p>
+              <p className="text-muted-foreground text-sm pt-1">
+                {premium.heroSubtitle}
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2">
@@ -90,28 +113,40 @@ export function PricingPageClient() {
               <div className="grid w-full gap-2 sm:grid-cols-2">
                 {checkoutUrls.monthly && (
                   <Button asChild>
-                    <Link href={checkoutUrls.monthly} target="_blank" rel="noopener">
+                    <Link
+                      href={checkoutUrls.monthly}
+                      target="_blank"
+                      rel="noopener"
+                    >
                       Monthly
                     </Link>
                   </Button>
                 )}
                 {checkoutUrls.yearly && (
                   <Button asChild variant="secondary">
-                    <Link href={checkoutUrls.yearly} target="_blank" rel="noopener">
+                    <Link
+                      href={checkoutUrls.yearly}
+                      target="_blank"
+                      rel="noopener"
+                    >
                       Yearly
                     </Link>
                   </Button>
                 )}
                 {!checkoutUrls.monthly && !checkoutUrls.yearly && (
                   <Button asChild className="sm:col-span-2">
-                    <Link href="https://ko-fi.com/qkeiran" target="_blank" rel="noopener">
+                    <Link
+                      href="https://ko-fi.com/qkeiran"
+                      target="_blank"
+                      rel="noopener"
+                    >
                       Join Waitlist
                     </Link>
                   </Button>
                 )}
               </div>
               <p className="text-muted-foreground text-center text-sm">
-                Questions? Reach out on{" "}
+                Questions? Reach out on{' '}
                 <a
                   href="https://discord.gg/jPxJ52GF3r"
                   target="_blank"
@@ -128,7 +163,8 @@ export function PricingPageClient() {
 
       <div className="text-muted-foreground text-center text-sm">
         <p>
-          All plans include GDPR compliance, EU hosting, and 99.9% uptime guarantee.
+          All plans include GDPR compliance, EU hosting, and 99.9% uptime
+          guarantee.
           <br />
           Cancel anytime. No questions asked.
         </p>

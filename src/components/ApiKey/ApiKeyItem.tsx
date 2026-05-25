@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
-import { toast } from "sonner";
-import type { ApiKey } from "@/types/settings";
-import { ShareXConfigDialog } from "@/components/Files/ShareXConfigDialog";
-import { DeleteApiKeyDialog } from "@/components/ApiKey/DeleteApiKeyDialog";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { toast } from 'sonner';
+import type { ApiKey } from '@/types/settings';
+import { ShareXConfigDialog } from '@/components/Files/ShareXConfigDialog';
+import { DeleteApiKeyDialog } from '@/components/ApiKey/DeleteApiKeyDialog';
 
 interface ApiKeyItemProps {
   apiKey: ApiKey;
@@ -15,14 +15,19 @@ interface ApiKeyItemProps {
   onDeleted: () => Promise<void>;
 }
 
-export function ApiKeyItem({ apiKey, customDomain, onDelete, onDeleted }: ApiKeyItemProps) {
+export function ApiKeyItem({
+  apiKey,
+  customDomain,
+  onDelete,
+  onDeleted,
+}: ApiKeyItemProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast(
       <div>
         <strong>Copied to clipboard</strong>
         <div>API key copied to clipboard</div>
-      </div>,
+      </div>
     );
   };
 
@@ -55,10 +60,17 @@ export function ApiKeyItem({ apiKey, customDomain, onDelete, onDeleted }: ApiKey
                   </Button>
                 </div>
                 <div>
-                  <ShareXConfigDialog apiKey={apiKey} customDomain={customDomain} />
+                  <ShareXConfigDialog
+                    apiKey={apiKey}
+                    customDomain={customDomain}
+                  />
                 </div>
                 <div>
-                  <DeleteApiKeyDialog apiKey={apiKey} onDelete={onDelete} onDeleted={onDeleted} />
+                  <DeleteApiKeyDialog
+                    apiKey={apiKey}
+                    onDelete={onDelete}
+                    onDeleted={onDeleted}
+                  />
                 </div>
               </div>
             </div>

@@ -1,12 +1,15 @@
-import NextAuth, { AuthOptions, User } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db, schema } from "@/lib/db";
-import prisma from "@/lib/prisma";
-import { sendEmail } from "@/lib/email";
-import { welcomeEmailTemplate, verificationEmailTemplate } from "@/lib/email-templates";
-import { generateOTP } from "@/lib/utils";
+import NextAuth, { AuthOptions, User } from 'next-auth';
+import DiscordProvider from 'next-auth/providers/discord';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import { db, schema } from '@/lib/db';
+import prisma from '@/lib/prisma';
+import { sendEmail } from '@/lib/email';
+import {
+  welcomeEmailTemplate,
+  verificationEmailTemplate,
+} from '@/lib/email-templates';
+import { generateOTP } from '@/lib/utils';
 
 declare global {
   interface BigInt {
@@ -27,11 +30,11 @@ export const authOptions: AuthOptions = {
   } as any) as any,
   providers: [
     CredentialsProvider({
-      id: "email-login",
-      name: "Email",
+      id: 'email-login',
+      name: 'Email',
       credentials: {
-        email: { label: "Email", type: "email" },
-        otp: { label: "OTP", type: "text" },
+        email: { label: 'Email', type: 'email' },
+        otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.otp) return null;
@@ -57,7 +60,7 @@ export const authOptions: AuthOptions = {
           where: {
             email: credentials.email,
             code: credentials.otp,
-            type: "registration",
+            type: 'registration',
             used: false,
             expiresAt: { gt: new Date() },
           },
@@ -68,7 +71,7 @@ export const authOptions: AuthOptions = {
             where: {
               email: credentials.email,
               code: credentials.otp,
-              type: "login",
+              type: 'login',
               used: false,
               expiresAt: { gt: new Date() },
             },
@@ -100,24 +103,24 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
       authorization: {
         params: {
-          scope: "identify email guilds",
-          prompt: "consent",
+          scope: 'identify email guilds',
+          prompt: 'consent',
         },
       },
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60,
   },
   cookies: {
     sessionToken: {
-      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },
@@ -140,11 +143,11 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async signIn({ user, account }) {
-      if (account?.error === "access_denied") {
+      if (account?.error === 'access_denied') {
         return false;
       }
 
-      if (account?.provider === "discord") {
+      if (account?.provider === 'discord') {
         try {
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
@@ -152,24 +155,24 @@ export const authOptions: AuthOptions = {
           });
 
           if (!existingUser) {
-            console.log("Sending welcome email to new user:", user.email);
-            const template = welcomeEmailTemplate(user.name || "there");
+            console.log('Sending welcome email to new user:', user.email);
+            const template = welcomeEmailTemplate(user.name || 'there');
             await sendEmail({
               to: user.email!,
               ...template,
             }).catch((error) => {
-              console.error("Failed to send welcome email:", {
+              console.error('Failed to send welcome email:', {
                 error,
                 user: user.email,
               });
             });
           }
         } catch (error) {
-          console.error("Error in signIn callback:", error);
+          console.error('Error in signIn callback:', error);
         }
       }
 
-      if (account?.provider === "email-login") {
+      if (account?.provider === 'email-login') {
         try {
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
@@ -177,13 +180,13 @@ export const authOptions: AuthOptions = {
           });
 
           if (!existingUser) {
-            console.log("Sending welcome email to new email user:", user.email);
-            const welcomeTemplate = welcomeEmailTemplate(user.name || "there");
+            console.log('Sending welcome email to new email user:', user.email);
+            const welcomeTemplate = welcomeEmailTemplate(user.name || 'there');
             await sendEmail({
               to: user.email!,
               ...welcomeTemplate,
             }).catch((error) => {
-              console.error("Failed to send welcome email:", {
+              console.error('Failed to send welcome email:', {
                 error,
                 user: user.email,
               });
@@ -191,14 +194,14 @@ export const authOptions: AuthOptions = {
           }
 
           if (!existingUser?.emailVerified) {
-            console.log("Sending verification email to user:", user.email);
+            console.log('Sending verification email to user:', user.email);
             const otp = generateOTP();
             const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
             await prisma.oTP.deleteMany({
               where: {
                 email: user.email!,
-                type: "registration",
+                type: 'registration',
                 used: false,
               },
             });
@@ -208,11 +211,15 @@ export const authOptions: AuthOptions = {
                 email: user.email!,
                 code: otp,
                 expiresAt,
-                type: "registration",
+                type: 'registration',
               },
             });
 
-            const { subject, text, html } = verificationEmailTemplate(otp, user.email!, "login");
+            const { subject, text, html } = verificationEmailTemplate(
+              otp,
+              user.email!,
+              'login'
+            );
 
             await sendEmail({
               to: user.email!,
@@ -220,26 +227,26 @@ export const authOptions: AuthOptions = {
               text,
               html,
             }).catch((error) => {
-              console.error("Failed to send verification email:", {
+              console.error('Failed to send verification email:', {
                 error,
                 user: user.email,
               });
             });
           }
         } catch (error) {
-          console.error("Error in email signIn callback:", error);
+          console.error('Error in email signIn callback:', error);
         }
       }
       return true;
     },
   },
   pages: {
-    signIn: "/",
-    error: "/",
-    signOut: "/logout",
-    verifyRequest: "/verify-request",
+    signIn: '/',
+    error: '/',
+    signOut: '/logout',
+    verifyRequest: '/verify-request',
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === 'development',
 };
 
 const handler = NextAuth(authOptions);

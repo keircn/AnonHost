@@ -1,7 +1,13 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Endpoint, Parameter } from "@/lib/endpoints";
-import { CodeBlock } from "@/components/Docs/CodeBlock";
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import type { Endpoint, Parameter } from '@/lib/endpoints';
+import { CodeBlock } from '@/components/Docs/CodeBlock';
 
 interface EndpointCardProps {
   endpoint: Endpoint;
@@ -34,13 +40,21 @@ const ParameterTable = ({ parameters, title }: ParameterTableProps) => (
   </div>
 );
 
-export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardProps) {
+export function EndpointCard({
+  endpoint,
+  isExpanded,
+  onToggle,
+}: EndpointCardProps) {
   return (
     <Card>
       <CardHeader className="cursor-pointer" onClick={onToggle}>
         <div className="flex items-center justify-between">
           <CardTitle>{endpoint.title}</CardTitle>
-          {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          {isExpanded ? (
+            <ChevronDown className="h-5 w-5" />
+          ) : (
+            <ChevronRight className="h-5 w-5" />
+          )}
         </div>
         <CardDescription>
           {endpoint.method} {endpoint.path}
@@ -59,7 +73,10 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
           </div>
 
           {endpoint.request.parameters && (
-            <ParameterTable parameters={endpoint.request.parameters} title="Parameters" />
+            <ParameterTable
+              parameters={endpoint.request.parameters}
+              title="Parameters"
+            />
           )}
 
           {endpoint.request.queryParameters && (
@@ -70,12 +87,17 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
           )}
 
           {endpoint.request.pathParameters && (
-            <ParameterTable parameters={endpoint.request.pathParameters} title="Path Parameters" />
+            <ParameterTable
+              parameters={endpoint.request.pathParameters}
+              title="Path Parameters"
+            />
           )}
 
           <div className="space-y-2">
             <h4 className="font-semibold">Response</h4>
-            {endpoint.response.description && <p>{endpoint.response.description}</p>}
+            {endpoint.response.description && (
+              <p>{endpoint.response.description}</p>
+            )}
             <div>
               <CodeBlock
                 code={JSON.stringify(endpoint.response.example, null, 2)}

@@ -1,5 +1,5 @@
 export const welcomeEmailTemplate = (name: string) => ({
-  subject: "Welcome to AnonHost! 🚀",
+  subject: 'Welcome to AnonHost! 🚀',
   text: `Hi ${name}!
   
   Welcome to AnonHost - we're excited to have you on board!
@@ -56,9 +56,9 @@ export const welcomeEmailTemplate = (name: string) => ({
 export const verificationEmailTemplate = (
   code: string,
   email: string,
-  type: "login" | "email-change" = "login",
+  type: 'login' | 'email-change' = 'login'
 ) => ({
-  subject: `Your ${type === "email-change" ? "Email Change" : "Login"} Verification Code 🔐`,
+  subject: `Your ${type === 'email-change' ? 'Email Change' : 'Login'} Verification Code 🔐`,
   text: `Your verification code is: ${code}
   
 This code will expire in 15 minutes.
@@ -73,7 +73,7 @@ The AnonHost Team`,
 <div style="background-color: #18181b;">
   <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #c6cdd4; background: #18181b;">
     <h1 style="color: #ffffff; margin-bottom: 24px; font-size: 24px;">
-      ${type === "email-change" ? "Email Change" : "Login"} Verification Code 🔐
+      ${type === 'email-change' ? 'Email Change' : 'Login'} Verification Code 🔐
     </h1>
 
     <div style="background: #27272a; border-radius: 8px; padding: 20px; margin-bottom: 24px; text-align: center;">

@@ -1,7 +1,7 @@
-import { DbUser } from "@/lib/db/schema";
-import { db } from "@/lib/db";
-import { apiKeys, users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { DbUser } from '@/lib/db/schema';
+import { db } from '@/lib/db';
+import { apiKeys, users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function verifyApiKey(apiKey: string): Promise<DbUser | null> {
   if (!apiKey) return null;

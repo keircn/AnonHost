@@ -1,7 +1,13 @@
-import { NextResponse } from "next/server";
-import { buildDownloadResponse, downloadPrivateUploadWithToken } from "@/lib/server/private-upload";
+import { NextResponse } from 'next/server';
+import {
+  buildDownloadResponse,
+  downloadPrivateUploadWithToken,
+} from '@/lib/server/private-upload';
 
-export async function GET(_: Request, { params }: { params: Promise<{ token: string }> }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ token: string }> }
+) {
   const { token } = await params;
 
   try {
@@ -9,7 +15,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ token: str
     const response = buildDownloadResponse(payload);
     return new NextResponse(response.body, { headers: response.headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Download failed";
+    const message = error instanceof Error ? error.message : 'Download failed';
     return NextResponse.json({ error: message }, { status: 404 });
   }
 }

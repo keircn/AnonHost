@@ -1,34 +1,38 @@
 #!/usr/bin/env node
 
-import postgres from "postgres";
-import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
+import postgres from 'postgres';
+import {
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+  S3Client,
+} from '@aws-sdk/client-s3';
 
 function parseArgs(argv) {
   const args = {
     execute: false,
-    prefix: "",
+    prefix: '',
     limit: null,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
 
-    if (arg === "--execute") {
+    if (arg === '--execute') {
       args.execute = true;
       continue;
     }
 
-    if (arg === "--prefix") {
-      args.prefix = argv[i + 1] || "";
+    if (arg === '--prefix') {
+      args.prefix = argv[i + 1] || '';
       i += 1;
       continue;
     }
 
-    if (arg === "--limit") {
+    if (arg === '--limit') {
       const raw = argv[i + 1];
-      const parsed = Number.parseInt(raw || "", 10);
+      const parsed = Number.parseInt(raw || '', 10);
       if (!Number.isFinite(parsed) || parsed <= 0) {
-        throw new Error("--limit must be a positive integer");
+        throw new Error('--limit must be a positive integer');
       }
       args.limit = parsed;
       i += 1;
@@ -48,15 +52,15 @@ function requireEnv(name) {
 }
 
 function normalizePublicBase(url) {
-  return url.replace(/\/$/, "");
+  return url.replace(/\/$/, '');
 }
 
 function keyFromPublicUrl(url, publicBase) {
-  if (!url || typeof url !== "string") {
+  if (!url || typeof url !== 'string') {
     return null;
   }
 
-  if (!url.startsWith(publicBase + "/")) {
+  if (!url.startsWith(publicBase + '/')) {
     return null;
   }
 
@@ -64,12 +68,12 @@ function keyFromPublicUrl(url, publicBase) {
 }
 
 function fileIdFromKey(key) {
-  const last = key.split("/").pop();
+  const last = key.split('/').pop();
   if (!last) {
     return null;
   }
 
-  const dot = last.lastIndexOf(".");
+  const dot = last.lastIndexOf('.');
   return dot > 0 ? last.slice(0, dot) : last;
 }
 
@@ -83,10 +87,12 @@ async function listAllObjectKeys({ client, bucket, prefix, limit }) {
         Bucket: bucket,
         Prefix: prefix || undefined,
         ContinuationToken: continuationToken,
-      }),
+      })
     );
 
-    const batch = (response.Contents || []).map((item) => item.Key).filter(Boolean);
+    const batch = (response.Contents || [])
+      .map((item) => item.Key)
+      .filter(Boolean);
     keys.push(...batch);
 
     if (limit !== null && keys.length >= limit) {
@@ -115,7 +121,7 @@ async function deleteKeysInBatches({ client, bucket, keys }) {
           Objects: chunk.map((key) => ({ Key: key })),
           Quiet: true,
         },
-      }),
+      })
     );
 
     deleted += chunk.length;
@@ -126,12 +132,12 @@ async function deleteKeysInBatches({ client, bucket, keys }) {
 async function main() {
   const { execute, prefix, limit } = parseArgs(process.argv.slice(2));
 
-  const databaseUrl = requireEnv("DATABASE_URL");
-  const accountId = requireEnv("R2_ACCOUNT_ID");
-  const accessKeyId = requireEnv("R2_ACCESS_KEY_ID");
-  const secretAccessKey = requireEnv("R2_SECRET_ACCESS_KEY");
-  const bucket = requireEnv("R2_BUCKET_NAME");
-  const publicBase = normalizePublicBase(requireEnv("R2_PUBLIC_URL"));
+  const databaseUrl = requireEnv('DATABASE_URL');
+  const accountId = requireEnv('R2_ACCOUNT_ID');
+  const accessKeyId = requireEnv('R2_ACCESS_KEY_ID');
+  const secretAccessKey = requireEnv('R2_SECRET_ACCESS_KEY');
+  const bucket = requireEnv('R2_BUCKET_NAME');
+  const publicBase = normalizePublicBase(requireEnv('R2_PUBLIC_URL'));
 
   const sql = postgres(databaseUrl, { prepare: false });
 
@@ -165,7 +171,7 @@ async function main() {
     }
 
     const client = new S3Client({
-      region: "auto",
+      region: 'auto',
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId,
@@ -197,41 +203,44 @@ async function main() {
       orphanedKeys.push(key);
     }
 
-    console.log("R2 cleanup scan complete");
+    console.log('R2 cleanup scan complete');
     console.log(`- Bucket: ${bucket}`);
-    console.log(`- Prefix: ${prefix || "(none)"}`);
+    console.log(`- Prefix: ${prefix || '(none)'}`);
     console.log(`- DB protected ids: ${protectedIds.size}`);
     console.log(`- DB protected keys from URLs: ${protectedKeys.size}`);
     console.log(`- Bucket objects scanned: ${allBucketKeys.length}`);
     console.log(`- Candidate orphan objects: ${orphanedKeys.length}`);
 
     if (orphanedKeys.length > 0) {
-      console.log("\nFirst 50 orphan candidates:");
+      console.log('\nFirst 50 orphan candidates:');
       for (const key of orphanedKeys.slice(0, 50)) {
         console.log(`  ${key}`);
       }
     }
 
     if (!execute) {
-      console.log("\nDry run only. No files were deleted.");
-      console.log("Re-run with --execute to delete orphan candidates.");
+      console.log('\nDry run only. No files were deleted.');
+      console.log('Re-run with --execute to delete orphan candidates.');
       return;
     }
 
     if (orphanedKeys.length === 0) {
-      console.log("\nNothing to delete.");
+      console.log('\nNothing to delete.');
       return;
     }
 
-    console.log("\nDeleting orphaned objects...");
+    console.log('\nDeleting orphaned objects...');
     await deleteKeysInBatches({ client, bucket, keys: orphanedKeys });
-    console.log("Done.");
+    console.log('Done.');
   } finally {
     await sql.end({ timeout: 5 });
   }
 }
 
 main().catch((error) => {
-  console.error("Cleanup failed:", error instanceof Error ? error.message : error);
+  console.error(
+    'Cleanup failed:',
+    error instanceof Error ? error.message : error
+  );
   process.exit(1);
 });

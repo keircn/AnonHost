@@ -1,15 +1,15 @@
-import JSZip from "jszip";
-import { execFile } from "child_process";
-import { randomUUID } from "crypto";
-import { constants } from "fs";
-import { access, chmod, mkdtemp, rm, writeFile } from "fs/promises";
-import { path7za } from "7zip-bin";
-import { join } from "path";
-import { tmpdir } from "os";
-import tar from "tar-stream";
-import { Readable } from "stream";
-import { promisify } from "util";
-import { gunzipSync } from "zlib";
+import JSZip from 'jszip';
+import { execFile } from 'child_process';
+import { randomUUID } from 'crypto';
+import { constants } from 'fs';
+import { access, chmod, mkdtemp, rm, writeFile } from 'fs/promises';
+import { path7za } from '7zip-bin';
+import { join } from 'path';
+import { tmpdir } from 'os';
+import tar from 'tar-stream';
+import { Readable } from 'stream';
+import { promisify } from 'util';
+import { gunzipSync } from 'zlib';
 
 const execFileAsync = promisify(execFile);
 
@@ -33,29 +33,46 @@ interface ArchiveMetadata {
 }
 
 type ArchiveType =
-  | "zip"
-  | "tar"
-  | "tar.gz"
-  | "tgz"
-  | "tar.bz2"
-  | "tbz2"
-  | "7z"
-  | "rar"
-  | "gz"
-  | "bz2";
+  | 'zip'
+  | 'tar'
+  | 'tar.gz'
+  | 'tgz'
+  | 'tar.bz2'
+  | 'tbz2'
+  | '7z'
+  | 'rar'
+  | 'gz'
+  | 'bz2';
 
-const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>(["zip", "tar", "tar.gz", "tgz", "7z"]);
+const PREVIEWABLE_ARCHIVE_TYPES = new Set<ArchiveType>([
+  'zip',
+  'tar',
+  'tar.gz',
+  'tgz',
+  '7z',
+]);
 
 function getBundled7zaFallbackPath(): string {
   const platformDir =
-    process.platform === "darwin" ? "mac" : process.platform === "win32" ? "win" : "linux";
-  const executable = process.platform === "win32" ? "7za.exe" : "7za";
+    process.platform === 'darwin'
+      ? 'mac'
+      : process.platform === 'win32'
+        ? 'win'
+        : 'linux';
+  const executable = process.platform === 'win32' ? '7za.exe' : '7za';
 
-  return join(process.cwd(), "node_modules", "7zip-bin", platformDir, process.arch, executable);
+  return join(
+    process.cwd(),
+    'node_modules',
+    '7zip-bin',
+    platformDir,
+    process.arch,
+    executable
+  );
 }
 
 async function commandExists(command: string): Promise<boolean> {
-  if (command.includes("/") || command.includes("\\")) {
+  if (command.includes('/') || command.includes('\\')) {
     try {
       await access(command, constants.F_OK);
       return true;
@@ -68,7 +85,7 @@ async function commandExists(command: string): Promise<boolean> {
 }
 
 async function ensureExecutable(command: string): Promise<void> {
-  if (!command.includes("/") && !command.includes("\\")) {
+  if (!command.includes('/') && !command.includes('\\')) {
     return;
   }
 
@@ -82,24 +99,29 @@ async function ensureExecutable(command: string): Promise<void> {
 }
 
 export class ServerArchiveProcessor {
-  static async processArchive(buffer: Buffer, filename: string): Promise<ArchiveMetadata> {
+  static async processArchive(
+    buffer: Buffer,
+    filename: string
+  ): Promise<ArchiveMetadata> {
     const archiveType = this.getArchiveType(filename);
 
     if (!archiveType) {
-      throw new Error("Unsupported archive format");
+      throw new Error('Unsupported archive format');
     }
 
     switch (archiveType) {
-      case "zip":
+      case 'zip':
         return this.processZip(buffer);
-      case "tar":
-      case "tar.gz":
-      case "tgz":
+      case 'tar':
+      case 'tar.gz':
+      case 'tgz':
         return this.processTar(buffer, archiveType);
-      case "7z":
+      case '7z':
         return this.process7z(buffer);
       default:
-        throw new Error(`Archive preview is not supported for ${archiveType} files`);
+        throw new Error(
+          `Archive preview is not supported for ${archiveType} files`
+        );
     }
   }
 
@@ -121,18 +143,27 @@ export class ServerArchiveProcessor {
       }
 
       const isDirectory =
-        current.Folder === "+" || current.Attributes?.toUpperCase().includes("D") === true;
-      const rawSize = Number.parseInt(current.Size || "0", 10);
-      const rawCompressedSize = Number.parseInt(current["Packed Size"] || "0", 10);
-      const modified = current.Modified ? new Date(current.Modified) : undefined;
+        current.Folder === '+' ||
+        current.Attributes?.toUpperCase().includes('D') === true;
+      const rawSize = Number.parseInt(current.Size || '0', 10);
+      const rawCompressedSize = Number.parseInt(
+        current['Packed Size'] || '0',
+        10
+      );
+      const modified = current.Modified
+        ? new Date(current.Modified)
+        : undefined;
 
       entries.push({
-        name: name.replace(/\\/g, "/"),
+        name: name.replace(/\\/g, '/'),
         size: Number.isNaN(rawSize) ? 0 : rawSize,
         isDirectory,
         compressedSize:
-          !isDirectory && !Number.isNaN(rawCompressedSize) ? rawCompressedSize : undefined,
-        lastModified: modified && !Number.isNaN(modified.getTime()) ? modified : undefined,
+          !isDirectory && !Number.isNaN(rawCompressedSize)
+            ? rawCompressedSize
+            : undefined,
+        lastModified:
+          modified && !Number.isNaN(modified.getTime()) ? modified : undefined,
       });
 
       current = null;
@@ -144,7 +175,7 @@ export class ServerArchiveProcessor {
         continue;
       }
 
-      const delimiter = line.indexOf(" = ");
+      const delimiter = line.indexOf(' = ');
 
       if (delimiter === -1) {
         continue;
@@ -153,7 +184,7 @@ export class ServerArchiveProcessor {
       const key = line.slice(0, delimiter).trim();
       const value = line.slice(delimiter + 3).trim();
 
-      if (key === "Path") {
+      if (key === 'Path') {
         flush();
         current = { Path: value };
         continue;
@@ -172,7 +203,7 @@ export class ServerArchiveProcessor {
   }
 
   private static async process7z(buffer: Buffer): Promise<ArchiveMetadata> {
-    const tempDir = await mkdtemp(join(tmpdir(), "anonhost-archive-"));
+    const tempDir = await mkdtemp(join(tmpdir(), 'anonhost-archive-'));
     const archivePath = join(tempDir, `${randomUUID()}.7z`);
 
     try {
@@ -182,11 +213,11 @@ export class ServerArchiveProcessor {
         process.env.SEVEN_ZIP_BINARY?.trim(),
         path7za,
         getBundled7zaFallbackPath(),
-        "7z",
-        "7za",
+        '7z',
+        '7za',
       ].filter((value): value is string => Boolean(value));
 
-      let stdout = "";
+      let stdout = '';
       let lastError: unknown = null;
 
       for (const command of commands) {
@@ -197,10 +228,14 @@ export class ServerArchiveProcessor {
         await ensureExecutable(command);
 
         try {
-          const result = await execFileAsync(command, ["l", "-slt", "-ba", "-p", archivePath], {
-            timeout: 10000,
-            maxBuffer: 20 * 1024 * 1024,
-          });
+          const result = await execFileAsync(
+            command,
+            ['l', '-slt', '-ba', '-p', archivePath],
+            {
+              timeout: 10000,
+              maxBuffer: 20 * 1024 * 1024,
+            }
+          );
           stdout = result.stdout;
           lastError = null;
           break;
@@ -208,7 +243,7 @@ export class ServerArchiveProcessor {
           lastError = error;
           const code = (error as { code?: string }).code;
 
-          if (code === "ENOENT" || code === "EACCES") {
+          if (code === 'ENOENT' || code === 'EACCES') {
             continue;
           }
 
@@ -218,7 +253,7 @@ export class ServerArchiveProcessor {
 
       if (!stdout) {
         throw new Error(
-          `No usable 7z binary found (tried ${commands.join(", ")}). Last error: ${String(lastError)}`,
+          `No usable 7z binary found (tried ${commands.join(', ')}). Last error: ${String(lastError)}`
         );
       }
 
@@ -242,7 +277,7 @@ export class ServerArchiveProcessor {
         uncompressedSize,
         compressedSize: buffer.length,
         entries,
-        archiveType: "7z",
+        archiveType: '7z',
       };
     } catch (error) {
       throw new Error(`Failed to process 7z archive: ${error}`);
@@ -293,7 +328,7 @@ export class ServerArchiveProcessor {
         uncompressedSize,
         compressedSize: buffer.length,
         entries: archiveEntries,
-        archiveType: "zip",
+        archiveType: 'zip',
       };
     } catch (error) {
       throw new Error(`Failed to process ZIP archive: ${error}`);
@@ -302,9 +337,10 @@ export class ServerArchiveProcessor {
 
   private static async processTar(
     buffer: Buffer,
-    archiveType: "tar" | "tar.gz" | "tgz",
+    archiveType: 'tar' | 'tar.gz' | 'tgz'
   ): Promise<ArchiveMetadata> {
-    const tarBuffer = archiveType === "tar" ? buffer : Buffer.from(gunzipSync(buffer));
+    const tarBuffer =
+      archiveType === 'tar' ? buffer : Buffer.from(gunzipSync(buffer));
 
     return new Promise((resolve, reject) => {
       const extract = tar.extract();
@@ -313,11 +349,11 @@ export class ServerArchiveProcessor {
       let totalDirectories = 0;
       let uncompressedSize = 0;
 
-      extract.on("entry", (header, stream, next) => {
+      extract.on('entry', (header, stream, next) => {
         const entry: ArchiveEntry = {
           name: header.name,
           size: header.size || 0,
-          isDirectory: header.type === "directory",
+          isDirectory: header.type === 'directory',
           lastModified: header.mtime,
         };
 
@@ -330,11 +366,11 @@ export class ServerArchiveProcessor {
           uncompressedSize += entry.size;
         }
 
-        stream.on("end", next);
+        stream.on('end', next);
         stream.resume();
       });
 
-      extract.on("finish", () => {
+      extract.on('finish', () => {
         resolve({
           totalFiles,
           totalDirectories,
@@ -345,7 +381,7 @@ export class ServerArchiveProcessor {
         });
       });
 
-      extract.on("error", reject);
+      extract.on('error', reject);
 
       const readable = new Readable();
       readable.push(tarBuffer);
@@ -357,11 +393,20 @@ export class ServerArchiveProcessor {
   static getArchiveType(filename: string): ArchiveType | null {
     const lower = filename.toLowerCase();
 
-    if (lower.endsWith(".tar.gz")) return "tar.gz";
-    if (lower.endsWith(".tar.bz2")) return "tar.bz2";
+    if (lower.endsWith('.tar.gz')) return 'tar.gz';
+    if (lower.endsWith('.tar.bz2')) return 'tar.bz2';
 
-    const extension = lower.split(".").pop() as ArchiveType | undefined;
-    const supportedTypes: ArchiveType[] = ["zip", "tar", "7z", "rar", "gz", "bz2", "tgz", "tbz2"];
+    const extension = lower.split('.').pop() as ArchiveType | undefined;
+    const supportedTypes: ArchiveType[] = [
+      'zip',
+      'tar',
+      '7z',
+      'rar',
+      'gz',
+      'bz2',
+      'tgz',
+      'tbz2',
+    ];
 
     return extension && supportedTypes.includes(extension) ? extension : null;
   }

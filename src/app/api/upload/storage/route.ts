@@ -1,14 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-import { uploadToR2, generateR2Key, checkR2Connection, isR2Configured } from "@/lib/r2";
+import { NextRequest, NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
+import {
+  uploadToR2,
+  generateR2Key,
+  checkR2Connection,
+  isR2Configured,
+} from '@/lib/r2';
 
 async function uploadToLocalStorage(options: {
   file: Buffer;
   key: string;
   request: NextRequest;
 }): Promise<string> {
-  const uploadPath = path.join(process.cwd(), "uploads", ...options.key.split("/"));
+  const uploadPath = path.join(
+    process.cwd(),
+    'uploads',
+    ...options.key.split('/')
+  );
   const uploadDir = path.dirname(uploadPath);
 
   await fs.mkdir(uploadDir, { recursive: true });
@@ -21,14 +30,17 @@ async function uploadToLocalStorage(options: {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const fileId = formData.get("fileId") as string;
-    const filename = formData.get("filename") as string;
-    const type = formData.get("type") as string | undefined;
-    const userId = formData.get("userId") as string;
+    const file = formData.get('file') as File;
+    const fileId = formData.get('fileId') as string;
+    const filename = formData.get('filename') as string;
+    const type = formData.get('type') as string | undefined;
+    const userId = formData.get('userId') as string;
 
     if (!file || !fileId || !filename || !userId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -39,7 +51,10 @@ export async function POST(request: NextRequest) {
 
     if (isR2Configured()) {
       if (!(await checkR2Connection())) {
-        return NextResponse.json({ error: "Storage service unavailable" }, { status: 503 });
+        return NextResponse.json(
+          { error: 'Storage service unavailable' },
+          { status: 503 }
+        );
       }
 
       url = await uploadToR2({
@@ -63,7 +78,10 @@ export async function POST(request: NextRequest) {
       type: file.type,
     });
   } catch (error) {
-    console.error("Storage error:", error);
-    return NextResponse.json({ error: "Failed to store file" }, { status: 500 });
+    console.error('Storage error:', error);
+    return NextResponse.json(
+      { error: 'Failed to store file' },
+      { status: 500 }
+    );
   }
 }

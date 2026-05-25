@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Download, FileKey } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { formatFileSize } from "@/lib/utils";
+import { useState } from 'react';
+import { Download, FileKey } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { formatFileSize } from '@/lib/utils';
 
 export function PrivateDownloadPageClient({
   id,
@@ -20,31 +20,31 @@ export function PrivateDownloadPageClient({
   size: number;
   oneUse: boolean;
 }) {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
 
   const download = async () => {
     if (!password) {
-      toast.error("Enter the password");
+      toast.error('Enter the password');
       return;
     }
 
     setIsDownloading(true);
     try {
       const response = await fetch(`/api/private-upload/${id}/download`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
 
       if (!response.ok) {
         const body = await response.json().catch(() => null);
-        throw new Error(body?.error || "Download failed");
+        throw new Error(body?.error || 'Download failed');
       }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
+      const anchor = document.createElement('a');
       anchor.href = url;
       anchor.download = filename;
       document.body.appendChild(anchor);
@@ -53,10 +53,10 @@ export function PrivateDownloadPageClient({
       URL.revokeObjectURL(url);
 
       if (oneUse) {
-        setPassword("");
+        setPassword('');
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Download failed");
+      toast.error(error instanceof Error ? error.message : 'Download failed');
     } finally {
       setIsDownloading(false);
     }
@@ -74,7 +74,7 @@ export function PrivateDownloadPageClient({
               <h1 className="text-2xl font-semibold break-all">{filename}</h1>
               <p className="text-muted-foreground mt-1 text-sm">
                 {formatFileSize(size)}
-                {oneUse ? " · deleted after download" : ""}
+                {oneUse ? ' · deleted after download' : ''}
               </p>
             </div>
           </div>
@@ -87,7 +87,7 @@ export function PrivateDownloadPageClient({
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter") {
+                if (event.key === 'Enter') {
                   download();
                 }
               }}
@@ -95,9 +95,13 @@ export function PrivateDownloadPageClient({
             />
           </div>
 
-          <Button onClick={download} disabled={isDownloading} className="w-full gap-2">
+          <Button
+            onClick={download}
+            disabled={isDownloading}
+            className="w-full gap-2"
+          >
             <Download className="h-4 w-4" />
-            {isDownloading ? "Downloading..." : "Download"}
+            {isDownloading ? 'Downloading...' : 'Download'}
           </Button>
         </CardContent>
       </Card>

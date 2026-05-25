@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Pagination,
   PaginationContent,
@@ -12,15 +18,15 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal } from "lucide-react";
-import Link from "next/link";
-import { getStorageStats } from "@/lib/upload";
-import { toast } from "sonner";
-import { LuMusic } from "react-icons/lu";
-import { formatFileSize } from "@/lib/utils";
+} from '@/components/ui/pagination';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal } from 'lucide-react';
+import Link from 'next/link';
+import { getStorageStats } from '@/lib/upload';
+import { toast } from 'sonner';
+import { LuMusic } from 'react-icons/lu';
+import { formatFileSize } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -28,7 +34,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 interface MediaItem {
   id: string;
@@ -37,7 +43,7 @@ interface MediaItem {
   filename: string;
   createdAt: string;
   size: number;
-  type: "IMAGE" | "VIDEO" | "AUDIO";
+  type: 'IMAGE' | 'VIDEO' | 'AUDIO';
   duration?: number;
 }
 
@@ -74,7 +80,7 @@ export function DashboardPageClient() {
   const { data: session, status } = useSession();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("media");
+  const [activeTab, setActiveTab] = useState('media');
   const [privateUploads, setPrivateUploads] = useState<PrivateUploadItem[]>([]);
   const [isPrivateLoading, setIsPrivateLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,16 +100,18 @@ export function DashboardPageClient() {
   const fetchMedia = async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/media?page=${page}&limit=${paginationInfo.limit}`);
-      if (!response.ok) throw new Error("Failed to fetch media");
+      const response = await fetch(
+        `/api/media?page=${page}&limit=${paginationInfo.limit}`
+      );
+      if (!response.ok) throw new Error('Failed to fetch media');
       const data = await response.json();
       setMediaItems(data.media || []);
       setStats(data.stats);
       setPaginationInfo(data.pagination);
     } catch (error) {
-      console.error("Failed to fetch media:", error);
+      console.error('Failed to fetch media:', error);
       setMediaItems([]);
-      toast.error("Failed to fetch media");
+      toast.error('Failed to fetch media');
     } finally {
       setIsLoading(false);
     }
@@ -112,14 +120,14 @@ export function DashboardPageClient() {
   const fetchPrivateUploads = async () => {
     setIsPrivateLoading(true);
     try {
-      const response = await fetch("/api/private-upload");
-      if (!response.ok) throw new Error("Failed to fetch private uploads");
+      const response = await fetch('/api/private-upload');
+      if (!response.ok) throw new Error('Failed to fetch private uploads');
       const data = await response.json();
       setPrivateUploads(data.uploads || []);
     } catch (error) {
-      console.error("Failed to fetch private uploads:", error);
+      console.error('Failed to fetch private uploads:', error);
       setPrivateUploads([]);
-      toast.error("Failed to fetch private uploads");
+      toast.error('Failed to fetch private uploads');
     } finally {
       setIsPrivateLoading(false);
     }
@@ -127,20 +135,22 @@ export function DashboardPageClient() {
 
   const handleDeleteMedia = async (id: string) => {
     try {
-      const response = await fetch(`/api/media/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to delete media");
+      const response = await fetch(`/api/media/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete media');
 
       setMediaItems((prev) => prev.filter((item) => item.id !== id));
       setStats((prev) => ({
         ...prev,
         totalUploads: prev.totalUploads - 1,
-        storageUsed: prev.storageUsed - (mediaItems.find((item) => item.id === id)?.size || 0),
+        storageUsed:
+          prev.storageUsed -
+          (mediaItems.find((item) => item.id === id)?.size || 0),
       }));
 
-      toast.success("Media deleted successfully");
+      toast.success('Media deleted successfully');
     } catch (error) {
-      console.error("Failed to delete media:", error);
-      toast.error("Failed to delete media");
+      console.error('Failed to delete media:', error);
+      toast.error('Failed to delete media');
     }
   };
 
@@ -148,7 +158,7 @@ export function DashboardPageClient() {
     const image = mediaItems.find((img) => img.id === imageId);
     if (image) {
       navigator.clipboard.writeText(image.displayUrl);
-      toast.success("Image URL copied to clipboard");
+      toast.success('Image URL copied to clipboard');
     }
   };
 
@@ -159,39 +169,41 @@ export function DashboardPageClient() {
 
   const handleDeletePrivateUpload = async (id: string) => {
     try {
-      const response = await fetch(`/api/private-upload/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to delete private upload");
+      const response = await fetch(`/api/private-upload/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete private upload');
       setPrivateUploads((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Private upload deleted");
+      toast.success('Private upload deleted');
     } catch (error) {
-      console.error("Failed to delete private upload:", error);
-      toast.error("Failed to delete private upload");
+      console.error('Failed to delete private upload:', error);
+      toast.error('Failed to delete private upload');
     }
   };
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       fetchMedia(currentPage);
     }
   }, [currentPage, status]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      redirect("/register");
+    if (status === 'unauthenticated') {
+      redirect('/register');
     }
 
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       Promise.all([fetchMedia(), fetchPrivateUploads()]);
     }
   }, [status]);
 
   useEffect(() => {
-    if (activeTab === "private" && privateUploads.length === 0) {
-      setActiveTab("media");
+    if (activeTab === 'private' && privateUploads.length === 0) {
+      setActiveTab('media');
     }
   }, [activeTab, privateUploads.length]);
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-center">Loading...</div>
@@ -214,7 +226,7 @@ export function DashboardPageClient() {
 
         <div>
           <TabsContent value="media" forceMount>
-            {activeTab === "media" && (
+            {activeTab === 'media' && (
               <>
                 <div className="grid gap-4 lg:gap-5">
                   <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -261,7 +273,7 @@ export function DashboardPageClient() {
                             <div className="relative aspect-[5/3] overflow-hidden bg-muted">
                               {(() => {
                                 switch (item.type) {
-                                  case "VIDEO":
+                                  case 'VIDEO':
                                     return (
                                       <video
                                         src={item.url}
@@ -269,19 +281,22 @@ export function DashboardPageClient() {
                                         className="absolute inset-0 h-full w-full object-cover"
                                       />
                                     );
-                                  case "AUDIO":
+                                  case 'AUDIO':
                                     return (
                                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-card p-4">
                                         <LuMusic className="text-muted-foreground mb-4 h-16 w-16" />
                                         <audio controls className="w-full">
-                                          <source src={item.url} type="audio/mpeg" />
+                                          <source
+                                            src={item.url}
+                                            type="audio/mpeg"
+                                          />
                                         </audio>
                                       </div>
                                     );
                                   default:
                                     return (
                                       <img
-                                        src={item.url || "/placeholder.svg"}
+                                        src={item.url || '/placeholder.svg'}
                                         alt={item.filename}
                                         className="absolute inset-0 h-full w-full object-cover"
                                         loading="lazy"
@@ -293,17 +308,23 @@ export function DashboardPageClient() {
                             <CardContent className="p-3 sm:p-4">
                               <div className="flex min-w-0 items-center justify-between gap-3">
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate font-medium">{item.filename}</p>
+                                  <p className="truncate font-medium">
+                                    {item.filename}
+                                  </p>
                                   <p className="text-muted-foreground text-xs">
-                                    {new Date(item.createdAt).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "2-digit",
+                                    {new Date(
+                                      item.createdAt
+                                    ).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: '2-digit',
                                     })}
-                                    {item.type === "VIDEO" && item.duration && (
+                                    {item.type === 'VIDEO' && item.duration && (
                                       <span className="ml-2">
                                         {Math.floor(item.duration / 60)}:
-                                        {(item.duration % 60).toString().padStart(2, "0")}
+                                        {(item.duration % 60)
+                                          .toString()
+                                          .padStart(2, '0')}
                                       </span>
                                     )}
                                   </p>
@@ -339,7 +360,9 @@ export function DashboardPageClient() {
                         <PaginationItem>
                           {currentPage > 1 && (
                             <PaginationPrevious
-                              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                              onClick={() =>
+                                setCurrentPage((p) => Math.max(1, p - 1))
+                              }
                             />
                           )}
                         </PaginationItem>
@@ -349,7 +372,8 @@ export function DashboardPageClient() {
                           if (
                             pageNumber === 1 ||
                             pageNumber === paginationInfo.pages ||
-                            (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                            (pageNumber >= currentPage - 1 &&
+                              pageNumber <= currentPage + 1)
                           ) {
                             return (
                               <PaginationItem key={pageNumber}>
@@ -378,7 +402,9 @@ export function DashboardPageClient() {
                           {currentPage < paginationInfo.pages && (
                             <PaginationNext
                               onClick={() =>
-                                setCurrentPage((p) => Math.min(paginationInfo.pages, p + 1))
+                                setCurrentPage((p) =>
+                                  Math.min(paginationInfo.pages, p + 1)
+                                )
                               }
                             />
                           )}
@@ -393,7 +419,7 @@ export function DashboardPageClient() {
 
           {privateUploads.length > 0 && (
             <TabsContent value="private" forceMount>
-              {activeTab === "private" && (
+              {activeTab === 'private' && (
                 <div className="grid gap-4 lg:gap-5">
                   <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -417,17 +443,27 @@ export function DashboardPageClient() {
                       </div>
                       <CardContent className="p-0">
                         {isPrivateLoading ? (
-                          <div className="py-8 text-center">Loading private uploads...</div>
+                          <div className="py-8 text-center">
+                            Loading private uploads...
+                          </div>
                         ) : (
                           <>
                             <div className="hidden xl:block">
                               <Table>
                                 <TableHeader>
                                   <TableRow>
-                                    <TableHead className="align-middle">File</TableHead>
-                                    <TableHead className="align-middle">Size</TableHead>
-                                    <TableHead className="align-middle">Created</TableHead>
-                                    <TableHead className="align-middle">Mode</TableHead>
+                                    <TableHead className="align-middle">
+                                      File
+                                    </TableHead>
+                                    <TableHead className="align-middle">
+                                      Size
+                                    </TableHead>
+                                    <TableHead className="align-middle">
+                                      Created
+                                    </TableHead>
+                                    <TableHead className="align-middle">
+                                      Mode
+                                    </TableHead>
                                     <TableHead className="min-w-64 align-middle">
                                       Web Link
                                     </TableHead>
@@ -449,13 +485,15 @@ export function DashboardPageClient() {
                                         {formatShortDate(item.createdAt)}
                                       </TableCell>
                                       <TableCell className="align-middle">
-                                        {item.oneUse ? "One-use" : "Reusable"}
+                                        {item.oneUse ? 'One-use' : 'Reusable'}
                                       </TableCell>
                                       <TableCell className="align-middle">
                                         <div className="grid min-w-0 max-w-xl gap-2">
                                           <DashboardLinkButton
                                             value={item.webUrl}
-                                            onCopy={() => copyValue(item.webUrl, "Web URL")}
+                                            onCopy={() =>
+                                              copyValue(item.webUrl, 'Web URL')
+                                            }
                                           />
                                         </div>
                                       </TableCell>
@@ -465,7 +503,10 @@ export function DashboardPageClient() {
                                             variant="outline"
                                             size="icon"
                                             onClick={() =>
-                                              copyValue(item.curlCommand, "Curl command")
+                                              copyValue(
+                                                item.curlCommand,
+                                                'Curl command'
+                                              )
                                             }
                                             aria-label={`Copy curl command for ${item.filename}`}
                                           >
@@ -474,7 +515,9 @@ export function DashboardPageClient() {
                                           <Button
                                             variant="destructive"
                                             size="icon"
-                                            onClick={() => handleDeletePrivateUpload(item.id)}
+                                            onClick={() =>
+                                              handleDeletePrivateUpload(item.id)
+                                            }
                                             aria-label={`Delete ${item.filename}`}
                                           >
                                             <Trash2 className="h-4 w-4" />
@@ -498,20 +541,29 @@ export function DashboardPageClient() {
                                   </div>
                                   <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                                     <span>{formatFileSize(item.size)}</span>
-                                    <span>{formatShortDate(item.createdAt)}</span>
-                                    <span>{item.oneUse ? "One-use" : "Reusable"}</span>
+                                    <span>
+                                      {formatShortDate(item.createdAt)}
+                                    </span>
+                                    <span>
+                                      {item.oneUse ? 'One-use' : 'Reusable'}
+                                    </span>
                                   </div>
                                   <div className="grid gap-2">
                                     <DashboardLinkButton
                                       value={item.webUrl}
-                                      onCopy={() => copyValue(item.webUrl, "Web URL")}
+                                      onCopy={() =>
+                                        copyValue(item.webUrl, 'Web URL')
+                                      }
                                     />
                                     <div className="grid grid-cols-2 gap-2">
                                       <Button
                                         variant="outline"
                                         className="w-full"
                                         onClick={() =>
-                                          copyValue(item.curlCommand, "Curl command")
+                                          copyValue(
+                                            item.curlCommand,
+                                            'Curl command'
+                                          )
                                         }
                                       >
                                         <Terminal className="h-4 w-4" />
@@ -520,7 +572,9 @@ export function DashboardPageClient() {
                                       <Button
                                         variant="destructive"
                                         className="w-full"
-                                        onClick={() => handleDeletePrivateUpload(item.id)}
+                                        onClick={() =>
+                                          handleDeletePrivateUpload(item.id)
+                                        }
                                       >
                                         <Trash2 className="h-4 w-4" />
                                         Delete
@@ -541,55 +595,58 @@ export function DashboardPageClient() {
           )}
 
           <TabsContent value="stats" forceMount>
-            {activeTab === "stats" && (
+            {activeTab === 'stats' && (
               <>
                 {(() => {
                   const storageStats = getStorageStats(
                     stats.storageUsed,
                     session?.user?.premium ?? false,
-                    session?.user?.admin ?? false,
+                    session?.user?.admin ?? false
                   );
                   const statsData = [
                     {
-                      title: "Total Uploads",
+                      title: 'Total Uploads',
                       description: "Number of files you've uploaded",
                       value: stats.totalUploads,
                     },
                     {
-                      title: "Storage Used",
+                      title: 'Storage Used',
                       description: session?.user?.premium
-                        ? "Unlimited storage available"
+                        ? 'Unlimited storage available'
                         : `${storageStats.used} of ${storageStats.total} used`,
                       value: session?.user?.premium
                         ? formatFileSize(stats.storageUsed)
                         : storageStats.percentage,
                     },
                     {
-                      title: "API Requests",
-                      description: "API requests in the last 30 days",
+                      title: 'API Requests',
+                      description: 'API requests in the last 30 days',
                       value: stats.apiRequests,
                     },
                     {
-                      title: "UID",
-                      description: "Your user ID",
-                      value: stats.uid || "N/A",
-                      prefix: "#",
+                      title: 'UID',
+                      description: 'Your user ID',
+                      value: stats.uid || 'N/A',
+                      prefix: '#',
                     },
                     {
-                      title: "Account Type",
-                      description: "Your current subscription tier",
-                      value: session?.user?.premium ? "Premium" : "Free",
+                      title: 'Account Type',
+                      description: 'Your current subscription tier',
+                      value: session?.user?.premium ? 'Premium' : 'Free',
                     },
                     {
-                      title: "Member Since",
-                      description: "Account creation date",
+                      title: 'Member Since',
+                      description: 'Account creation date',
                       value: stats.createdAt
-                        ? new Date(stats.createdAt).toLocaleDateString("en-GB", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "N/A",
+                        ? new Date(stats.createdAt).toLocaleDateString(
+                            'en-GB',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            }
+                          )
+                        : 'N/A',
                     },
                   ];
                   return (
@@ -598,7 +655,9 @@ export function DashboardPageClient() {
                         <div key={stat.title}>
                           <Card className="h-full">
                             <CardHeader>
-                              <CardTitle className="text-xl">{stat.title}</CardTitle>
+                              <CardTitle className="text-xl">
+                                {stat.title}
+                              </CardTitle>
                               <CardDescription className="text-sm">
                                 {stat.description}
                               </CardDescription>
@@ -625,10 +684,10 @@ export function DashboardPageClient() {
 }
 
 function formatShortDate(value: string) {
-  return new Date(value).toLocaleDateString("en-GB", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
+  return new Date(value).toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
   });
 }
 
@@ -640,19 +699,32 @@ function PrivateFileSummary({ item }: { item: PrivateUploadItem }) {
       </span>
       <div className="min-w-0">
         <p className="truncate font-medium">{item.filename}</p>
-        <p className="text-muted-foreground truncate text-xs">{item.contentType}</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {item.contentType}
+        </p>
       </div>
     </div>
   );
 }
 
-function DashboardLinkButton({ value, onCopy }: { value: string; onCopy: () => void }) {
+function DashboardLinkButton({
+  value,
+  onCopy,
+}: {
+  value: string;
+  onCopy: () => void;
+}) {
   return (
     <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
       <code className="min-w-0 overflow-hidden border bg-muted px-2 py-1 text-xs leading-7 text-ellipsis">
         {value}
       </code>
-      <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCopy}>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full sm:w-auto"
+        onClick={onCopy}
+      >
         <Copy className="h-4 w-4" />
         Copy
       </Button>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { SiSharex } from "react-icons/si";
-import { Copy, Download } from "lucide-react";
-import { toast } from "sonner";
-import type { ApiKey } from "@/types/settings";
+import { Button } from '@/components/ui/button';
+import { SiSharex } from 'react-icons/si';
+import { Copy, Download } from 'lucide-react';
+import { toast } from 'sonner';
+import type { ApiKey } from '@/types/settings';
 import {
   Dialog,
   DialogContent,
@@ -12,21 +12,30 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+} from '@/components/ui/dialog';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   generateShareXConfig,
   generateShareXShortenerConfig,
   generateDirectUploadPowerShellScript,
   downloadShareXConfig,
-} from "@/lib/sharex";
+} from '@/lib/sharex';
 
 interface ShareXConfigDialogProps {
   apiKey: ApiKey;
   customDomain?: string;
 }
 
-export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogProps) {
+export function ShareXConfigDialog({
+  apiKey,
+  customDomain,
+}: ShareXConfigDialogProps) {
   interface ShareXConfig {
     [key: string]: unknown;
   }
@@ -46,12 +55,14 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Export ShareX Configuration</DialogTitle>
-          <DialogDescription>Choose which ShareX configuration you want to use.</DialogDescription>
+          <DialogDescription>
+            Choose which ShareX configuration you want to use.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
           <p className="text-muted-foreground text-sm">
-            ShareX .sxcu uploaders use single-request multipart uploads. For faster uploads, use the
-            PowerShell helper below
+            ShareX .sxcu uploaders use single-request multipart uploads. For
+            faster uploads, use the PowerShell helper below
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <ShareXConfigCard
@@ -63,7 +74,7 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
                 const config = generateShareXConfig(
                   apiKey.key,
                   window.location.origin,
-                  customDomain,
+                  customDomain
                 );
                 downloadShareXConfig(config, `${apiKey.name}-uploader`);
               }}
@@ -71,9 +82,9 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
                 const config = generateShareXConfig(
                   apiKey.key,
                   window.location.origin,
-                  customDomain,
+                  customDomain
                 );
-                handleCopyConfig(config, "Image uploader");
+                handleCopyConfig(config, 'Image uploader');
               }}
             />
 
@@ -86,7 +97,7 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
                 const config = generateShareXShortenerConfig(
                   apiKey.key,
                   window.location.origin,
-                  customDomain,
+                  customDomain
                 );
                 downloadShareXConfig(config, `${apiKey.name}-shortener`);
               }}
@@ -94,9 +105,9 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
                 const config = generateShareXShortenerConfig(
                   apiKey.key,
                   window.location.origin,
-                  customDomain,
+                  customDomain
                 );
-                handleCopyConfig(config, "URL shortener");
+                handleCopyConfig(config, 'URL shortener');
               }}
             />
           </div>
@@ -104,8 +115,8 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
             <CardHeader className="p-0">
               <CardTitle className="text-base">Windows Upload Helper</CardTitle>
               <CardDescription>
-                PowerShell script that performs faster uploads via a method not compatible with
-                sharex.
+                PowerShell script that performs faster uploads via a method not
+                compatible with sharex.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 pt-4">
@@ -115,10 +126,10 @@ export function ShareXConfigDialog({ apiKey, customDomain }: ShareXConfigDialogP
                   onClick={() => {
                     const script = generateDirectUploadPowerShellScript(
                       apiKey.key,
-                      window.location.origin,
+                      window.location.origin
                     );
                     navigator.clipboard.writeText(script);
-                    toast.success("PowerShell upload script copied");
+                    toast.success('PowerShell upload script copied');
                   }}
                 >
                   <Copy className="h-4 w-4" />
@@ -147,12 +158,17 @@ interface ShareXConfigCardProps {
   title: string;
   description: string;
   apiKey: ApiKey;
-  configType: "uploader" | "shortener";
+  configType: 'uploader' | 'shortener';
   onDownload: () => void;
   onCopy: () => void;
 }
 
-function ShareXConfigCard({ title, description, onDownload, onCopy }: ShareXConfigCardProps) {
+function ShareXConfigCard({
+  title,
+  description,
+  onDownload,
+  onCopy,
+}: ShareXConfigCardProps) {
   return (
     <Card className="p-4">
       <CardHeader className="p-0">

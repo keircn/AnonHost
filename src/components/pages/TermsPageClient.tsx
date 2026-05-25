@@ -1,11 +1,13 @@
-"use client";
+'use client';
 
 export function TermsPageClient() {
   return (
     <div className="container mx-auto max-w-2xl py-8 md:py-12">
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Terms of Service
+          </h1>
         </div>
 
         <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
@@ -37,7 +39,9 @@ export function TermsPageClient() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-foreground font-semibold">Limitation of liability</h2>
+            <h2 className="text-foreground font-semibold">
+              Limitation of liability
+            </h2>
             <p>
               The service is provided &quot;as is&quot; without warranty. We are
               not liable for data loss, downtime, or any damages arising from
@@ -56,8 +60,13 @@ export function TermsPageClient() {
           <section className="space-y-2">
             <h2 className="text-foreground font-semibold">Contact</h2>
             <p>
-              Questions:{" "}
-              <a href="mailto:support@anonhost.cc" className="text-foreground hover:underline">support@anonhost.cc</a>
+              Questions:{' '}
+              <a
+                href="mailto:support@anonhost.cc"
+                className="text-foreground hover:underline"
+              >
+                support@anonhost.cc
+              </a>
             </p>
           </section>
         </div>

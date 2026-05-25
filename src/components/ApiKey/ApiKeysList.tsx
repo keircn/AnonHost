@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ApiKeyItem } from "@/components/ApiKey/ApiKeyItem";
-import type { ApiKey } from "@/types/settings";
+import { ApiKeyItem } from '@/components/ApiKey/ApiKeyItem';
+import type { ApiKey } from '@/types/settings';
 
 interface ApiKeysListProps {
   apiKeys: ApiKey[];
@@ -23,7 +23,9 @@ export function ApiKeysList({
       <h3 className="text-lg font-semibold">Your API Keys</h3>
 
       {isLoading ? (
-        <div className="text-muted-foreground py-8 text-center">Loading API keys...</div>
+        <div className="text-muted-foreground py-8 text-center">
+          Loading API keys...
+        </div>
       ) : apiKeys.length === 0 ? (
         <div className="text-muted-foreground py-8 text-center">
           You don&apos;t have any API keys yet

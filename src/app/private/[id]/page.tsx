@@ -1,7 +1,7 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { PrivateDownloadPageClient } from "@/components/pages/PrivateDownloadPageClient";
-import { getPrivateUploadPublicInfo } from "@/lib/server/private-upload";
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { PrivateDownloadPageClient } from '@/components/pages/PrivateDownloadPageClient';
+import { getPrivateUploadPublicInfo } from '@/lib/server/private-upload';
 
 export async function generateMetadata({
   params,
@@ -12,12 +12,18 @@ export async function generateMetadata({
   const upload = await getPrivateUploadPublicInfo(id);
 
   return {
-    title: upload ? `${upload.filename} | AnonHost` : "Private upload not found",
-    description: "Password-protected private file transfer.",
+    title: upload
+      ? `${upload.filename} | AnonHost`
+      : 'Private upload not found',
+    description: 'Password-protected private file transfer.',
   };
 }
 
-export default async function PrivateDownloadPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PrivateDownloadPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const upload = await getPrivateUploadPublicInfo(id);
 

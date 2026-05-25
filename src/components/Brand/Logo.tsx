@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useTheme } from "next-themes";
-import Image from "next/image";
-import { LuLink } from "react-icons/lu";
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import { LuLink } from 'react-icons/lu';
 
 interface LogoProps {
   className?: string;
-  size?: "sm" | "md" | "lg";
-  variant?: "svg" | "image" | "auto";
-  forceColor?: "light" | "dark";
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'svg' | 'image' | 'auto';
+  forceColor?: 'light' | 'dark';
 }
 
 const SIZE_MAP = {
@@ -17,13 +17,20 @@ const SIZE_MAP = {
   lg: { width: 48, height: 48 },
 };
 
-export function Logo({ className = "", size = "md", variant = "svg", forceColor }: LogoProps) {
+export function Logo({
+  className = '',
+  size = 'md',
+  variant = 'svg',
+  forceColor,
+}: LogoProps) {
   const { resolvedTheme } = useTheme();
   const dimensions = SIZE_MAP[size];
 
-  const isDark = forceColor === "dark" || (forceColor === undefined && resolvedTheme === "dark");
+  const isDark =
+    forceColor === 'dark' ||
+    (forceColor === undefined && resolvedTheme === 'dark');
 
-  if (variant === "image" || (variant === "auto" && isDark)) {
+  if (variant === 'image' || (variant === 'auto' && isDark)) {
     return (
       <Image
         src="/brand/anonhost-fill.png"
@@ -57,7 +64,7 @@ export function Logo({ className = "", size = "md", variant = "svg", forceColor 
   );
 }
 
-export function LogoLink({ className = "", size = "md" }: LogoProps) {
+export function LogoLink({ className = '', size = 'md' }: LogoProps) {
   return <Logo className={className} size={size} />;
 }
 
@@ -66,7 +73,7 @@ interface LogoTextProps {
   showText?: boolean;
 }
 
-export function LogoText({ className = "", showText = true }: LogoTextProps) {
+export function LogoText({ className = '', showText = true }: LogoTextProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Logo variant="svg" size="md" />
@@ -75,6 +82,6 @@ export function LogoText({ className = "", showText = true }: LogoTextProps) {
   );
 }
 
-export function LogoIcon({ className = "" }: { className?: string }) {
+export function LogoIcon({ className = '' }: { className?: string }) {
   return <LuLink className={className} />;
 }

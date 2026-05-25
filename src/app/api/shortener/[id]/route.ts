@@ -1,19 +1,22 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { verifyApiKey } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { apiKeys, shortlinks } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { verifyApiKey } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { apiKeys, shortlinks } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXTAUTH_URL || "https://anonhost.cc";
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://anonhost.cc';
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -21,24 +24,34 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id.toString();
 
-    await db.update(apiKeys).set({ lastUsed: new Date() }).where(eq(apiKeys.key, apiKey));
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = session!.user.id.toString();
   }
 
   try {
-    const [shortlink] = await db.select().from(shortlinks).where(eq(shortlinks.id, id)).limit(1);
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
-      return NextResponse.json({ error: "Shortlink not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Shortlink not found' },
+        { status: 404 }
+      );
     }
 
     if (BigInt(shortlink.userId) !== BigInt(userId) && !session?.user.admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     return NextResponse.json({
@@ -52,19 +65,25 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       expireAt: shortlink.expireAt,
     });
   } catch (error) {
-    console.error("Error fetching shortlink:", error);
-    return NextResponse.json({ error: "Failed to fetch shortlink" }, { status: 500 });
+    console.error('Error fetching shortlink:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch shortlink' },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
-  const baseUrl = process.env.NEXTAUTH_URL || "https://anonhost.cc";
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://anonhost.cc';
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: bigint;
@@ -72,24 +91,34 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = BigInt(user.id);
 
-    await db.update(apiKeys).set({ lastUsed: new Date() }).where(eq(apiKeys.key, apiKey));
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = BigInt(session!.user.id);
   }
 
   try {
-    const [shortlink] = await db.select().from(shortlinks).where(eq(shortlinks.id, id)).limit(1);
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
-      return NextResponse.json({ error: "Shortlink not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Shortlink not found' },
+        { status: 404 }
+      );
     }
 
     if (BigInt(shortlink.userId) !== userId && !session?.user.admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -105,7 +134,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       try {
         new URL(originalUrl);
       } catch {
-        return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid URL format' },
+          { status: 400 }
+        );
       }
     }
 
@@ -131,18 +163,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       expireAt: updatedShortlink.expireAt,
     });
   } catch (error) {
-    console.error("Error updating shortlink:", error);
-    return NextResponse.json({ error: "Failed to update shortlink" }, { status: 500 });
+    console.error('Error updating shortlink:', error);
+    return NextResponse.json(
+      { error: 'Failed to update shortlink' },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  const apiKey = req.headers.get("authorization")?.split("Bearer ")[1];
+  const apiKey = req.headers.get('authorization')?.split('Bearer ')[1];
 
   if (!session && !apiKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let userId: string;
@@ -150,31 +188,44 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (apiKey) {
     const user = await verifyApiKey(apiKey);
     if (!user) {
-      return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     userId = user.id;
 
-    await db.update(apiKeys).set({ lastUsed: new Date() }).where(eq(apiKeys.key, apiKey));
+    await db
+      .update(apiKeys)
+      .set({ lastUsed: new Date() })
+      .where(eq(apiKeys.key, apiKey));
   } else {
     userId = session!.user.id;
   }
 
   try {
-    const [shortlink] = await db.select().from(shortlinks).where(eq(shortlinks.id, id)).limit(1);
+    const [shortlink] = await db
+      .select()
+      .from(shortlinks)
+      .where(eq(shortlinks.id, id))
+      .limit(1);
 
     if (!shortlink) {
-      return NextResponse.json({ error: "Shortlink not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Shortlink not found' },
+        { status: 404 }
+      );
     }
 
     if (shortlink.userId !== userId && !session?.user.admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     await db.delete(shortlinks).where(eq(shortlinks.id, id));
 
-    return NextResponse.json({ message: "Shortlink deleted successfully" });
+    return NextResponse.json({ message: 'Shortlink deleted successfully' });
   } catch (error) {
-    console.error("Error deleting shortlink:", error);
-    return NextResponse.json({ error: "Failed to delete shortlink" }, { status: 500 });
+    console.error('Error deleting shortlink:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete shortlink' },
+      { status: 500 }
+    );
   }
 }

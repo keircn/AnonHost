@@ -1,14 +1,20 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import useSWR from "swr";
-import bytes from "bytes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { endpoints } from "@/lib/endpoints";
-import { EndpointCard } from "@/components/Docs/EndpointCard";
-import { CodeBlock } from "@/components/Docs/CodeBlock";
-import { Stats } from "@/types/stats";
+import { useState } from 'react';
+import useSWR from 'swr';
+import bytes from 'bytes';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { endpoints } from '@/lib/endpoints';
+import { EndpointCard } from '@/components/Docs/EndpointCard';
+import { CodeBlock } from '@/components/Docs/CodeBlock';
+import { Stats } from '@/types/stats';
 
 const uploadJavaScript = `const file = fileInput.files[0];
 
@@ -141,38 +147,38 @@ const listCurl = `curl -X GET "https://anonhost.cc/api/media?page=1&limit=50" \\
 
 export function ApiDocumentationPageClient() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
 
   const toggleSection = (section: string) => {
     setExpandedSection((prev) => (prev === section ? null : section));
   };
 
   function formatNumber(value: number): string {
-    return new Intl.NumberFormat("en-US").format(Math.max(0, value));
+    return new Intl.NumberFormat('en-US').format(Math.max(0, value));
   }
 
   const fetcher = (url: string) => fetch(url).then((r) => r.json());
-  const { data: stats, isLoading } = useSWR<Stats>("/api/stats", fetcher, {
+  const { data: stats, isLoading } = useSWR<Stats>('/api/stats', fetcher, {
     refreshInterval: 300000,
   });
 
   const storage = isLoading
-    ? "..."
+    ? '...'
     : bytes(Math.max(0, stats?.storage ?? 0), {
-        unitSeparator: " ",
+        unitSeparator: ' ',
         decimalPlaces: 1,
         fixedDecimals: true,
-      }) || "0 B";
+      }) || '0 B';
 
   const examples = [
     {
-      title: "Upload an Image",
+      title: 'Upload an Image',
       js: uploadJavaScript,
       python: uploadPython,
       curl: uploadCurl,
     },
     {
-      title: "List All Images",
+      title: 'List All Images',
       js: listJavaScript,
       python: listPython,
       curl: listCurl,
@@ -181,22 +187,26 @@ export function ApiDocumentationPageClient() {
 
   return (
     <div className="container py-8">
-      <h1 className="mb-2 text-3xl font-bold">
-        API Documentation
-      </h1>
+      <h1 className="mb-2 text-3xl font-bold">API Documentation</h1>
       <p className="text-muted-foreground mb-6">
         Integrate AnonHost with your applications using our simple REST API
       </p>
 
-      <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+      <Tabs
+        defaultValue="overview"
+        className="w-full"
+        onValueChange={setActiveTab}
+      >
         <div>
           <TabsList className="mb-4">
             {[
-              { id: "overview", label: "Overview" },
-              { id: "endpoints", label: "Endpoints" },
-              { id: "examples", label: "Examples" },
+              { id: 'overview', label: 'Overview' },
+              { id: 'endpoints', label: 'Endpoints' },
+              { id: 'examples', label: 'Examples' },
             ].map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id}>{tab.label}</TabsTrigger>
+              <TabsTrigger key={tab.id} value={tab.id}>
+                {tab.label}
+              </TabsTrigger>
             ))}
           </TabsList>
         </div>
@@ -212,16 +222,23 @@ export function ApiDocumentationPageClient() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Authentication</h3>
                     <p>
-                      All API requests require authentication using an API key. You can generate
-                      API keys in your account settings.
+                      All API requests require authentication using an API key.
+                      You can generate API keys in your account settings.
                     </p>
-                    <p>Include your API key in the request headers as follows:</p>
-                    <CodeBlock code="Authorization: Bearer YOUR_API_KEY" language="http" />
+                    <p>
+                      Include your API key in the request headers as follows:
+                    </p>
+                    <CodeBlock
+                      code="Authorization: Bearer YOUR_API_KEY"
+                      language="http"
+                    />
                   </div>
 
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Base URL</h3>
-                    <p>All API endpoints are relative to the following base URL:</p>
+                    <p>
+                      All API endpoints are relative to the following base URL:
+                    </p>
                     <CodeBlock code="https://anonhost.cc/api" language="bash" />
                   </div>
                 </CardContent>
@@ -230,18 +247,20 @@ export function ApiDocumentationPageClient() {
               <div className="grid grid-cols-3 divide-x rounded-md border text-sm">
                 <div className="px-4 py-3">
                   <div className="font-mono text-lg font-bold tabular-nums">
-                    {isLoading ? ".." : formatNumber(stats?.users ?? 0)}
+                    {isLoading ? '..' : formatNumber(stats?.users ?? 0)}
                   </div>
                   <div className="text-xs text-muted-foreground">users</div>
                 </div>
                 <div className="px-4 py-3">
                   <div className="font-mono text-lg font-bold tabular-nums">
-                    {isLoading ? ".." : formatNumber(stats?.uploads ?? 0)}
+                    {isLoading ? '..' : formatNumber(stats?.uploads ?? 0)}
                   </div>
                   <div className="text-xs text-muted-foreground">files</div>
                 </div>
                 <div className="px-4 py-3">
-                  <div className="font-mono text-lg font-bold tabular-nums">{storage}</div>
+                  <div className="font-mono text-lg font-bold tabular-nums">
+                    {storage}
+                  </div>
                   <div className="text-xs text-muted-foreground">stored</div>
                 </div>
               </div>
@@ -275,7 +294,9 @@ export function ApiDocumentationPageClient() {
                   {examples.map((example, index) => (
                     <div key={example.title}>
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">{example.title}</h3>
+                        <h3 className="text-lg font-semibold">
+                          {example.title}
+                        </h3>
 
                         <Tabs defaultValue="js" className="w-full">
                           <TabsList>
@@ -285,11 +306,17 @@ export function ApiDocumentationPageClient() {
                           </TabsList>
 
                           <TabsContent value="js" className="mt-4">
-                            <CodeBlock code={example.js} language="javascript" />
+                            <CodeBlock
+                              code={example.js}
+                              language="javascript"
+                            />
                           </TabsContent>
 
                           <TabsContent value="python" className="mt-4">
-                            <CodeBlock code={example.python} language="python" />
+                            <CodeBlock
+                              code={example.python}
+                              language="python"
+                            />
                           </TabsContent>
 
                           <TabsContent value="curl" className="mt-4">

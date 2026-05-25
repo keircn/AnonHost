@@ -1,15 +1,21 @@
-"use client";
+'use client';
 
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import type { Settings } from "@/lib/settings";
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import type { Settings } from '@/lib/settings';
 
 interface CustomDomainSettingsProps {
   settings: Settings;
-  onFieldChange: (field: keyof Settings, value: Settings[keyof Settings]) => void;
+  onFieldChange: (
+    field: keyof Settings,
+    value: Settings[keyof Settings]
+  ) => void;
 }
 
-export function CustomDomainSettings({ settings, onFieldChange }: CustomDomainSettingsProps) {
+export function CustomDomainSettings({
+  settings,
+  onFieldChange,
+}: CustomDomainSettingsProps) {
   return (
     <div className="space-y-2">
       <Label htmlFor="custom-domain">Custom Domain</Label>
@@ -19,8 +25,8 @@ export function CustomDomainSettings({ settings, onFieldChange }: CustomDomainSe
       <Input
         id="custom-domain"
         placeholder="images.yourdomain.com"
-        value={settings.customDomain || ""}
-        onChange={(e) => onFieldChange("customDomain", e.target.value)}
+        value={settings.customDomain || ''}
+        onChange={(e) => onFieldChange('customDomain', e.target.value)}
       />
     </div>
   );

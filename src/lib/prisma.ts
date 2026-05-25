@@ -1,10 +1,17 @@
-import { randomBytes } from "crypto";
-import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { apiKeys, media, otps, settings, shortlinks, users } from "@/lib/db/schema";
+import { randomBytes } from 'crypto';
+import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import {
+  apiKeys,
+  media,
+  otps,
+  settings,
+  shortlinks,
+  users,
+} from '@/lib/db/schema';
 
 function makeShortId() {
-  return randomBytes(4).toString("base64url").slice(0, 6);
+  return randomBytes(4).toString('base64url').slice(0, 6);
 }
 
 function pickSelected(row: any, select?: Record<string, boolean>) {
@@ -19,7 +26,9 @@ function pickSelected(row: any, select?: Record<string, boolean>) {
 const prisma = {
   user: {
     async count() {
-      const [row] = await db.select({ value: sql<number>`count(*)::int` }).from(users);
+      const [row] = await db
+        .select({ value: sql<number>`count(*)::int` })
+        .from(users);
       return row?.value ?? 0;
     },
     async findUnique(args: any) {
@@ -44,12 +53,19 @@ const prisma = {
       if (data.storageUsed?.decrement !== undefined) {
         data.storageUsed = sql`${users.storageUsed} - ${data.storageUsed.decrement}`;
       }
-      const [row] = await db.update(users).set(data).where(eq(users.id, args.where.id)).returning();
+      const [row] = await db
+        .update(users)
+        .set(data)
+        .where(eq(users.id, args.where.id))
+        .returning();
       return row;
     },
     async findMany(args: any) {
-      const order = args?.orderBy?.createdAt === "asc" ? asc : desc;
-      const rows = await db.select().from(users).orderBy(order(users.createdAt));
+      const order = args?.orderBy?.createdAt === 'asc' ? asc : desc;
+      const rows = await db
+        .select()
+        .from(users)
+        .orderBy(order(users.createdAt));
       if (!args?.include?._count && !args?.include?.settings) return rows;
 
       const withExtras = await Promise.all(
@@ -66,7 +82,11 @@ const prisma = {
             .select({ value: sql<number>`count(*)::int` })
             .from(apiKeys)
             .where(eq(apiKeys.userId, row.id));
-          const [st] = await db.select().from(settings).where(eq(settings.userId, row.id)).limit(1);
+          const [st] = await db
+            .select()
+            .from(settings)
+            .where(eq(settings.userId, row.id))
+            .limit(1);
           return {
             ...row,
             settings: st ?? null,
@@ -76,34 +96,48 @@ const prisma = {
               apiKeys: k?.value ?? 0,
             },
           };
-        }),
+        })
       );
       return withExtras;
     },
   },
   apiKey: {
     async findFirst(args: any) {
-      const [row] = await db.select().from(apiKeys).where(eq(apiKeys.key, args.where.key)).limit(1);
+      const [row] = await db
+        .select()
+        .from(apiKeys)
+        .where(eq(apiKeys.key, args.where.key))
+        .limit(1);
       if (!row) return null;
       if (args?.include?.user) {
-        const [user] = await db.select().from(users).where(eq(users.id, row.userId)).limit(1);
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, row.userId))
+          .limit(1);
         return { ...row, user: user ?? null };
       }
       return row;
     },
     async findUnique(args: any) {
       const where = args.where;
-      const cond = where.id ? eq(apiKeys.id, where.id) : eq(apiKeys.key, where.key);
+      const cond = where.id
+        ? eq(apiKeys.id, where.id)
+        : eq(apiKeys.key, where.key);
       const [row] = await db.select().from(apiKeys).where(cond).limit(1);
       if (!row) return null;
       if (args?.include?.user) {
-        const [user] = await db.select().from(users).where(eq(users.id, row.userId)).limit(1);
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, row.userId))
+          .limit(1);
         return { ...row, user: user ?? null };
       }
       return pickSelected(row, args?.select);
     },
     async findMany(args: any) {
-      const order = args?.orderBy?.createdAt === "asc" ? asc : desc;
+      const order = args?.orderBy?.createdAt === 'asc' ? asc : desc;
       return db
         .select()
         .from(apiKeys)
@@ -128,18 +162,29 @@ const prisma = {
     },
     async update(args: any) {
       const where = args.where;
-      const cond = where.id ? eq(apiKeys.id, where.id) : eq(apiKeys.key, where.key);
-      const [row] = await db.update(apiKeys).set(args.data).where(cond).returning();
+      const cond = where.id
+        ? eq(apiKeys.id, where.id)
+        : eq(apiKeys.key, where.key);
+      const [row] = await db
+        .update(apiKeys)
+        .set(args.data)
+        .where(cond)
+        .returning();
       return row;
     },
     async delete(args: any) {
-      const [row] = await db.delete(apiKeys).where(eq(apiKeys.id, args.where.id)).returning();
+      const [row] = await db
+        .delete(apiKeys)
+        .where(eq(apiKeys.id, args.where.id))
+        .returning();
       return row;
     },
   },
   media: {
     async count(args: any) {
-      const cond = args?.where?.userId ? eq(media.userId, args.where.userId) : undefined;
+      const cond = args?.where?.userId
+        ? eq(media.userId, args.where.userId)
+        : undefined;
       const q = db.select({ value: sql<number>`count(*)::int` }).from(media);
       const [row] = cond ? await q.where(cond) : await q;
       return row?.value ?? 0;
@@ -150,7 +195,8 @@ const prisma = {
       let orderCol = media.createdAt;
       if (args?.orderBy?.filename) orderCol = media.filename as any;
       if (args?.orderBy?.size) orderCol = media.size as any;
-      const orderDir = Object.values(args?.orderBy ?? {})[0] === "asc" ? asc : desc;
+      const orderDir =
+        Object.values(args?.orderBy ?? {})[0] === 'asc' ? asc : desc;
       let q: any = db.select().from(media).orderBy(orderDir(orderCol));
       if (cond) q = q.where(cond);
       if (args?.skip !== undefined) q = q.offset(args.skip);
@@ -158,8 +204,12 @@ const prisma = {
       return q;
     },
     async aggregate(args: any) {
-      const cond = args?.where?.userId ? eq(media.userId, args.where.userId) : undefined;
-      const q = db.select({ size: sql<number>`coalesce(sum(${media.size}),0)::int` }).from(media);
+      const cond = args?.where?.userId
+        ? eq(media.userId, args.where.userId)
+        : undefined;
+      const q = db
+        .select({ size: sql<number>`coalesce(sum(${media.size}),0)::int` })
+        .from(media);
       const [row] = cond ? await q.where(cond) : await q;
       return { _sum: { size: row?.size ?? 0 } };
     },
@@ -170,19 +220,33 @@ const prisma = {
       return row;
     },
     async findUnique(args: any) {
-      const [row] = await db.select().from(media).where(eq(media.id, args.where.id)).limit(1);
+      const [row] = await db
+        .select()
+        .from(media)
+        .where(eq(media.id, args.where.id))
+        .limit(1);
       if (!row) return null;
       if (args?.include?.user) {
         const userSelect = args.include.user.select ?? {};
-        const [u] = await db.select().from(users).where(eq(users.id, row.userId)).limit(1);
+        const [u] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, row.userId))
+          .limit(1);
 
         let userWithRelations: any = u ? pickSelected(u, userSelect) : null;
 
         if (u && userSelect.settings) {
           const settingsSelect =
-            typeof userSelect.settings === "object" ? userSelect.settings.select : undefined;
+            typeof userSelect.settings === 'object'
+              ? userSelect.settings.select
+              : undefined;
 
-          const [s] = await db.select().from(settings).where(eq(settings.userId, u.id)).limit(1);
+          const [s] = await db
+            .select()
+            .from(settings)
+            .where(eq(settings.userId, u.id))
+            .limit(1);
 
           userWithRelations = {
             ...userWithRelations,
@@ -198,7 +262,10 @@ const prisma = {
       return pickSelected(row, args?.select);
     },
     async delete(args: any) {
-      const [row] = await db.delete(media).where(eq(media.id, args.where.id)).returning();
+      const [row] = await db
+        .delete(media)
+        .where(eq(media.id, args.where.id))
+        .returning();
       return row;
     },
   },
@@ -243,8 +310,10 @@ const prisma = {
             args.where.email ? eq(otps.email, args.where.email) : undefined,
             args.where.userId ? eq(otps.userId, args.where.userId) : undefined,
             args.where.type ? eq(otps.type, args.where.type) : undefined,
-            args.where.used !== undefined ? eq(otps.used, args.where.used) : undefined,
-          ) as any,
+            args.where.used !== undefined
+              ? eq(otps.used, args.where.used)
+              : undefined
+          ) as any
         );
       return { count: 0 };
     },
@@ -256,7 +325,8 @@ const prisma = {
       if (where.code) conds.push(eq(otps.code, where.code));
       if (where.type) conds.push(eq(otps.type, where.type));
       if (where.used !== undefined) conds.push(eq(otps.used, where.used));
-      if (where.expiresAt?.gt) conds.push(gte(otps.expiresAt, where.expiresAt.gt));
+      if (where.expiresAt?.gt)
+        conds.push(gte(otps.expiresAt, where.expiresAt.gt));
       const [row] = await db
         .select()
         .from(otps)
@@ -265,7 +335,11 @@ const prisma = {
       if (!row) return null;
       if (args?.include?.user) {
         const [u] = row.userId
-          ? await db.select().from(users).where(eq(users.id, row.userId)).limit(1)
+          ? await db
+              .select()
+              .from(users)
+              .where(eq(users.id, row.userId))
+              .limit(1)
           : [null];
         return { ...row, user: u };
       }
@@ -282,7 +356,7 @@ const prisma = {
   },
   shortlink: {
     async findMany(args: any) {
-      const order = args?.orderBy?.createdAt === "asc" ? asc : desc;
+      const order = args?.orderBy?.createdAt === 'asc' ? asc : desc;
       return db
         .select()
         .from(shortlinks)
@@ -312,7 +386,10 @@ const prisma = {
       return row;
     },
     async delete(args: any) {
-      const [row] = await db.delete(shortlinks).where(eq(shortlinks.id, args.where.id)).returning();
+      const [row] = await db
+        .delete(shortlinks)
+        .where(eq(shortlinks.id, args.where.id))
+        .returning();
       return row;
     },
   },

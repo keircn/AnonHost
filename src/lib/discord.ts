@@ -13,11 +13,11 @@ export async function sendDiscordWebhook(payload: {
 
   try {
     await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
   } catch (error) {
-    console.error("Discord webhook error:", error);
+    console.error('Discord webhook error:', error);
   }
 }

@@ -1,90 +1,65 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Server, Lock, Key } from "lucide-react";
-
-const sections = [
-  {
-    icon: <Lock className="text-primary h-6 w-6" />,
-    title: "Data Encryption",
-    content: [
-      "AES-256 encryption for all stored data",
-      "End-to-end encryption in transit",
-      "Zero-knowledge encryption",
-      "Military-grade security protocols",
-    ],
-  },
-  {
-    icon: <Key className="text-primary h-6 w-6" />,
-    title: "Security Measures",
-    content: [
-      "Multi-layer data protection",
-      "Regular package updates and security patches",
-      "Secure key management system",
-    ],
-  },
-  {
-    icon: <Server className="text-primary h-6 w-6" />,
-    title: "Storage Security",
-    content: [
-      "Data encrypted at rest with industry standards",
-      "Redundant secure storage - Cloudflare R2",
-      "Automated backup systems",
-    ],
-  },
-];
-
 export function PrivacyPageClient() {
   return (
-    <div className="container py-8 md:py-12">
+    <div className="container mx-auto max-w-2xl py-8 md:py-12">
       <div className="space-y-8">
-        <div className="space-y-4 text-center">
-          <h1 className="text-4xl font-bold tracking-tight">We take your privacy seriously</h1>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Privacy</h1>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {sections.map((section) => (
-            <div key={section.title}>
-              <Card className="h-full transition-shadow hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex items-center gap-4">
-                    {section.icon}
-                    <h2 className="text-xl font-semibold">{section.title}</h2>
-                  </div>
-                  <ul className="space-y-2">
-                    {section.content.map((item, i) => (
-                      <li key={i} className="text-muted-foreground flex items-start">
-                        <span className="text-primary mr-2">•</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
+        <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-foreground font-semibold">What we collect</h2>
+            <p>
+              We collect your email address and a display name when you register
+              an account. We store files you upload along with their metadata
+              (filename, size, upload timestamp).
+            </p>
+            <p>
+              Anonymous uploads are not linked to any account. We store the
+              upload timestamp and the file itself.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-foreground font-semibold">What we don&apos;t collect</h2>
+            <p>
+              We don&apos;t use tracking cookies, analytics scripts, or third-party
+              trackers. We don&apos;t sell your data. We don&apos;t read your files.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-foreground font-semibold">Data retention</h2>
+            <p>
+              Account data is kept until you delete your account. Uploaded files
+              are kept until you delete them or until an account is deleted.
+              Anonymous uploads are kept indefinitely unless deleted via the
+              deletion link.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-foreground font-semibold">Third parties</h2>
+            <p>
+              Files are stored on Cloudflare R2. We use a Postgres database
+              hosted on the same server. No third party has access to your data.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-foreground font-semibold">Contact</h2>
+            <p>
+              For privacy questions:{" "}
+              <a href="mailto:support@anonhost.cc" className="text-foreground hover:underline">support@anonhost.cc</a>
+            </p>
+          </section>
         </div>
 
-        <div className="bg-primary/5 mx-auto max-w-3xl rounded-lg p-6">
-          <h3 className="mb-3 text-center text-lg font-semibold">Our Encryption Promise</h3>
-          <p className="text-muted-foreground text-center text-sm">
-            Every file is encrypted using AES-256 encryption before storage, with keys secured using
-            RSA-4096. Data in transit is protected by TLS 1.3, ensuring end-to-end security. Our
-            zero-knowledge architecture means even we cannot access your encrypted data without your
-            explicit permission.
-          </p>
-        </div>
-
-        <div className="text-muted-foreground mx-auto max-w-2xl space-y-4 text-center text-sm">
-          <p>
-            To exercise your privacy rights or ask questions about our privacy practices, please
-            contact us at <span className="text-primary">support@anonhost.cc</span>
-          </p>
-          <p className="text-xs">
-            Last updated: April 2, 2025. AnonHost is committed to protecting your privacy and
-            maintaining the security of your personal information.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Last updated: April 2, 2025.
+        </p>
       </div>
     </div>
   );

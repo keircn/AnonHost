@@ -5,7 +5,6 @@ import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -19,8 +18,6 @@ import {
   Music,
   Lock,
   Copy,
-  Terminal,
-  LinkIcon,
 } from "lucide-react";
 import { FileSettingsModal } from "@/components/Files/FileSettingsModal";
 import type { FileSettings } from "@/types/file-settings";
@@ -577,11 +574,9 @@ export function UploadPageClient() {
                       disabled={isUploading}
                       className="w-full sm:w-auto"
                     >
-                      {isUploading
-                        ? "Uploading..."
-                        : isAnonymous
-                          ? "Upload Anonymously"
-                          : privateMode
+                    {isUploading
+                      ? "Uploading..."
+                      : privateMode
                             ? "Create Private Uploads"
                             : "Upload Files"}
                     </Button>
@@ -677,49 +672,23 @@ export function UploadPageClient() {
             )}
 
             {uploadedLinks.length > 0 && (
-              <div className="mt-6 space-y-4 rounded-lg border bg-card p-4 shadow-sm sm:mt-8">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {isAnonymous ? "Upload Complete" : "Private Links"}
-                  </h3>
-                  {isAnonymous ? (
-                    <p className="text-muted-foreground text-sm">
-                      Save the deletion URL to remove this file later. It is only shown once.
-                    </p>
-                  ) : (
-                    <p className="text-muted-foreground text-sm">
-                      The terminal URL is one-use. The web URL requires the password.
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-4">
-                  {uploadedLinks.map((link) => (
-                    <div
-                      key={`${link.filename}-${link.webUrl}`}
-                      className="space-y-3 rounded-lg border bg-muted p-3"
-                    >
-                      <p className="text-sm font-medium break-all">{link.filename}</p>
-                      <UploadLinkRow label="Web URL" value={link.webUrl} icon="web" />
+              <div className="space-y-3">
+                {uploadedLinks.map((link) => (
+                  <div key={`${link.filename}-${link.webUrl}`} className="rounded-lg border bg-card p-4">
+                    <p className="mb-3 text-sm font-medium">{link.filename}</p>
+                    <div className="space-y-2">
+                      <UrlRow label="URL" value={link.webUrl} />
                       {isAnonymous && link.deletionUrl && (
-                        <UploadLinkRow
-                          label="Deletion URL"
-                          value={link.deletionUrl}
-                          icon="terminal"
-                        />
+                        <UrlRow label="Deletion URL (save this)" value={link.deletionUrl} />
                       )}
-                      {link.terminalUrl && (
-                        <UploadLinkRow
-                          label="Terminal URL"
-                          value={link.terminalUrl}
-                          icon="terminal"
-                        />
-                      )}
-                      {link.curlCommand && (
-                        <UploadLinkRow label="Curl" value={link.curlCommand} icon="terminal" />
-                      )}
+                      {link.terminalUrl && <UrlRow label="Terminal" value={link.terminalUrl} />}
+                      {link.curlCommand && <UrlRow label="Curl" value={link.curlCommand} />}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+                <Button variant="outline" className="w-full" onClick={() => { setUploadedLinks([]); setFiles([]); }}>
+                  Upload another
+                </Button>
               </div>
             )}
         </div>
@@ -728,35 +697,20 @@ export function UploadPageClient() {
   );
 }
 
-function UploadLinkRow({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: "web" | "terminal";
-}) {
+function UrlRow({ label, value }: { label: string; value: string }) {
   const copy = async () => {
     await navigator.clipboard.writeText(value);
     toast.success(`${label} copied`);
   };
 
   return (
-    <div className="space-y-2">
-      <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium uppercase">
-        {icon === "web" ? <LinkIcon className="h-4 w-4" /> : <Terminal className="h-4 w-4" />}
-        {label}
-      </div>
-      <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <code className="max-w-full min-w-0 overflow-x-auto border bg-muted px-3 py-2 text-xs whitespace-nowrap">
-          {value}
-        </code>
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={copy}>
-          <Copy className="h-4 w-4" />
-          Copy
-        </Button>
-      </div>
+    <div className="flex items-center gap-2">
+      <code className="min-w-0 flex-1 overflow-x-auto rounded-md border bg-muted px-3 py-2 text-xs whitespace-nowrap">
+        {value}
+      </code>
+      <Button type="button" variant="outline" size="icon" className="size-8 shrink-0" onClick={copy}>
+        <Copy className="h-3.5 w-3.5" />
+      </Button>
     </div>
   );
 }

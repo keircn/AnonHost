@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
       (formData.get('fileType') as string | null) || 'application/octet-stream';
     const settings = formData.get('settings') as string | null;
     const customDomain = formData.get('domain') as string | null;
+    const expiresIn = formData.get('expiresIn') as string | null;
 
     if (!uploadId || !filename || totalChunks <= 0) {
       return NextResponse.json(
@@ -209,6 +210,14 @@ export async function POST(request: NextRequest) {
 
     const fileBlob = new File([fullBuffer], filename, { type: fileType });
 
+    let expiresAt: Date | null = null;
+    if (expiresIn) {
+      const seconds = Number.parseInt(expiresIn, 10);
+      if (!Number.isNaN(seconds) && seconds > 0) {
+        expiresAt = new Date(Date.now() + seconds * 1000);
+      }
+    }
+
     const result = await finalizeUpload({
       file: fileBlob,
       originalName: filename,
@@ -218,6 +227,7 @@ export async function POST(request: NextRequest) {
       rawSettings: settings,
       customDomain,
       fileId: uploadId,
+      expiresAt,
     });
 
     await fs.rm(uploadDir, { recursive: true, force: true });

@@ -104,6 +104,7 @@ export const media = pgTable('Media', {
   disableEmbed: boolean('disableEmbed').notNull().default(false),
   domain: varchar('domain', { length: 253 }),
   createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+  expiresAt: timestamp('expiresAt', { mode: 'date' }),
   archiveType: text('archiveType'),
   fileCount: integer('fileCount'),
   archiveMeta: jsonb('archiveMeta'),

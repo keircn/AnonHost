@@ -78,12 +78,21 @@ export async function POST(req: NextRequest) {
     const settingsStr = formData.get('settings') as string | null;
     const customDomain = formData.get('domain') as string | null;
     const clientFileId = formData.get('fileId') as string | null;
+    const expiresIn = formData.get('expiresIn') as string | null;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     const originalName = (file as File).name || 'untitled';
+
+    let expiresAt: Date | null = null;
+    if (expiresIn) {
+      const seconds = Number.parseInt(expiresIn, 10);
+      if (!Number.isNaN(seconds) && seconds > 0) {
+        expiresAt = new Date(Date.now() + seconds * 1000);
+      }
+    }
 
     const result = await finalizeUpload({
       file,
@@ -94,6 +103,7 @@ export async function POST(req: NextRequest) {
       rawSettings: settingsStr,
       customDomain,
       fileId: clientFileId || undefined,
+      expiresAt,
     });
 
     return NextResponse.json(result);

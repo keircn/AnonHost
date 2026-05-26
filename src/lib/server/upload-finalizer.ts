@@ -102,6 +102,7 @@ export interface FinalizeUploadInput {
   rawSettings?: string | FileSettings | null;
   customDomain?: string | null;
   fileId?: string;
+  expiresAt?: Date | null;
 }
 
 export async function finalizeUpload(input: FinalizeUploadInput) {
@@ -209,6 +210,7 @@ export async function finalizeUpload(input: FinalizeUploadInput) {
       public: Boolean(settings.public),
       disableEmbed: Boolean(settings.disableEmbed),
       domain: input.customDomain || null,
+      expiresAt: input.expiresAt ?? null,
       archiveType,
       fileCount,
       archiveMeta: archiveMetadata ? (archiveMetadata as unknown) : null,

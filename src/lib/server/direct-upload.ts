@@ -38,6 +38,7 @@ export interface FinalizeDirectUploadInput {
   password?: string;
   oneUse?: boolean;
   baseUrl?: string;
+  expiresAt?: Date | null;
 }
 
 export interface FinalizeDirectUploadResponse {
@@ -293,6 +294,7 @@ export async function finalizeDirectUploadForUser(
       normalizedDomain && normalizedDomain !== 'anonhost.cc'
         ? normalizedDomain
         : null,
+    expiresAt: input.expiresAt ?? null,
     archiveType: null,
     fileCount: null,
     archiveMeta: null,

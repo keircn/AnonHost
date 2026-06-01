@@ -105,6 +105,11 @@ export const endpoints: Endpoint[] = [
           type: 'String',
           description: 'direct-init, direct-finalize, direct-fail',
         },
+        {
+          name: 'expiresIn',
+          type: 'Integer',
+          description: 'Seconds until the uploaded file expires (optional)',
+        },
       ],
     },
     response: {
@@ -119,6 +124,52 @@ export const endpoints: Endpoint[] = [
         createdAt: '2024-04-01T12:00:00Z',
         baseUrl: 'https://anonhost.cc',
         customDomain: 'custom-domain.com',
+      },
+    },
+  },
+  {
+    id: 'upload-url',
+    title: 'Upload from URL',
+    method: 'POST',
+    path: '/upload/url',
+    description: 'Upload a file from a remote URL. Fetches the file and processes it through the standard upload pipeline.',
+    request: {
+      description: 'Provide a URL to fetch the file from.',
+      headers: 'Authorization: Bearer YOUR_API_KEY\nContent-Type: application/json',
+      parameters: [
+        {
+          name: 'url',
+          type: 'String',
+          description: 'The remote URL of the file to upload (required)',
+        },
+        {
+          name: 'expiresIn',
+          type: 'Integer',
+          description: 'Seconds until the uploaded file expires (optional)',
+        },
+        {
+          name: 'domain',
+          type: 'String',
+          description: 'Custom domain for the file URL (optional)',
+        },
+        {
+          name: 'settings',
+          type: 'Object',
+          description: 'File processing settings as JSON string (optional)',
+        },
+      ],
+    },
+    response: {
+      example: {
+        id: 'abc123',
+        url: 'https://anonhost.cc/abc123',
+        filename: 'remote-file.png',
+        size: 1024000,
+        width: 1920,
+        height: 1080,
+        type: 'IMAGE',
+        public: false,
+        createdAt: '2024-04-01T12:00:00Z',
       },
     },
   },
@@ -151,6 +202,11 @@ export const endpoints: Endpoint[] = [
           name: 'order',
           type: 'String',
           description: 'Sort order (asc, desc)',
+        },
+        {
+          name: 'q',
+          type: 'String',
+          description: 'Search query to filter files by filename',
         },
       ],
     },

@@ -13,7 +13,7 @@ import {
 } from '@/lib/server/direct-upload';
 import { ServerArchiveProcessor } from '@/lib/server-archive-processor';
 import { apiKeys, MediaType, media, settings, users } from '@/lib/db/schema';
-import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 
 interface MediaItem {
@@ -86,9 +86,15 @@ export async function GET(req: NextRequest) {
       Math.max(1, Number.parseInt(url.searchParams.get('limit') || '20')),
       100
     );
+    const search = url.searchParams.get('q') || '';
     const sort = url.searchParams.get('sort') || 'createdAt';
     const order = url.searchParams.get('order') || 'desc';
     const skip = (page - 1) * limit;
+
+    const userIdFilter = eq(media.userId, userId);
+    let mediaFilter = search
+      ? and(userIdFilter, ilike(media.filename, `%${search}%`))
+      : userIdFilter;
 
     const orderColumn =
       sort === 'filename'
@@ -109,12 +115,12 @@ export async function GET(req: NextRequest) {
       db
         .select({ value: sql<number>`count(*)::int` })
         .from(media)
-        .where(eq(media.userId, userId)),
+        .where(mediaFilter),
 
       db
         .select()
         .from(media)
-        .where(eq(media.userId, userId))
+        .where(mediaFilter)
         .orderBy(orderByExpr)
         .offset(skip)
         .limit(limit),
@@ -300,6 +306,11 @@ export async function POST(req: NextRequest) {
             );
           }
 
+          let expiresAt: Date | null = null;
+          if (body.expiresIn && typeof body.expiresIn === 'number') {
+            expiresAt = new Date(Date.now() + body.expiresIn * 1000);
+          }
+
           const data = await finalizeDirectUploadForUser({
             userId,
             imageId: body.imageId,
@@ -310,6 +321,7 @@ export async function POST(req: NextRequest) {
                 ? body.disableEmbed
                 : false,
             domain: typeof body.domain === 'string' ? body.domain : null,
+            expiresAt,
           });
 
           return NextResponse.json({ ok: true, data });

@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal } from 'lucide-react';
+import { Upload, ImageIcon, Trash2, Copy, Lock, Terminal, Search } from 'lucide-react';
 import Link from 'next/link';
 import { getStorageStats } from '@/lib/upload';
 import { toast } from 'sonner';
@@ -45,6 +45,7 @@ interface MediaItem {
   size: number;
   type: 'IMAGE' | 'VIDEO' | 'AUDIO';
   duration?: number;
+  expiresAt?: string | null;
 }
 
 interface Stats {
@@ -83,6 +84,8 @@ export function DashboardPageClient() {
   const [activeTab, setActiveTab] = useState('media');
   const [privateUploads, setPrivateUploads] = useState<PrivateUploadItem[]>([]);
   const [isPrivateLoading, setIsPrivateLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
     total: 0,
@@ -100,9 +103,12 @@ export function DashboardPageClient() {
   const fetchMedia = async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/media?page=${page}&limit=${paginationInfo.limit}`
-      );
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(paginationInfo.limit),
+      });
+      if (debouncedSearch) params.set('q', debouncedSearch);
+      const response = await fetch(`/api/media?${params}`);
       if (!response.ok) throw new Error('Failed to fetch media');
       const data = await response.json();
       setMediaItems(data.media || []);
@@ -182,10 +188,18 @@ export function DashboardPageClient() {
   };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
     if (status === 'authenticated') {
       fetchMedia(currentPage);
     }
-  }, [currentPage, status]);
+  }, [currentPage, debouncedSearch, status]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -242,6 +256,16 @@ export function DashboardPageClient() {
                         Upload New
                       </Button>
                     </Link>
+                  </div>
+                  <div className="relative">
+                    <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search files..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 pl-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
                   </div>
 
                   {isLoading ? (
@@ -325,6 +349,17 @@ export function DashboardPageClient() {
                                         {(item.duration % 60)
                                           .toString()
                                           .padStart(2, '0')}
+                                      </span>
+                                    )}
+                                    {item.expiresAt && (
+                                      <span className="text-destructive ml-2">
+                                        Expires{' '}
+                                        {new Date(
+                                          item.expiresAt
+                                        ).toLocaleDateString('en-US', {
+                                          month: 'short',
+                                          day: '2-digit',
+                                        })}
                                       </span>
                                     )}
                                   </p>

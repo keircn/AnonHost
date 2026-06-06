@@ -1,11 +1,16 @@
 FROM node:22-alpine AS base
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
 WORKDIR /app
-RUN npm install -g pnpm@10.8.1 && pnpm config set store-dir ~/.pnpm-store
+RUN npm install -g pnpm@10.8.1 && \
+    pnpm config set store-dir ~/.pnpm-store && \
+    pnpm config set fetch-retries 5 && \
+    pnpm config set fetch-retry-mintimeout 20000 && \
+    pnpm config set fetch-retry-maxtimeout 120000 && \
+    pnpm config set network-concurrency 2
 
 FROM base AS deps
 COPY pnpm-lock.yaml package.json ./
-RUN pnpm install --frozen-lockfile
+RUN for i in 1 2 3; do pnpm install --frozen-lockfile && break || sleep 5; done
 
 FROM deps AS builder
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/postgres

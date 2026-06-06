@@ -1,7 +1,7 @@
 FROM node:22-alpine AS base
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
 WORKDIR /app
-RUN corepack enable && pnpm config set store-dir ~/.pnpm-store
+RUN npm install -g pnpm@10.8.1 && pnpm config set store-dir ~/.pnpm-store
 
 FROM base AS deps
 COPY pnpm-lock.yaml package.json ./

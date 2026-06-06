@@ -1,4 +1,5 @@
 FROM node:22-alpine AS base
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 WORKDIR /app
 RUN corepack enable && pnpm config set store-dir ~/.pnpm-store
 

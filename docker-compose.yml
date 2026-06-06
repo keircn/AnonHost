@@ -40,6 +40,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      NODE_OPTIONS: --dns-result-order=ipv4first
       PORT: 1984
       DATABASE_URL: postgresql://${POSTGRES_USER:-anonhost}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-anonhost}
     volumes:

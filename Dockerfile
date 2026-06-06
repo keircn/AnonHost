@@ -30,8 +30,10 @@ COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/db/schema.ts ./src/lib/db/schema.ts
 
+COPY scripts/migrate.mjs ./scripts/migrate.mjs
+
 RUN mkdir -p /app/uploads
 
 EXPOSE 1984
 
-CMD ["pnpm", "run", "start"]
+CMD node scripts/migrate.mjs && pnpm run start

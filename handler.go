@@ -173,6 +173,9 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 			rec.IsArchive = true
 			rec.ArchiveFormat = fmtName
 			rec.ArchiveListing = archiveListingJSON(entries)
+			log.Printf("archive: extracted %d entries from %s (%s)", len(entries), id, fmtName)
+		} else {
+			log.Printf("archive: failed to list %s: %v", id, err)
 		}
 	}
 
@@ -312,6 +315,9 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 			rec.ArchiveFormat = fmtName
 			rec.ArchiveListing = archiveListingJSON(entries)
 			s.db.UpdateArchive(req.ID, true, fmtName, rec.ArchiveListing)
+			log.Printf("archive: extracted %d entries from %s (%s)", len(entries), req.ID, fmtName)
+		} else {
+			log.Printf("archive: failed to list %s: %v", req.ID, err)
 		}
 	}
 
@@ -784,8 +790,43 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) handleBackfillArchive(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	rec, err := s.db.GetFile(id)
+	if err != nil {
+		s.respondError(w, http.StatusNotFound, "file not found")
+		return
+	}
+	if !isArchive(rec.Filename) {
+		s.respondError(w, http.StatusBadRequest, "not an archive file")
+		return
+	}
+	if rec.Size > 500<<20 {
+		s.respondError(w, http.StatusBadRequest, "file too large")
+		return
+	}
+
+	entries, fmtName, err := s.readArchiveListing(r.Context(), rec.StoragePath)
+	if err != nil {
+		log.Printf("archive backfill error for %s: %v", id, err)
+		s.respondError(w, http.StatusInternalServerError, "failed to list archive")
+		return
+	}
+
+	if err := s.db.UpdateArchive(id, true, fmtName, archiveListingJSON(entries)); err != nil {
+		s.respondError(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	s.respondJSON(w, http.StatusOK, map[string]any{
+		"format":  fmtName,
+		"entries": len(entries),
+	})
+}
+
 func (s *Server) readArchiveListing(ctx context.Context, storagePath string) ([]FileEntry, string, error) {
-	tmp, err := os.CreateTemp("", "anonhost-archive-*")
+	ext := path.Ext(storagePath)
+	tmp, err := os.CreateTemp("", "anonhost-archive-*"+ext)
 	if err != nil {
 		return nil, "", err
 	}

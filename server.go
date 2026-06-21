@@ -22,6 +22,7 @@ func (s *Server) handler() http.Handler {
 	mux.HandleFunc("GET /api/cron/cleanup", s.handleCronCleanup)
 	mux.HandleFunc("GET /api/archive/{id}", s.handleArchiveList)
 	mux.HandleFunc("GET /api/archive/{id}/file", s.handleArchiveFile)
+	mux.HandleFunc("POST /api/backfill/archive/{id}", s.handleBackfillArchive)
 
 	mux.HandleFunc("GET /api/media/{id}", s.handleView)
 

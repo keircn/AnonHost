@@ -10,7 +10,9 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -162,6 +164,16 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		StoragePath:    storagePath,
 		DeletionToken:  deletionToken,
 		CreatedAt:      now,
+	}
+
+	if header.Size <= 500<<20 && isArchive(header.Filename) {
+		localPath := filepath.Join(s.cfg.UploadDir, storagePath)
+		entries, fmtName, err := listArchive(localPath)
+		if err == nil {
+			rec.IsArchive = true
+			rec.ArchiveFormat = fmtName
+			rec.ArchiveListing = archiveListingJSON(entries)
+		}
 	}
 
 	if err := s.db.InsertFile(rec); err != nil {
@@ -337,22 +349,146 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 
 	playableVideo := isVideo && isPlayableVideo(rec.MimeType)
 	playableAudio := isAudio && isPlayableAudio(rec.MimeType)
+	isArch := rec.IsArchive
+	var listing []FileEntry
+	if isArch && rec.ArchiveListing != "" {
+		json.Unmarshal([]byte(rec.ArchiveListing), &listing)
+	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	s.views.ExecuteTemplate(w, "view", map[string]any{
-		"ID":             rec.ID,
-		"Filename":       rec.Filename,
-		"Size":           rec.Size,
-		"MimeType":       rec.MimeType,
-		"FileURL":        fileURL,
-		"IsImage":        isImage,
-		"IsVideo":        playableVideo,
-		"IsAudio":        playableAudio,
-		"IsUnplayable":   (isVideo || isAudio) && !playableVideo && !playableAudio,
-		"Width":          rec.Width,
-		"Height":         rec.Height,
-		"BaseURL":        strings.TrimRight(s.cfg.PublicURL, "/"),
+		"ID":                  rec.ID,
+		"Filename":            rec.Filename,
+		"Size":                rec.Size,
+		"MimeType":            rec.MimeType,
+		"FileURL":             fileURL,
+		"IsImage":             isImage,
+		"IsVideo":             playableVideo,
+		"IsAudio":             playableAudio,
+		"IsUnplayable":        (isVideo || isAudio) && !playableVideo && !playableAudio,
+		"IsArchive":           isArch,
+		"ArchiveFormat":       rec.ArchiveFormat,
+		"ArchiveListing":      listing,
+		"ArchiveListingJSON":  template.JS(rec.ArchiveListing),
+		"Width":               rec.Width,
+		"Height":              rec.Height,
+		"BaseURL":             strings.TrimRight(s.cfg.PublicURL, "/"),
 	})
+}
+
+func (s *Server) handleArchiveList(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	rec, err := s.db.GetFile(id)
+	if err != nil {
+		s.respondError(w, http.StatusNotFound, "file not found")
+		return
+	}
+	if !rec.IsArchive || rec.ArchiveListing == "" {
+		s.respondError(w, http.StatusNotFound, "not an archive")
+		return
+	}
+	var entries []FileEntry
+	if err := json.Unmarshal([]byte(rec.ArchiveListing), &entries); err != nil {
+		s.respondError(w, http.StatusInternalServerError, "invalid listing")
+		return
+	}
+	s.respondJSON(w, http.StatusOK, map[string]any{
+		"format": rec.ArchiveFormat,
+		"files":  entries,
+	})
+}
+
+func (s *Server) handleArchiveFile(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	target := r.URL.Query().Get("path")
+	if target == "" {
+		s.respondError(w, http.StatusBadRequest, "missing path")
+		return
+	}
+
+	rec, err := s.db.GetFile(id)
+	if err != nil {
+		s.respondError(w, http.StatusNotFound, "file not found")
+		return
+	}
+	if !rec.IsArchive {
+		s.respondError(w, http.StatusNotFound, "not an archive")
+		return
+	}
+
+	// verify target path exists in listing
+	var entries []FileEntry
+	if err := json.Unmarshal([]byte(rec.ArchiveListing), &entries); err != nil {
+		s.respondError(w, http.StatusInternalServerError, "invalid listing")
+		return
+	}
+	found := false
+	for _, e := range entries {
+		if e.Path == target && !e.Dir {
+			found = true
+			break
+		}
+	}
+	if !found {
+		s.respondError(w, http.StatusNotFound, "file not found in archive")
+		return
+	}
+
+	var archivePath string
+	var cleanup func()
+
+	if ls, ok := s.storage.(*LocalStorage); ok {
+		archivePath = filepath.Join(ls.baseDir, rec.StoragePath)
+	} else if _, ok := s.storage.(*R2Storage); ok {
+		// download to temp file
+		tmp, err := os.CreateTemp("", "anonhost-archive-*")
+		if err != nil {
+			s.respondError(w, http.StatusInternalServerError, "temp file error")
+			return
+		}
+		cleanup = func() { os.Remove(tmp.Name()) }
+		defer tmp.Close()
+
+		rc, _, err := s.storage.GetWithSize(r.Context(), rec.StoragePath)
+		if err != nil {
+			s.respondError(w, http.StatusNotFound, "storage error")
+			return
+		}
+		if _, err := io.Copy(tmp, rc); err != nil {
+			rc.Close()
+			s.respondError(w, http.StatusInternalServerError, "download error")
+			return
+		}
+		rc.Close()
+		archivePath = tmp.Name()
+	} else {
+		s.respondError(w, http.StatusInternalServerError, "unknown storage backend")
+		return
+	}
+
+	rc, size, err := extractFileFromArchive(archivePath, target)
+	if err != nil {
+		if cleanup != nil {
+			cleanup()
+		}
+		s.respondError(w, http.StatusNotFound, "extraction failed")
+		return
+	}
+
+	filename := path.Base(target)
+	ct := mime.TypeByExtension(path.Ext(filename))
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+
+	w.Header().Set("Content-Type", ct)
+	w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`inline; filename="%s"`, filename))
+	io.Copy(w, rc)
+	rc.Close()
+	if cleanup != nil {
+		cleanup()
+	}
 }
 
 func (s *Server) handleServe(w http.ResponseWriter, r *http.Request) {

@@ -119,6 +119,38 @@
     font-size: 13px;
   }
 
+  .archive-browser { font-size: 12px; border-bottom: 1px solid #c0c0c0; }
+  .archive-toolbar {
+    background: #e8e8e8;
+    padding: 6px 10px;
+    border-bottom: 1px solid #c0c0c0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .archive-toolbar .dl-all {
+    padding: 2px 10px;
+    font-size: 11px;
+    background: #eee;
+    border: 1px solid #999;
+    color: #000;
+    text-decoration: none;
+  }
+  .archive-toolbar .dl-all:hover { background: #ddd; }
+  .archive-tree { padding: 6px 0; max-height: 360px; overflow-y: auto; text-align: left; }
+  .archive-tree ul { list-style: none; padding: 0; margin: 0; }
+  .archive-tree li { padding: 1px 0; }
+  .archive-tree .tree-toggle {
+    cursor: pointer; user-select: none; color: #666; font-family: monospace;
+    margin-right: 4px;
+  }
+  .archive-tree .tree-toggle:hover { color: #000; }
+  .archive-tree a { text-decoration: none; color: #00e; }
+  .archive-tree a:hover { text-decoration: underline; }
+  .archive-tree .file-size { color: #999; font-size: 10px; margin-left: 6px; }
+  .archive-tree .dir-name { color: #000; font-weight: bold; }
+  .archive-tree .dir-children { padding-left: 18px; }
+
   .actions {
     padding: 10px 16px;
     text-align: center;
@@ -189,6 +221,17 @@
     <audio controls>
       <source src="{{.FileURL}}" type="{{.MimeType}}">
     </audio>
+{{else if .IsArchive}}
+    <div class="archive-browser" data-id="{{.ID}}" data-url="{{.BaseURL}}">
+      <div class="archive-toolbar">
+        <span>Archive ({{.ArchiveFormat}}): {{len .ArchiveListing}} files</span>
+        <a href="{{.FileURL}}" class="dl-all" download="{{.Filename}}">Download all</a>
+      </div>
+      <div class="archive-tree" id="archive-tree">
+        <div class="placeholder">loading archive listing...</div>
+      </div>
+    </div>
+    <script id="archive-data" type="application/json">{{.ArchiveListingJSON}}</script>
 {{else if .IsUnplayable}}
     <div class="placeholder">this format cannot be previewed in your browser</div>
 {{else}}
@@ -209,6 +252,92 @@
   <a href="{{.BaseURL}}/">AnonHost</a> - anonymous file hosting
 </div>
 
+{{if .IsArchive}}
+<script>
+(function () {
+  var dataEl = document.getElementById('archive-data');
+  if (!dataEl) return;
+  var files;
+  try { files = JSON.parse(dataEl.textContent); } catch(e) { return; }
+  if (!files || !files.length) return;
+
+  var tree = document.getElementById('archive-tree');
+
+  function buildTree(entries) {
+    var root = { children: {} };
+    entries.forEach(function (e) {
+      var parts = e.path.split('/');
+      var node = root;
+      for (var i = 0; i < parts.length; i++) {
+        var name = parts[i];
+        var isLast = i === parts.length - 1;
+        if (!node.children[name]) {
+          node.children[name] = { name: name, children: {}, size: e.size, dir: !isLast && e.dir, isFile: isLast && !e.dir };
+        }
+        if (isLast && !e.dir) {
+          node.children[name].isFile = true;
+          node.children[name].size = e.size;
+        }
+        node = node.children[name];
+      }
+    });
+    return root;
+  }
+
+  function renderTree(node, basePath) {
+    var names = Object.keys(node.children).sort();
+    if (!names.length) return document.createTextNode('(empty)');
+    var ul = document.createElement('ul');
+    names.forEach(function (name) {
+      var child = node.children[name];
+      var li = document.createElement('li');
+      if (child.dir || (!child.isFile && Object.keys(child.children).length)) {
+        var toggle = document.createElement('span');
+        toggle.className = 'tree-toggle';
+        toggle.textContent = '[+]';
+        var dirSpan = document.createElement('span');
+        dirSpan.className = 'dir-name';
+        dirSpan.textContent = name + '/';
+        li.appendChild(toggle);
+        li.appendChild(dirSpan);
+        var childDiv = document.createElement('div');
+        childDiv.className = 'dir-children';
+        childDiv.style.display = 'none';
+        childDiv.appendChild(renderTree(child, basePath + name + '/'));
+        toggle.onclick = function () {
+          var show = childDiv.style.display === 'none';
+          childDiv.style.display = show ? '' : 'none';
+          toggle.textContent = show ? '[-]' : '[+]';
+        };
+        li.appendChild(childDiv);
+      } else if (child.isFile) {
+        var a = document.createElement('a');
+        a.href = '{{.BaseURL}}/api/archive/{{.ID}}/file?path=' + encodeURIComponent(basePath + name);
+        a.textContent = name;
+        li.appendChild(a);
+        var sz = document.createElement('span');
+        sz.className = 'file-size';
+        sz.textContent = formatSize(child.size);
+        li.appendChild(sz);
+      }
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+
+  var root = buildTree(files);
+  tree.innerHTML = '';
+  tree.appendChild(renderTree(root, ''));
+
+  function formatSize(b) {
+    if (b >= 1073741824) return (b / 1073741824).toFixed(1) + ' GB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
+    return b + ' B';
+  }
+})();
+</script>
+{{end}}
 </div>
 </body>
 </html>

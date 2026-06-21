@@ -335,19 +335,23 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 	isVideo := strings.HasPrefix(rec.MimeType, "video/")
 	isAudio := strings.HasPrefix(rec.MimeType, "audio/")
 
+	playableVideo := isVideo && isPlayableVideo(rec.MimeType)
+	playableAudio := isAudio && isPlayableAudio(rec.MimeType)
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	s.views.ExecuteTemplate(w, "view", map[string]any{
-		"ID":       rec.ID,
-		"Filename": rec.Filename,
-		"Size":     rec.Size,
-		"MimeType": rec.MimeType,
-		"FileURL":  fileURL,
-		"IsImage":  isImage,
-		"IsVideo":  isVideo,
-		"IsAudio":  isAudio,
-		"Width":    rec.Width,
-		"Height":   rec.Height,
-		"BaseURL":  strings.TrimRight(s.cfg.PublicURL, "/"),
+		"ID":             rec.ID,
+		"Filename":       rec.Filename,
+		"Size":           rec.Size,
+		"MimeType":       rec.MimeType,
+		"FileURL":        fileURL,
+		"IsImage":        isImage,
+		"IsVideo":        playableVideo,
+		"IsAudio":        playableAudio,
+		"IsUnplayable":   (isVideo || isAudio) && !playableVideo && !playableAudio,
+		"Width":          rec.Width,
+		"Height":         rec.Height,
+		"BaseURL":        strings.TrimRight(s.cfg.PublicURL, "/"),
 	})
 }
 
@@ -707,4 +711,20 @@ func (rl *RateLimiter) cleanup() {
 			delete(rl.requests, k)
 		}
 	}
+}
+
+func isPlayableVideo(mimeType string) bool {
+	switch mimeType {
+	case "video/mp4", "video/webm", "video/ogg":
+		return true
+	}
+	return false
+}
+
+func isPlayableAudio(mimeType string) bool {
+	switch mimeType {
+	case "audio/mpeg", "audio/ogg", "audio/wav", "audio/wave", "audio/flac", "audio/aac", "audio/mp4":
+		return true
+	}
+	return false
 }

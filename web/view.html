@@ -182,13 +182,15 @@
 {{if .IsImage}}
     <img src="{{.FileURL}}" alt="{{.Filename}}">
 {{else if .IsVideo}}
-    <video controls autoplay>
+    <video controls>
       <source src="{{.FileURL}}" type="{{.MimeType}}">
     </video>
 {{else if .IsAudio}}
-    <audio controls autoplay>
+    <audio controls>
       <source src="{{.FileURL}}" type="{{.MimeType}}">
     </audio>
+{{else if .IsUnplayable}}
+    <div class="placeholder">this format cannot be previewed in your browser</div>
 {{else}}
     <div class="placeholder">no preview available</div>
 {{end}}

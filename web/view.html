@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/public/anonhost-fill.png" type="image/png" sizes="512x512">
 <title>{{.Filename}} - AnonHost</title>
 
 <meta property="og:title" content="{{.Filename}}">
@@ -12,6 +14,15 @@
 {{if .Width}}<meta property="og:image:width" content="{{.Width}}">{{end}}
 {{if .Height}}<meta property="og:image:height" content="{{.Height}}">{{end}}
 <meta name="twitter:card" content="summary_large_image">
+{{else if .IsVideo}}
+<meta property="og:video" content="{{.FileURL}}">
+<meta property="og:video:type" content="{{.MimeType}}">
+<meta property="og:video:url" content="{{.FileURL}}">
+<meta property="og:video:secure_url" content="{{.FileURL}}">
+{{if .Width}}<meta property="og:video:width" content="{{.Width}}">{{end}}
+{{if .Height}}<meta property="og:video:height" content="{{.Height}}">{{end}}
+<meta name="twitter:card" content="player">
+<meta name="twitter:player" content="{{.BaseURL}}/{{.ID}}">
 {{else}}
 <meta name="twitter:card" content="summary">
 {{end}}

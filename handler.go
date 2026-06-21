@@ -11,6 +11,7 @@ import (
 	"mime"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -362,7 +363,7 @@ func (s *Server) handleServe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := s.storage.Get(r.Context(), key)
+	file, size, err := s.storage.GetWithSize(r.Context(), key)
 	if err != nil {
 		s.respondError(w, http.StatusNotFound, "file not found")
 		return
@@ -370,10 +371,85 @@ func (s *Server) handleServe(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	ct := mime.TypeByExtension(path.Ext(key))
-	w.Header().Set("Content-Type", ct)
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+
+	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	io.Copy(w, file)
+
+	rangeHeader := r.Header.Get("Range")
+	if rangeHeader == "" {
+		w.Header().Set("Content-Type", ct)
+		w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
+		io.CopyN(w, file, size)
+		return
+	}
+
+	start, end, ok := parseRange(rangeHeader, size)
+	if !ok {
+		w.Header().Set("Content-Type", ct)
+		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+		fmt.Fprintf(w, "invalid range")
+		return
+	}
+
+	seeker, ok := file.(io.ReadSeeker)
+	if !ok {
+		w.Header().Set("Content-Type", ct)
+		w.WriteHeader(http.StatusOK)
+		io.CopyN(w, file, size)
+		return
+	}
+
+	if _, err := seeker.Seek(start, io.SeekStart); err != nil {
+		w.Header().Set("Content-Type", ct)
+		http.Error(w, "seek error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", ct)
+	w.Header().Set("Content-Length", strconv.FormatInt(end-start+1, 10))
+	w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, size))
+	w.WriteHeader(http.StatusPartialContent)
+	io.CopyN(w, seeker, end-start+1)
+}
+
+func parseRange(r string, size int64) (start, end int64, ok bool) {
+	if !strings.HasPrefix(r, "bytes=") {
+		return 0, 0, false
+	}
+	r = strings.TrimPrefix(r, "bytes=")
+	parts := strings.SplitN(r, "-", 2)
+	if len(parts) != 2 {
+		return 0, 0, false
+	}
+	if parts[0] == "" {
+		suffix, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil || suffix <= 0 {
+			return 0, 0, false
+		}
+		start = size - suffix
+		if start < 0 {
+			start = 0
+		}
+		end = size - 1
+		return start, end, true
+	}
+	start, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil || start < 0 || start >= size {
+		return 0, 0, false
+	}
+	if parts[1] == "" {
+		end = size - 1
+	} else {
+		end, err = strconv.ParseInt(parts[1], 10, 64)
+		if err != nil || end < start || end >= size {
+			return 0, 0, false
+		}
+	}
+	return start, end, true
 }
 
 func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {

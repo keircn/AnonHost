@@ -20,7 +20,7 @@ import (
 
 type Storage interface {
 	Save(ctx context.Context, key string, file io.Reader, size int64, contentType string) error
-	Get(ctx context.Context, key string) (io.ReadCloser, error)
+	GetWithSize(ctx context.Context, key string) (io.ReadCloser, int64, error)
 	Delete(ctx context.Context, key string) error
 	URL(key string) string
 }
@@ -49,8 +49,17 @@ func (s *LocalStorage) Save(_ context.Context, key string, file io.Reader, _ int
 	return err
 }
 
-func (s *LocalStorage) Get(_ context.Context, key string) (io.ReadCloser, error) {
-	return os.Open(filepath.Join(s.baseDir, key))
+func (s *LocalStorage) GetWithSize(_ context.Context, key string) (io.ReadCloser, int64, error) {
+	fullPath := filepath.Join(s.baseDir, key)
+	fi, err := os.Stat(fullPath)
+	if err != nil {
+		return nil, 0, err
+	}
+	f, err := os.Open(fullPath)
+	if err != nil {
+		return nil, 0, err
+	}
+	return f, fi.Size(), nil
 }
 
 func (s *LocalStorage) Delete(_ context.Context, key string) error {
@@ -102,15 +111,19 @@ func (s *R2Storage) Save(ctx context.Context, key string, file io.Reader, size i
 	return err
 }
 
-func (s *R2Storage) Get(ctx context.Context, key string) (io.ReadCloser, error) {
+func (s *R2Storage) GetWithSize(ctx context.Context, key string) (io.ReadCloser, int64, error) {
 	out, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return out.Body, nil
+	var size int64
+	if out.ContentLength != nil {
+		size = *out.ContentLength
+	}
+	return out.Body, size, nil
 }
 
 func (s *R2Storage) Delete(ctx context.Context, key string) error {

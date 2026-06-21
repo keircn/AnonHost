@@ -1,34 +1,6 @@
-# COMPOSE_BAKE=true  # enable BuildKit bake for faster builds
-# DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1  # legacy BuildKit flags
-
 name: anonhost
 
 services:
-  postgres:
-    image: postgres:18-alpine
-    container_name: anonhost-postgres
-    restart: unless-stopped
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-anonhost}
-      POSTGRES_USER: ${POSTGRES_USER:-anonhost}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-    volumes:
-      - postgres_data:/var/lib/postgresql
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-anonhost} -d ${POSTGRES_DB:-anonhost}',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - anonhost
-
   app:
     build:
       context: .
@@ -36,18 +8,15 @@ services:
     container_name: anonhost-app
     restart: unless-stopped
     init: true
-    depends_on:
-      postgres:
-        condition: service_healthy
     env_file:
       - .env
     environment:
-      NODE_ENV: production
-      NODE_OPTIONS: --dns-result-order=ipv4first
-      PORT: 1984
-      DATABASE_URL: postgresql://${POSTGRES_USER:-anonhost}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-anonhost}
+      ANONHOST_BIND: :1984
+      ANONHOST_DB_PATH: /app/data/anonhost.db
+      ANONHOST_UPLOAD_DIR: /app/uploads
     volumes:
       - uploads_data:/app/uploads
+      - data_volume:/app/data
     ports:
       - '${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984'
     healthcheck:
@@ -55,17 +24,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 15s
-    networks:
-      - anonhost
+      start_period: 5s
 
 volumes:
-  postgres_data:
-    external: true
-    name: anonhost_postgres_data
   uploads_data:
     external: true
     name: anonhost_uploads_data
-
-networks:
-  anonhost:
+  data_volume:
+    external: true
+    name: anonhost_data

@@ -1,0 +1,32 @@
+{{define "uploadForm"}}
+<form id="upload-form" enctype="multipart/form-data">
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" name="file" id="file-input">
+    <div class="dz-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 16V4m0 0L8 8m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+      </svg>
+    </div>
+    <div class="dz-text" id="dz-text">Drop a file here or click to browse</div>
+    <div class="dz-file" id="dz-file"></div>
+    <div class="dz-hint" id="dz-hint">max {{.MaxFileSizeHuman}}</div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn" id="submit-btn">Upload</button>
+  </div>
+
+  <div class="progress" id="progress">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</form>
+
+<div class="result" id="result">
+  <div class="result-url">URL: <a id="result-link" target="_blank"></a></div>
+  <div class="result-meta" id="result-meta"></div>
+  <div class="result-row">
+    <input type="text" id="result-url-input" readonly onclick="this.select()">
+    <button class="btn-small" id="copy-btn">Copy</button>
+  </div>
+</div>
+{{end}}

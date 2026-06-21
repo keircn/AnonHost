@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload - AnonHost</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: Verdana, sans-serif;
+    font-size: 13px;
+    background: #fff;
+    color: #000;
+    line-height: 1.4;
+  }
+  a { color: #00e; }
+  a:visited { color: #551a8b; }
+  a:hover { color: #e00; }
+
+  .wrapper {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background: #000033;
+    color: #fff;
+    padding: 10px 16px;
+    border-bottom: 2px solid #c0c0c0;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 16px;
+    display: inline;
+  }
+  .header h1 a { color: #fff; text-decoration: none; }
+  .header .jp { font-size: 10px; color: #ff99cc; }
+  .header .sub {
+    font-size: 10px;
+    color: #999;
+    margin-left: 8px;
+  }
+
+  .nav {
+    background: #e8e8e8;
+    padding: 4px 16px;
+    border-bottom: 1px solid #c0c0c0;
+    font-size: 12px;
+  }
+  .nav a {
+    margin-right: 14px;
+    color: #00e;
+    text-decoration: none;
+  }
+  .nav a:hover { text-decoration: underline; }
+
+  .content {
+    flex: 1;
+    max-width: 600px;
+    width: 100%;
+    margin: 16px auto;
+    padding: 0 16px;
+  }
+
+  .section {
+    border: 1px solid #c0c0c0;
+    margin-bottom: 10px;
+  }
+  .section h3 {
+    margin: 0;
+    padding: 5px 10px;
+    font-size: 11px;
+    background: #e8e8e8;
+    border-bottom: 1px solid #c0c0c0;
+  }
+  .section-inner { padding: 10px; }
+
+  pre {
+    background: #f4f4f4;
+    border: 1px solid #c0c0c0;
+    padding: 8px;
+    font-size: 11px;
+    font-family: "Courier New", monospace;
+    overflow-x: auto;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  code { font-family: "Courier New", monospace; }
+
+  .drop-zone {
+    border: 2px dashed #c0c0c0;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .drop-zone:hover { border-color: #36c; background: #f0f6ff; }
+  .drop-zone.dragover { border-color: #36c; background: #e8f0fe; }
+  .drop-zone.has-file { border-style: solid; border-color: #36c; }
+  .drop-zone .dz-icon { color: #999; margin-bottom: 6px; }
+  .drop-zone.dragover .dz-icon,
+  .drop-zone:hover .dz-icon { color: #36c; }
+  .drop-zone input {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .dz-text { font-size: 12px; color: #888; }
+  .dz-file { font-size: 13px; font-weight: 700; display: none; margin-bottom: 2px; }
+  .dz-hint { font-size: 11px; color: #999; margin-top: 4px; }
+  .has-file .dz-text { display: none; }
+  .has-file .dz-file { display: block; }
+  .has-file .dz-icon { display: none; }
+
+  .form-actions { margin-bottom: 10px; }
+
+  .btn {
+    padding: 6px 24px;
+    font-size: 13px;
+    background: #eee;
+    border: 1px solid #999;
+    cursor: pointer;
+  }
+  .btn:hover { background: #ddd; }
+
+  .btn-small {
+    padding: 4px 12px;
+    font-size: 12px;
+    background: #eee;
+    border: 1px solid #999;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-small:hover { background: #ddd; }
+
+  .progress {
+    border: 1px solid #c0c0c0;
+    height: 14px;
+    margin-bottom: 10px;
+    background: #fff;
+    display: none;
+  }
+  .progress.active { display: block; }
+  .progress-bar { height: 100%; background: #36c; width: 0; }
+
+  .result {
+    border: 1px solid #c0c0c0;
+    background: #f4f4f4;
+    padding: 10px;
+    display: none;
+  }
+  .result.error { border-color: #c00; background: #fee; }
+  .result.show { display: block; }
+
+  .result-url { font-size: 12px; margin-bottom: 6px; }
+  .result-url a { font-weight: 700; word-break: break-all; }
+  .result-meta { font-size: 11px; color: #666; margin-bottom: 6px; }
+
+  .result-row {
+    display: flex;
+    gap: 6px;
+  }
+  .result-row input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #c0c0c0;
+    padding: 4px 6px;
+    font-size: 12px;
+    font-family: monospace;
+  }
+
+  .footer {
+    border-top: 1px solid #c0c0c0;
+    padding: 14px;
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+  }
+  .footer a { color: #666; }
+
+  @media (max-width: 480px) {
+    body { font-size: 14px; }
+    .content { padding: 0 10px; margin: 10px auto; }
+    .header { padding: 8px 10px; }
+    .header .sub { display: block; margin-left: 0; margin-top: 2px; }
+    .nav { padding: 4px 10px; font-size: 13px; }
+    .nav a { margin-right: 10px; }
+    .drop-zone { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<div class="header">
+  <h1><a href="/">AnonHost</a></h1>
+  <span class="jp">&#12450;&#12494;&#12531;&#12507;&#12473;&#12488;</span>
+  <span class="sub">anonymous file hosting</span>
+</div>
+
+<div class="nav">
+  <a href="/">Home</a>
+  <a href="/upload">Upload</a>
+  <a href="/install">CLI</a>
+</div>
+
+<div class="content">
+
+<div class="section">
+  <h3>upload a file</h3>
+  <div class="section-inner">
+    {{template "uploadForm" .}}
+  </div>
+</div>
+
+<div class="section">
+  <h3>command line</h3>
+  <div class="section-inner">
+    <pre>curl -F "file=@image.png" {{.BaseURL}}/api/upload</pre>
+  </div>
+</div>
+
+<div class="section">
+  <h3>CLI tool</h3>
+  <div class="section-inner">
+    <pre>curl {{.BaseURL}}/install -o anonhost.sh
+chmod +x anonhost.sh
+./anonhost.sh upload image.png</pre>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <a href="/">AnonHost</a> - anonymous file hosting
+</div>
+
+</div>
+
+<script>
+(function () {
+  var zone = document.getElementById('drop-zone');
+  var input = document.getElementById('file-input');
+  var form = document.getElementById('upload-form');
+  var btn = document.getElementById('submit-btn');
+  var prog = document.getElementById('progress');
+  var bar = document.getElementById('progress-bar');
+  var result = document.getElementById('result');
+  var rlink = document.getElementById('result-link');
+  var rmeta = document.getElementById('result-meta');
+  var rinput = document.getElementById('result-url-input');
+  var copyBtn = document.getElementById('copy-btn');
+  var dzFile = document.getElementById('dz-file');
+  var dzHint = document.getElementById('dz-hint');
+
+  function updateFile() {
+    if (input.files.length) {
+      zone.classList.add('has-file');
+      dzFile.textContent = input.files[0].name;
+      dzHint.textContent = formatSize(input.files[0].size);
+    } else {
+      zone.classList.remove('has-file');
+    }
+  }
+
+  zone.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+
+  zone.addEventListener('dragleave', function () {
+    zone.classList.remove('dragover');
+  });
+
+  zone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    input.files = e.dataTransfer.files;
+    updateFile();
+  });
+
+  input.addEventListener('change', updateFile);
+
+  copyBtn.addEventListener('click', function () {
+    rinput.select();
+    navigator.clipboard.writeText(rinput.value).then(function () {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+  });
+
+  function showResult(data) {
+    prog.className = 'progress';
+    btn.disabled = false;
+    btn.textContent = 'Upload';
+    result.className = 'result show';
+    rlink.href = data.url;
+    rlink.textContent = data.url;
+    rinput.value = data.url;
+    rmeta.textContent = data.filename + ' (' + formatSize(data.size) + ')  |  ID: ' + data.id + '  |  Delete token: ' + data.deletion_token;
+    result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function showError(msg) {
+    prog.className = 'progress';
+    btn.disabled = false;
+    btn.textContent = 'Upload';
+    result.className = 'result error show';
+    rlink.textContent = msg;
+    rmeta.textContent = '';
+    rinput.value = '';
+    result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function uploadDirect(file) {
+    var init = new XMLHttpRequest();
+    init.open('POST', '/api/upload/direct');
+    init.setRequestHeader('Content-Type', 'application/json');
+    init.onload = function () {
+      if (init.status !== 200) {
+        uploadFallback(file);
+        return;
+      }
+      var resp = JSON.parse(init.responseText);
+      if (!resp.direct) {
+        uploadFallback(file);
+        return;
+      }
+
+      bar.style.width = '0%';
+      var put = new XMLHttpRequest();
+      put.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+          bar.style.width = (e.loaded / e.total * 100) + '%';
+        }
+      };
+      put.onload = function () {
+        if (put.status >= 200 && put.status < 300) {
+          var fin = new XMLHttpRequest();
+          fin.open('POST', '/api/upload/direct/finalize');
+          fin.setRequestHeader('Content-Type', 'application/json');
+          fin.onload = function () {
+            if (fin.status === 200) {
+              showResult(JSON.parse(fin.responseText));
+            } else {
+              showError('Finalize failed');
+            }
+          };
+          fin.onerror = function () { showError('Finalize network error'); };
+          fin.send(JSON.stringify({
+            id: resp.id,
+            object_key: resp.object_key,
+            filename: file.name,
+            size: file.size,
+            mime_type: file.type || 'application/octet-stream'
+          }));
+        } else {
+          uploadFallback(file);
+        }
+      };
+      put.onerror = function () { uploadFallback(file); };
+      put.open('PUT', resp.upload_url);
+      put.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      put.send(file);
+    };
+    init.onerror = function () { uploadFallback(file); };
+    init.send(JSON.stringify({
+      filename: file.name,
+      size: file.size,
+      mime_type: file.type || 'application/octet-stream'
+    }));
+  }
+
+  function uploadFallback(file) {
+    prog.className = 'progress active';
+    bar.style.width = '0%';
+    var fd = new FormData();
+    fd.append('file', file);
+    var xhr = new XMLHttpRequest();
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) {
+        bar.style.width = (e.loaded / e.total * 100) + '%';
+      }
+    };
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        showResult(JSON.parse(xhr.responseText));
+      } else {
+        try {
+          var err = JSON.parse(xhr.responseText);
+          showError(err.error || 'Upload failed');
+        } catch (e) {
+          showError('Upload failed');
+        }
+      }
+    };
+    xhr.onerror = function () { showError('Network error'); };
+    xhr.open('POST', '/api/upload');
+    xhr.send(fd);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!input.files.length) return;
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+    prog.className = 'progress active';
+    result.className = 'result';
+    bar.style.width = '0%';
+    uploadDirect(input.files[0]);
+  });
+
+  function formatSize(b) {
+    if (b >= 1073741824) return (b / 1073741824).toFixed(1) + ' GB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
+    return b + ' B';
+  }
+})();
+</script>
+</body>
+</html>

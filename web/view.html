@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Filename}} - AnonHost</title>
+
+<meta property="og:title" content="{{.Filename}}">
+<meta property="og:description" content="{{.Filename}} ({{formatSize .Size}})">
+{{if .IsImage}}
+<meta property="og:image" content="{{.FileURL}}">
+{{if .Width}}<meta property="og:image:width" content="{{.Width}}">{{end}}
+{{if .Height}}<meta property="og:image:height" content="{{.Height}}">{{end}}
+<meta name="twitter:card" content="summary_large_image">
+{{else}}
+<meta name="twitter:card" content="summary">
+{{end}}
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{.BaseURL}}/{{.ID}}">
+<meta property="og:site_name" content="AnonHost">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: Verdana, sans-serif;
+    font-size: 13px;
+    background: #fff;
+    color: #000;
+    line-height: 1.4;
+  }
+  a { color: #00e; }
+  a:visited { color: #551a8b; }
+  a:hover { color: #e00; }
+
+  .wrapper {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background: #000033;
+    color: #fff;
+    padding: 10px 16px;
+    border-bottom: 2px solid #c0c0c0;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 16px;
+    display: inline;
+  }
+  .header h1 a { color: #fff; text-decoration: none; }
+  .header .jp { font-size: 10px; color: #ff99cc; }
+  .header .sub {
+    font-size: 10px;
+    color: #999;
+    margin-left: 8px;
+  }
+
+  .nav {
+    background: #e8e8e8;
+    padding: 4px 16px;
+    border-bottom: 1px solid #c0c0c0;
+    font-size: 12px;
+  }
+  .nav a {
+    margin-right: 14px;
+    color: #00e;
+    text-decoration: none;
+  }
+  .nav a:hover { text-decoration: underline; }
+
+  .content {
+    flex: 1;
+    max-width: 640px;
+    width: 100%;
+    margin: 16px auto;
+    padding: 0 16px;
+  }
+
+  .section {
+    border: 1px solid #c0c0c0;
+  }
+  .section-header {
+    background: #e8e8e8;
+    padding: 8px 12px;
+    border-bottom: 1px solid #c0c0c0;
+  }
+  .section-header h2 { margin: 0; font-size: 14px; }
+  .section-header .meta {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+  }
+
+  .media {
+    text-align: center;
+    background: #000;
+    border-bottom: 1px solid #c0c0c0;
+  }
+  .media img { max-width: 100%; display: block; margin: 0 auto; }
+  .media video { max-width: 100%; display: block; margin: 0 auto; }
+  .media audio { width: 90%; margin: 24px auto; display: block; }
+  .media .placeholder {
+    padding: 48px 24px;
+    color: #999;
+    font-size: 13px;
+  }
+
+  .actions {
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .actions a {
+    padding: 6px 24px;
+    font-size: 13px;
+    background: #eee;
+    border: 1px solid #999;
+    color: #000;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .actions a:hover { background: #ddd; }
+
+  .footer {
+    border-top: 1px solid #c0c0c0;
+    padding: 14px;
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+  }
+  .footer a { color: #666; }
+
+  @media (max-width: 480px) {
+    body { font-size: 14px; }
+    .content { padding: 0 10px; margin: 10px auto; }
+    .header { padding: 8px 10px; }
+    .header .sub { display: block; margin-left: 0; margin-top: 2px; }
+    .nav { padding: 4px 10px; font-size: 13px; }
+    .nav a { margin-right: 10px; }
+    .section-header { padding: 6px 10px; }
+    .section-header h2 { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<div class="header">
+  <h1><a href="{{.BaseURL}}/">AnonHost</a></h1>
+  <span class="jp">&#12450;&#12494;&#12531;&#12507;&#12473;&#12488;</span>
+  <span class="sub">anonymous file hosting</span>
+</div>
+
+<div class="nav">
+  <a href="{{.BaseURL}}/">Home</a>
+  <a href="{{.BaseURL}}/upload">Upload</a>
+  <a href="{{.BaseURL}}/install">CLI</a>
+</div>
+
+<div class="content">
+
+<div class="section">
+  <div class="section-header">
+    <h2>{{.Filename}}</h2>
+    <div class="meta">{{formatSize .Size}} - {{.MimeType}}</div>
+  </div>
+
+  <div class="media">
+{{if .IsImage}}
+    <img src="{{.FileURL}}" alt="{{.Filename}}">
+{{else if .IsVideo}}
+    <video controls autoplay>
+      <source src="{{.FileURL}}" type="{{.MimeType}}">
+    </video>
+{{else if .IsAudio}}
+    <audio controls autoplay>
+      <source src="{{.FileURL}}" type="{{.MimeType}}">
+    </audio>
+{{else}}
+    <div class="placeholder">no preview available</div>
+{{end}}
+  </div>
+
+{{if not .IsImage}}
+  <div class="actions">
+    <a href="{{.FileURL}}" download="{{.Filename}}">Download</a>
+  </div>
+{{end}}
+</div>
+
+</div>
+
+<div class="footer">
+  <a href="{{.BaseURL}}/">AnonHost</a> - anonymous file hosting
+</div>
+
+</div>
+</body>
+</html>

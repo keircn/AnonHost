@@ -458,7 +458,7 @@ func (s *Server) handleArchiveFile(w http.ResponseWriter, r *http.Request) {
 		archivePath = filepath.Join(ls.baseDir, rec.StoragePath)
 	} else if _, ok := s.storage.(*R2Storage); ok {
 		// download to temp file
-		tmp, err := os.CreateTemp("", "anonhost-archive-*")
+		tmp, err := os.CreateTemp("", "anonhost-archive-*"+path.Ext(rec.StoragePath))
 		if err != nil {
 			s.respondError(w, http.StatusInternalServerError, "temp file error")
 			return

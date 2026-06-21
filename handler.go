@@ -710,7 +710,7 @@ upload_file() {
 
     echo "Uploading $(basename "$file")..."
 
-    local resp=$(curl -sf -w "\n%{http_code}" -X POST "$API_URL/api/upload" \
+    local resp=$(curl -s -w "\n%{http_code}" -X POST "$API_URL/api/upload" \
         -F "file=@$file")
     local code=$(tail -n1 <<< "$resp")
     local body=$(sed '$ d' <<< "$resp")

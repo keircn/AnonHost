@@ -103,10 +103,11 @@ func NewR2Storage(cfg *Config) (*R2Storage, error) {
 
 func (s *R2Storage) Save(ctx context.Context, key string, file io.Reader, size int64, contentType string) error {
 	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(s.bucket),
-		Key:         aws.String(key),
-		Body:        file,
-		ContentType: aws.String(contentType),
+		Bucket:        aws.String(s.bucket),
+		Key:           aws.String(key),
+		Body:          file,
+		ContentLength: aws.Int64(size),
+		ContentType:   aws.String(contentType),
 	})
 	return err
 }

@@ -300,8 +300,19 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 
 	if err := s.db.InsertFile(rec); err != nil {
 		log.Printf("db insert error: %v", err)
+		r2.Delete(r.Context(), req.ObjectKey)
 		s.respondError(w, http.StatusInternalServerError, "database error")
 		return
+	}
+
+	if req.Size <= 500<<20 && isArchive(req.Filename) {
+		entries, fmtName, err := s.readArchiveListing(r.Context(), req.ObjectKey)
+		if err == nil {
+			rec.IsArchive = true
+			rec.ArchiveFormat = fmtName
+			rec.ArchiveListing = archiveListingJSON(entries)
+			s.db.UpdateArchive(req.ID, true, fmtName, rec.ArchiveListing)
+		}
 	}
 
 	fileURL := fmt.Sprintf("%s/%s", strings.TrimRight(s.cfg.PublicURL, "/"), req.ID)

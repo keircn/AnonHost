@@ -166,6 +166,14 @@ func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 	return f, nil
 }
 
+func (d *DB) UpdateArchive(id string, isArchive bool, format, listing string) error {
+	_, err := d.db.Exec(
+		`UPDATE files SET is_archive = ?, archive_format = ?, archive_listing = ? WHERE id = ?`,
+		isArchive, format, listing, id,
+	)
+	return err
+}
+
 func (d *DB) DeleteFile(id string) error {
 	_, err := d.db.Exec(`DELETE FROM files WHERE id = ?`, id)
 	return err

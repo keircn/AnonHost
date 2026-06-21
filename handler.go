@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
@@ -167,8 +168,7 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if header.Size <= 500<<20 && isArchive(header.Filename) {
-		localPath := filepath.Join(s.cfg.UploadDir, storagePath)
-		entries, fmtName, err := listArchive(localPath)
+		entries, fmtName, err := s.readArchiveListing(r.Context(), storagePath)
 		if err == nil {
 			rec.IsArchive = true
 			rec.ArchiveFormat = fmtName
@@ -771,6 +771,28 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	s.respondJSON(w, http.StatusOK, map[string]any{
 		"deleted": count,
 	})
+}
+
+func (s *Server) readArchiveListing(ctx context.Context, storagePath string) ([]FileEntry, string, error) {
+	tmp, err := os.CreateTemp("", "anonhost-archive-*")
+	if err != nil {
+		return nil, "", err
+	}
+	defer os.Remove(tmp.Name())
+	defer tmp.Close()
+
+	rc, _, err := s.storage.GetWithSize(ctx, storagePath)
+	if err != nil {
+		return nil, "", err
+	}
+	defer rc.Close()
+
+	if _, err := io.Copy(tmp, rc); err != nil {
+		return nil, "", err
+	}
+	tmp.Close()
+
+	return listArchive(tmp.Name())
 }
 
 func formatSize(b int64) string {

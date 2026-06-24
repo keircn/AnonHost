@@ -49,7 +49,7 @@ func NewServer(cfg *Config, db *DB, storage Storage) (*Server, error) {
 
 	views := template.New("").Funcs(funcMap)
 
-	for _, name := range []string{"home", "upload", "view", "upload-form"} {
+	for _, name := range []string{"home", "upload", "view", "roadmap", "upload-form"} {
 		content, err := webFS.ReadFile("web/" + name + ".html")
 		if err != nil {
 			return nil, fmt.Errorf("reading web/%s.html: %w", name, err)
@@ -674,6 +674,11 @@ func (s *Server) handleUploadPage(w http.ResponseWriter, r *http.Request) {
 		"TotalSize":        totalSize,
 		"TotalSizeHuman":   formatSize(totalSize),
 	})
+}
+
+func (s *Server) handleRoadmapPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	s.views.ExecuteTemplate(w, "roadmap", nil)
 }
 
 func (s *Server) handleInstallScript(w http.ResponseWriter, r *http.Request) {

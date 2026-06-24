@@ -109,6 +109,129 @@
     margin: 2px 0 0;
   }
 
+  .snake {
+    position: relative;
+    padding: 4px 0;
+  }
+  .snake::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #d0d0d0;
+    transform: translateX(-50%);
+  }
+  .snake-item {
+    position: relative;
+    width: 50%;
+    padding: 18px 18px 18px;
+  }
+  .snake-item:nth-child(odd) {
+    left: 0;
+    text-align: right;
+    padding-right: 22px;
+  }
+  .snake-item:nth-child(even) {
+    left: 50%;
+    text-align: left;
+    padding-left: 22px;
+  }
+  .snake-item::before {
+    content: '';
+    position: absolute;
+    top: 21px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #bbb;
+    background: #fff;
+    z-index: 1;
+  }
+  .snake-item:nth-child(odd)::before { right: -5px; }
+  .snake-item:nth-child(even)::before { left: -5px; }
+  .snake-item::after {
+    content: '';
+    position: absolute;
+    top: 25px;
+    height: 2px;
+    background: #d0d0d0;
+  }
+  .snake-item:nth-child(odd)::after { right: 5px; width: 12px; }
+  .snake-item:nth-child(even)::after { left: 5px; width: 12px; }
+  .snake-item.active::before {
+    background: #36c;
+    border-color: #36c;
+    box-shadow: 0 0 0 3px rgba(51,102,204,0.15);
+  }
+  .snake-item.dim {
+    opacity: 0.55;
+  }
+  .snake-item.dim h4 {
+    font-style: italic;
+  }
+  .snake-item.dim::before {
+    width: 8px;
+    height: 8px;
+    top: 22px;
+    border-style: dashed;
+    border-color: #ccc;
+    background: transparent;
+  }
+  .snake-item.dim:nth-child(odd)::before { right: -4px; }
+  .snake-item.dim:nth-child(even)::before { left: -4px; }
+  .snake-item h4 {
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+  .snake-item p {
+    font-size: 11px;
+    color: #555;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .rd-intro {
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 2px;
+  }
+
+  .key {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    padding: 10px 0 8px;
+  }
+  .key-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .key-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid;
+    flex-shrink: 0;
+  }
+  .key-dot.active { background: #36c; border-color: #36c; }
+  .key-dot.planned { background: #fff; border-color: #bbb; }
+  .key-dot.dim {
+    width: 7px;
+    height: 7px;
+    border-style: dashed;
+    border-color: #ccc;
+    background: transparent;
+    opacity: 0.5;
+  }
+
   .footer {
     border-top: 1px solid #c0c0c0;
     padding: 14px;
@@ -125,6 +248,10 @@
     .header .sub { display: block; margin-left: 0; margin-top: 2px; }
     .nav { padding: 4px 10px; font-size: 13px; }
     .nav a { margin-right: 10px; }
+    .snake-item { padding: 14px 12px 14px; }
+    .snake-item:nth-child(odd) { padding-right: 16px; }
+    .snake-item:nth-child(even) { padding-left: 16px; }
+    .snake-item::after { display: none; }
   }
 </style>
 </head>
@@ -148,82 +275,69 @@
 <div class="content">
 
 <div class="section">
-  <h3>roadmap</h3>
+  <h3>about</h3>
   <div class="section-inner">
-    <p style="margin-bottom:8px">Here's what's planned for AnonHost. Nothing on this list is guaranteed. Priorities may shift, but this is the direction we're heading. Feel free to <a href="mailto:root@roxylab.uk">email me</a> if you have any suggestions.</p>
+    <p>AnonHost started out as a joke project in ~2023 to make fun of the state of image hosting in the modern day. It was an obscenely bloated NextJS app with a PostgreSQL database and thousands more lines of code than it needed. I started taking it seriously again in late 2025 and recently rewrote it to be one tiny Go binary. This project wouldn&apos;t be possible without the contributions of AltRetro, our unpaid QA guy, as well as the countless open source projects we are built on top of. Here&apos;s to many more years of anonymous file hosting.</p>
+    <p style="margin-top:6px">You can host your own instance if you want, the entire thing is <a href="https://github.com/keircn/AnonHost">open source</a> and fits in a single Docker container and you are always more than welcome to email me at <a href="mailto:root@roxylab.uk">root@roxylab.uk</a> with any questions you may have or just to say hello. You can also visit my <a href="https://roxylab.uk">personal website</a> if you want to know more about me. Happy hosting!</p>
+    <p style="margin-top:6px">{{.TotalUploads}} files uploaded so far, totalling ({{.TotalSizeHuman}}).</p>
   </div>
 </div>
 
 <div class="section">
-  <h3>up next</h3>
-  <div class="section-inner" style="padding:0 10px">
+  <h3>roadmap</h3>
+  <div class="section-inner" style="padding:10px 14px">
+    <p class="rd-intro">Here's where we're heading. Nothing is guaranteed, priorities may shift. Feel free to <a href="mailto:root@roxylab.uk">email me</a> with suggestions.</p>
 
-    <div class="item">
-      <h4>Client-Side Encryption </h4>
-      <p>Browser-side encrypt-before-upload so the server stores only ciphertext. The decryption key lives in the URL fragment (<code>#key</code>) and never touches the network. The operator genuinely cannot read your files. We're proudly open source if you wish to audit us!</p>
+    <div class="key">
+      <span class="key-item"><span class="key-dot active"></span>up next</span>
+      <span class="key-item"><span class="key-dot planned"></span>planned</span>
+      <span class="key-item"><span class="key-dot dim"></span>considering</span>
     </div>
 
-    <!-- <div class="item"> -->
-    <!--   <h4>Tor Onion Service </h4> -->
-    <!--   <p>Host a <code>.onion</code> address so AnonHost is accessible entirely within the Tor network. No ISP can see you're connecting to anonhost.cc, and no exit node metadata leaks.</p> -->
-    <!-- </div> -->
+    <div class="snake">
+      <div class="snake-item active">
+        <h4>Client-Side Encryption</h4>
+        <p>Browser-side encrypt-before-upload so the server stores only ciphertext. The decryption key lives in the URL fragment (<code>#key</code>) and never touches the network. The operator genuinely cannot read your files. We're proudly open source if you wish to audit us!</p>
+      </div>
 
-    <div class="item">
-      <h4>Burn-After-Reading </h4>
-      <p>Files that self-destruct after the first view. Useful for ephemeral sharing where you don't want a permanent copy lingering on the server. Slightly more secure than setting an expiration date.</p>
+      <div class="snake-item active">
+        <h4>Burn-After-Reading</h4>
+        <p>Files that self-destruct after the first view. Useful for ephemeral sharing where you don't want a permanent copy lingering on the server. Slightly more secure than setting an expiration date.</p>
+      </div>
+
+      <div class="snake-item">
+        <h4>Proof-of-Work Rate Limiting</h4>
+        <p>Replace the basic IP rate limiter with a hashcash-style proof-of-work challenge. No IP addresses kept anywhere in the system, even ephemerally.</p>
+      </div>
+
+      <div class="snake-item">
+        <h4>Metadata Scrubbing</h4>
+        <p>Strip EXIF, GPS coordinates, author info, and other metadata from images and documents before storage. What you share is what stays.</p>
+      </div>
+
+      <div class="snake-item dim">
+        <h4>Content Integrity Hashes</h4>
+        <p>Serve SHA-256 hashes alongside files so recipients can verify nothing was tampered with server-side.</p>
+      </div>
+
+      <div class="snake-item dim">
+        <h4>File Size Obfuscation</h4>
+        <p>Round or hide exact file sizes from the API to reduce metadata leakage. Still thinking about how necessary this is.</p>
+      </div>
+
+      <div class="snake-item dim">
+        <h4>View-Based Expiry</h4>
+        <p>Delete files after N views or the first download, giving more granular control over file lifetimes.</p>
+      </div>
+
+      <div class="snake-item dim">
+        <h4>Database Encryption at Rest</h4>
+        <p>Encrypt the SQLite database so filenames, deletion tokens, and archive metadata aren't readable if the volume is compromised.</p>
+      </div>
     </div>
-
   </div>
 </div>
 
-<div class="section">
-  <h3>planned</h3>
-  <div class="section-inner" style="padding:0 10px">
-
-    <!-- <div class="item"> -->
-    <!--   <h4>No-JS Mode </h4> -->
-    <!--   <p>A fully functional upload experience without JavaScript for Tor users with NoScript, or anyone who prefers a pure HTML workflow.</p> -->
-    <!-- </div> -->
-
-    <div class="item">
-      <h4>Proof-of-Work Rate Limiting </h4>
-      <p>Replace the basic IP rate limiter with a hashcash-style proof-of-work challenge. No IP addresses kept anywhere in the system, even ephemerally.</p>
-    </div>
-
-    <div class="item">
-      <h4>Metadata Scrubbing </h4>
-      <p>Strip EXIF, GPS coordinates, author info, and other metadata from images and documents before storage. What you share is what stays.</p>
-    </div>
-
-  </div>
-</div>
-
-<div class="section">
-  <h3>considering</h3>
-  <div class="section-inner" style="padding:0 10px">
-
-    <div class="item">
-      <h4>Content Integrity Hashes </h4>
-      <p>Serve SHA-256 hashes alongside files so recipients can verify nothing was tampered with server-side.</p>
-    </div>
-
-    <div class="item">
-      <h4>File Size Obfuscation </h4>
-      <p>Round or hide exact file sizes from the API to reduce metadata leakage. Still thinking about how necessary this is.</p>
-    </div>
-
-    <div class="item">
-      <h4>View-Based Expiry </h4>
-      <p>Delete files after N views or the first download, giving more granular control over file lifetimes.</p>
-    </div>
-
-    <div class="item">
-      <h4>Database Encryption at Rest </h4>
-      <p>Encrypt the SQLite database so filenames, deletion tokens, and archive metadata aren't readable if the volume is compromised.</p>
-    </div>
-
-  </div>
-</div>
 </div>
 
 <div class="footer">

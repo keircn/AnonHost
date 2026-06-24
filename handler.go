@@ -678,7 +678,12 @@ func (s *Server) handleUploadPage(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleRoadmapPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	s.views.ExecuteTemplate(w, "roadmap", nil)
+	count, _ := s.db.Count()
+	totalSize, _ := s.db.TotalSize()
+	s.views.ExecuteTemplate(w, "roadmap", map[string]any{
+		"TotalUploads":   count,
+		"TotalSizeHuman": formatSize(totalSize),
+	})
 }
 
 func (s *Server) handleInstallScript(w http.ResponseWriter, r *http.Request) {

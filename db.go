@@ -166,6 +166,46 @@ func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 	return f, nil
 }
 
+func (d *DB) ListFiles() ([]FileRecord, error) {
+	rows, err := d.db.Query(
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing
+		 FROM files ORDER BY created_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var files []FileRecord
+	for rows.Next() {
+		var f FileRecord
+		var width, height sql.NullInt64
+		var expiresAt sql.NullString
+
+		err := rows.Scan(&f.ID, &f.Filename, &f.Size, &f.MimeType,
+			&f.StorageBackend, &f.StoragePath, &width, &height,
+			&f.DeletionToken, &f.CreatedAt, &expiresAt,
+			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing)
+		if err != nil {
+			return nil, err
+		}
+
+		if width.Valid {
+			v := int(width.Int64)
+			f.Width = &v
+		}
+		if height.Valid {
+			v := int(height.Int64)
+			f.Height = &v
+		}
+		if expiresAt.Valid {
+			f.ExpiresAt = &expiresAt.String
+		}
+		files = append(files, f)
+	}
+	return files, rows.Err()
+}
+
 func (d *DB) UpdateArchive(id string, isArchive bool, format, listing string) error {
 	_, err := d.db.Exec(
 		`UPDATE files SET is_archive = ?, archive_format = ?, archive_listing = ? WHERE id = ?`,

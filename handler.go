@@ -813,7 +813,27 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) requireAdmin(w http.ResponseWriter, r *http.Request) bool {
+	if s.cfg.AdminKey == "" {
+		return true
+	}
+	key := r.Header.Get("Authorization")
+	if key == "" {
+		key = r.URL.Query().Get("key")
+	} else if len(key) > 7 && key[:7] == "Bearer " {
+		key = key[7:]
+	}
+	if subtle.ConstantTimeCompare([]byte(key), []byte(s.cfg.AdminKey)) != 1 {
+		s.respondError(w, http.StatusUnauthorized, "unauthorized")
+		return false
+	}
+	return true
+}
+
 func (s *Server) handleBackfillArchive(w http.ResponseWriter, r *http.Request) {
+	if !s.requireAdmin(w, r) {
+		return
+	}
 	id := r.PathValue("id")
 	rec, err := s.db.GetFile(id)
 	if err != nil {
@@ -844,6 +864,53 @@ func (s *Server) handleBackfillArchive(w http.ResponseWriter, r *http.Request) {
 	s.respondJSON(w, http.StatusOK, map[string]any{
 		"format":  fmtName,
 		"entries": len(entries),
+	})
+}
+
+var archiveRescanLimit int64 = 500 << 20
+
+func (s *Server) handleRescanArchives(w http.ResponseWriter, r *http.Request) {
+	if !s.requireAdmin(w, r) {
+		return
+	}
+	files, err := s.db.ListFiles()
+	if err != nil {
+		log.Printf("archive rescan: listing files: %v", err)
+		s.respondError(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	type result struct {
+		ID      string `json:"id"`
+		Success bool   `json:"success"`
+		Format  string `json:"format,omitempty"`
+		Error   string `json:"error,omitempty"`
+	}
+
+	var results []result
+	for _, rec := range files {
+		if rec.Size > archiveRescanLimit {
+			results = append(results, result{ID: rec.ID, Error: "file too large"})
+			continue
+		}
+
+		entries, fmtName, err := s.readArchiveListing(r.Context(), rec.StoragePath)
+		if err != nil {
+			results = append(results, result{ID: rec.ID, Error: err.Error()})
+			continue
+		}
+
+		if err := s.db.UpdateArchive(rec.ID, true, fmtName, archiveListingJSON(entries)); err != nil {
+			results = append(results, result{ID: rec.ID, Error: err.Error()})
+			continue
+		}
+
+		results = append(results, result{ID: rec.ID, Success: true, Format: fmtName})
+	}
+
+	s.respondJSON(w, http.StatusOK, map[string]any{
+		"total":   len(files),
+		"results": results,
 	})
 }
 

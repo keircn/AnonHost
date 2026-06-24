@@ -19,6 +19,8 @@ type Config struct {
 	R2PublicURL       string
 
 	RateLimit int
+
+	AdminKey string
 }
 
 func LoadConfig() *Config {
@@ -34,6 +36,7 @@ func LoadConfig() *Config {
 		R2BucketName:      os.Getenv("R2_BUCKET_NAME"),
 		R2PublicURL:       os.Getenv("R2_PUBLIC_URL"),
 		RateLimit:  getEnvInt("ANONHOST_RATE_LIMIT", 5),
+		AdminKey:   os.Getenv("ANONHOST_ADMIN_KEY"),
 	}
 	return cfg
 }

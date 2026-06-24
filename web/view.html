@@ -119,37 +119,157 @@
     font-size: 13px;
   }
 
-  .archive-browser { font-size: 12px; border-bottom: 1px solid #c0c0c0; }
+  .archive-browser {
+    font-size: 13px;
+    border-bottom: 1px solid #c0c0c0;
+    text-align: left;
+    background: #fff;
+  }
   .archive-toolbar {
     background: #e8e8e8;
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-bottom: 1px solid #c0c0c0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+  }
+  .archive-toolbar .info {
+    font-size: 12px;
+    color: #333;
+  }
+  .archive-toolbar .info strong {
+    font-size: 13px;
   }
   .archive-toolbar .dl-all {
-    padding: 2px 10px;
-    font-size: 11px;
-    background: #eee;
+    padding: 4px 14px;
+    font-size: 12px;
+    background: #fff;
     border: 1px solid #999;
+    border-radius: 3px;
     color: #000;
     text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s;
   }
-  .archive-toolbar .dl-all:hover { background: #ddd; }
-  .archive-tree { padding: 6px 0; max-height: 360px; overflow-y: auto; text-align: left; }
-  .archive-tree ul { list-style: none; padding: 0; margin: 0; }
-  .archive-tree li { padding: 1px 0; }
-  .archive-tree .tree-toggle {
-    cursor: pointer; user-select: none; color: #666; font-family: monospace;
-    margin-right: 4px;
+  .archive-toolbar .dl-all:hover { background: #f0f0f0; }
+
+  .archive-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid #c0c0c0;
   }
-  .archive-tree .tree-toggle:hover { color: #000; }
-  .archive-tree a { text-decoration: none; color: #00e; }
-  .archive-tree a:hover { text-decoration: underline; }
-  .archive-tree .file-size { color: #999; font-size: 10px; margin-left: 6px; }
-  .archive-tree .dir-name { color: #000; font-weight: bold; }
-  .archive-tree .dir-children { padding-left: 18px; }
+  .archive-search input {
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    border: 1px solid #bbb;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .archive-search input:focus {
+    border-color: #666;
+  }
+
+  .archive-body {
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .archive-body::-webkit-scrollbar {
+    width: 8px;
+  }
+  .archive-body::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  .archive-body::-webkit-scrollbar-track {
+    background: #f5f5f5;
+  }
+
+  .archive-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+  }
+
+  .tree-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    gap: 6px;
+    user-select: none;
+    cursor: pointer;
+    transition: background 0.12s;
+    min-height: 28px;
+    border-left: 3px solid transparent;
+  }
+  .tree-item:hover {
+    background: #e8edf5;
+    border-left-color: #000033;
+  }
+  .tree-item a.name {
+    cursor: pointer;
+  }
+  .tree-item .icon {
+    width: 18px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .tree-item .name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .tree-item.folder .name {
+    font-weight: 600;
+  }
+  .tree-item a.name {
+    color: #00e;
+    text-decoration: none;
+  }
+  .tree-item a.name:hover {
+    text-decoration: underline;
+  }
+  .tree-item .size {
+    color: #999;
+    font-size: 11px;
+    white-space: nowrap;
+    min-width: 56px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .tree-item .path-hint {
+    color: #bbb;
+    font-size: 10px;
+    margin-left: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .tree-children {
+    overflow: hidden;
+  }
+  .tree-children.collapsed {
+    display: none;
+  }
+
+  .archive-status {
+    padding: 6px 12px;
+    font-size: 11px;
+    color: #999;
+    border-top: 1px solid #c0c0c0;
+    background: #fafafa;
+  }
 
   .actions {
     padding: 10px 16px;
@@ -222,14 +342,18 @@
       <source src="{{.FileURL}}" type="{{.MimeType}}">
     </audio>
 {{else if .IsArchive}}
-    <div class="archive-browser" data-id="{{.ID}}" data-url="{{.BaseURL}}">
+    <div class="archive-browser" id="archive-browser">
       <div class="archive-toolbar">
-        <span>Archive ({{.ArchiveFormat}}): {{len .ArchiveListing}} files</span>
+        <span class="info"><strong>Archive</strong> ({{.ArchiveFormat}})<span id="archive-count"> &middot; {{len .ArchiveListing}} files</span></span>
         <a href="{{.FileURL}}" class="dl-all" download="{{.Filename}}">Download all</a>
       </div>
-      <div class="archive-tree" id="archive-tree">
-        <div class="placeholder">loading archive listing...</div>
+      <div class="archive-search">
+        <input type="text" id="archive-filter" placeholder="Filter files..." autocomplete="off">
       </div>
+      <div class="archive-body" id="archive-body">
+        <div class="archive-empty">loading archive listing...</div>
+      </div>
+      <div class="archive-status" id="archive-status"></div>
     </div>
     <script id="archive-data" type="application/json">{{.ArchiveListingJSON}}</script>
 {{else if .IsUnplayable}}
@@ -258,10 +382,51 @@
   var dataEl = document.getElementById('archive-data');
   if (!dataEl) return;
   var files;
-  try { files = JSON.parse(dataEl.textContent); } catch(e) { return; }
+  try { files = JSON.parse(dataEl.textContent); } catch (e) { return; }
   if (!files || !files.length) return;
 
-  var tree = document.getElementById('archive-tree');
+  var baseURL = '{{.BaseURL}}';
+  var archiveId = '{{.ID}}';
+  var filterInput = document.getElementById('archive-filter');
+  var bodyEl = document.getElementById('archive-body');
+  var statusEl = document.getElementById('archive-status');
+  var countEl = document.getElementById('archive-count');
+  var currentFilter = '';
+
+  var ICONS = {
+    folder: '\uD83D\uDCC1',
+    image: '\uD83D\uDDBC\uFE0F',
+    audio: '\uD83C\uDFB5',
+    video: '\uD83C\uDFAC',
+    archive: '\uD83D\uDCE6',
+    code: '\uD83D\uDCDC',
+    text: '\uD83D\uDCC4',
+    generic: '\uD83D\uDCC4'
+  };
+
+  function getFileIcon(name) {
+    var ext = name.split('.').pop().toLowerCase();
+    if (['jpg','jpeg','png','gif','webp','svg','bmp','ico','avif','heic'].indexOf(ext) !== -1) return ICONS.image;
+    if (['mp3','wav','ogg','flac','aac','m4a','wma','opus'].indexOf(ext) !== -1) return ICONS.audio;
+    if (['mp4','webm','avi','mkv','mov','wmv','flv','m4v'].indexOf(ext) !== -1) return ICONS.video;
+    if (['zip','tar','gz','bz2','7z','rar','tgz','xz'].indexOf(ext) !== -1) return ICONS.archive;
+    if (['go','js','ts','jsx','tsx','py','rs','c','cpp','h','hpp','java','rb','php','swift','kt','scala','dart','lua','hs','ex','exs','clj','sql','r','m','mm'].indexOf(ext) !== -1) return ICONS.code;
+    if (['txt','md','rst','adoc','log','csv','tsv','ini','cfg','conf','env','yml','yaml','toml','json','xml','html','css','scss','less','sass'].indexOf(ext) !== -1) return ICONS.text;
+    return ICONS.generic;
+  }
+
+  function escapeHtml(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
+  }
+
+  function formatSize(b) {
+    if (b >= 1073741824) return (b / 1073741824).toFixed(1) + ' GB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
+    return b + ' B';
+  }
 
   function buildTree(entries) {
     var root = { children: {} };
@@ -270,71 +435,165 @@
       var node = root;
       for (var i = 0; i < parts.length; i++) {
         var name = parts[i];
-        var isLast = i === parts.length - 1;
         if (!node.children[name]) {
-          node.children[name] = { name: name, children: {}, size: e.size, dir: !isLast && e.dir, isFile: isLast && !e.dir };
-        }
-        if (isLast && !e.dir) {
-          node.children[name].isFile = true;
-          node.children[name].size = e.size;
+          node.children[name] = { name: name, children: {}, size: e.size, isFile: false, dir: false };
         }
         node = node.children[name];
+      }
+      if (!e.dir) {
+        node.isFile = true;
+        node.size = e.size;
+      } else {
+        node.dir = true;
       }
     });
     return root;
   }
 
-  function renderTree(node, basePath) {
-    var names = Object.keys(node.children).sort();
-    if (!names.length) return document.createTextNode('(empty)');
-    var ul = document.createElement('ul');
+  function flattenTree(node, prefix) {
+    var results = [];
+    var names = Object.keys(node.children).sort(function (a, b) {
+      var ca = node.children[a], cb = node.children[b];
+      var aDir = ca.dir || !ca.isFile;
+      var bDir = cb.dir || !cb.isFile;
+      if (aDir && !bDir) return -1;
+      if (!aDir && bDir) return 1;
+      return a.localeCompare(b);
+    });
     names.forEach(function (name) {
       var child = node.children[name];
-      var li = document.createElement('li');
-      if (child.dir || (!child.isFile && Object.keys(child.children).length)) {
-        var toggle = document.createElement('span');
-        toggle.className = 'tree-toggle';
-        toggle.textContent = '[+]';
-        var dirSpan = document.createElement('span');
-        dirSpan.className = 'dir-name';
-        dirSpan.textContent = name + '/';
-        li.appendChild(toggle);
-        li.appendChild(dirSpan);
-        var childDiv = document.createElement('div');
-        childDiv.className = 'dir-children';
-        childDiv.style.display = 'none';
-        childDiv.appendChild(renderTree(child, basePath + name + '/'));
-        toggle.onclick = function () {
-          var show = childDiv.style.display === 'none';
-          childDiv.style.display = show ? '' : 'none';
-          toggle.textContent = show ? '[-]' : '[+]';
-        };
-        li.appendChild(childDiv);
-      } else if (child.isFile) {
-        var a = document.createElement('a');
-        a.href = '{{.BaseURL}}/api/archive/{{.ID}}/file?path=' + encodeURIComponent(basePath + name);
-        a.textContent = name;
-        li.appendChild(a);
-        var sz = document.createElement('span');
-        sz.className = 'file-size';
-        sz.textContent = formatSize(child.size);
-        li.appendChild(sz);
+      var isDir = child.dir || !child.isFile;
+      var path = prefix ? prefix + '/' + name : name;
+      results.push({ name: name, path: path, size: child.size, isDir: isDir });
+      if (isDir) {
+        results = results.concat(flattenTree(child, path));
       }
-      ul.appendChild(li);
     });
-    return ul;
+    return results;
   }
 
-  var root = buildTree(files);
-  tree.innerHTML = '';
-  tree.appendChild(renderTree(root, ''));
-
-  function formatSize(b) {
-    if (b >= 1073741824) return (b / 1073741824).toFixed(1) + ' GB';
-    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
-    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
-    return b + ' B';
+  function toggleDir(el) {
+    var childrenEl = el.nextElementSibling;
+    var icon = el.querySelector('.icon');
+    if (!childrenEl || !icon) return;
+    var isCollapsed = childrenEl.classList.contains('collapsed');
+    if (isCollapsed) {
+      childrenEl.classList.remove('collapsed');
+      icon.textContent = '\uD83D\uDCC2';
+    } else {
+      childrenEl.classList.add('collapsed');
+      icon.textContent = '\uD83D\uDCC1';
+    }
   }
+
+  function render() {
+    var filter = (filterInput.value || '').trim().toLowerCase();
+    currentFilter = filter;
+
+    var flat = flattenTree(tree, '');
+    var totalDirs = 0, totalFiles = 0;
+    flat.forEach(function (f) { if (f.isDir) totalDirs++; else totalFiles++; });
+
+    if (countEl) {
+      countEl.textContent = ' \u00B7 ' + totalFiles + ' file' + (totalFiles !== 1 ? 's' : '');
+    }
+
+    if (filter) {
+      var matching = flat.filter(function (f) {
+        return f.name.toLowerCase().indexOf(filter) !== -1 || f.path.toLowerCase().indexOf(filter) !== -1;
+      });
+      if (matching.length === 0) {
+        bodyEl.innerHTML = '<div class="archive-empty">no files match your filter</div>';
+        statusEl.textContent = totalDirs + ' director' + (totalDirs === 1 ? 'y' : 'ies') + ' \u00B7 ' + totalFiles + ' file' + (totalFiles === 1 ? '' : 's') + ' (filtered)';
+        return;
+      }
+      var html = '';
+      matching.forEach(function (f) {
+        var icon = f.isDir ? ICONS.folder : getFileIcon(f.name);
+        if (f.isDir) {
+          html += '<div class="tree-item folder" data-path="' + escapeHtml(f.path) + '">';
+          html += '<span class="icon">' + icon + '</span>';
+          html += '<span class="name">' + escapeHtml(f.name) + '/</span>';
+          html += '<span class="path-hint">' + escapeHtml(f.path.replace('/' + f.name, '')) + '</span>';
+          html += '<span class="size"></span>';
+          html += '</div>';
+        } else {
+          html += '<div class="tree-item">';
+          html += '<span class="icon">' + icon + '</span>';
+          html += '<a class="name" href="' + baseURL + '/api/archive/' + archiveId + '/file?path=' + encodeURIComponent(f.path) + '">' + escapeHtml(f.name) + '</a>';
+          html += '<span class="path-hint">' + escapeHtml(f.path.replace('/' + f.name, '')) + '</span>';
+          html += '<span class="size">' + formatSize(f.size) + '</span>';
+          html += '</div>';
+        }
+      });
+      bodyEl.innerHTML = html;
+      statusEl.textContent = matching.length + ' result' + (matching.length !== 1 ? 's' : '') + ' (filtered from ' + totalFiles + ' file' + (totalFiles !== 1 ? 's' : '') + ')';
+      return;
+    }
+
+    var html = renderTreeHTML(tree, '', 0);
+    bodyEl.innerHTML = html;
+
+    bodyEl.querySelectorAll('.tree-item.folder').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A' || e.target.closest('a')) return;
+        toggleDir(el);
+      });
+    });
+
+    statusEl.textContent = totalDirs + ' director' + (totalDirs === 1 ? 'y' : 'ies') + ' \u00B7 ' + totalFiles + ' file' + (totalFiles === 1 ? '' : 's');
+  }
+
+  function renderTreeHTML(node, basePath, depth) {
+    var names = Object.keys(node.children).sort(function (a, b) {
+      var ca = node.children[a], cb = node.children[b];
+      var aDir = ca.dir || !ca.isFile;
+      var bDir = cb.dir || !cb.isFile;
+      if (aDir && !bDir) return -1;
+      if (!aDir && bDir) return 1;
+      return a.localeCompare(b);
+    });
+
+    var html = '';
+    names.forEach(function (name) {
+      var child = node.children[name];
+      var isDir = child.dir || !child.isFile;
+      var path = basePath ? basePath + '/' + name : name;
+      var indent = depth * 0;
+
+      if (isDir) {
+        html += '<div class="tree-item folder">';
+        html += '<span class="icon">' + ICONS.folder + '</span>';
+        html += '<span class="name">' + escapeHtml(name) + '/</span>';
+        html += '<span class="size"></span>';
+        html += '</div>';
+        html += '<div class="tree-children collapsed" style="padding-left:' + Math.min((depth + 1) * 18, 144) + 'px">';
+        html += renderTreeHTML(child, path, depth + 1);
+        html += '</div>';
+      } else {
+        html += '<div class="tree-item">';
+        html += '<span class="icon">' + getFileIcon(name) + '</span>';
+        html += '<a class="name" href="' + baseURL + '/api/archive/' + archiveId + '/file?path=' + encodeURIComponent(path) + '">' + escapeHtml(name) + '</a>';
+        html += '<span class="size">' + formatSize(child.size) + '</span>';
+        html += '</div>';
+      }
+    });
+
+    if (!names.length) {
+      html += '<div class="tree-item" style="color:#999;font-style:italic">';
+      html += '<span class="icon"></span>';
+      html += '<span class="name">(empty)</span>';
+      html += '<span class="size"></span>';
+      html += '</div>';
+    }
+
+    return html;
+  }
+
+  var tree = buildTree(files);
+  render();
+
+  filterInput.addEventListener('input', render);
 })();
 </script>
 {{end}}

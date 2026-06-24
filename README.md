@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="./public/brand/anonhost.svg" width="80" alt="AnonHost">
+  <img src="./public/anonhost.svg" width="80" alt="AnonHost">
   <br>
   <b>AnonHost</b>
 </p>
 
 <p align="center">
-  <a href="https://anonhost.cc"><img src="./public/brand/badge.png" alt="AnonHost"></a>
+  <a href="https://anonhost.cc"><img src="./public/badge.png" alt="AnonHost"></a>
 </p>
 
 ---

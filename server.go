@@ -32,6 +32,7 @@ func (s *Server) handler() http.Handler {
 	mux.HandleFunc("GET /{id}", s.handleView)
 
 	mux.HandleFunc("GET /install", s.handleInstallScript)
+	mux.HandleFunc("GET /sharex", s.handleShareXConfig)
 
 	fileServer := http.FileServer(http.Dir("./public"))
 	mux.Handle("GET /public/", http.StripPrefix("/public/", fileServer))

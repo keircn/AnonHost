@@ -10,6 +10,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/bodgit/sevenzip"
 )
 
 type FileEntry struct {
@@ -25,6 +27,7 @@ var archiveFormats = map[string]archiveOpener{
 	".tar":    openTar,
 	".tar.gz": openTarGzip,
 	".tgz":    openTarGzip,
+	".7z":     open7z,
 }
 
 func isArchive(filename string) bool {
@@ -94,6 +97,47 @@ func openTarGzip(r io.ReaderAt, size int64) ([]FileEntry, error) {
 	return readTar(gr)
 }
 
+func open7z(r io.ReaderAt, size int64) ([]FileEntry, error) {
+	sr := io.NewSectionReader(r, 0, size)
+	zr, err := sevenzip.NewReader(sr, size)
+	if err != nil {
+		return nil, err
+	}
+	var entries []FileEntry
+	for _, f := range zr.File {
+		entries = append(entries, FileEntry{
+			Path: f.Name,
+			Size: int64(f.UncompressedSize),
+			Dir:  f.FileInfo().IsDir(),
+		})
+	}
+	return entries, nil
+}
+
+func sniffArchiveFormat(header []byte) string {
+	if len(header) < 2 {
+		return ""
+	}
+	if len(header) >= 6 &&
+		header[0] == 0x37 && header[1] == 0x7a &&
+		header[2] == 0xbc && header[3] == 0xaf &&
+		header[4] == 0x27 && header[5] == 0x1c {
+		return ".7z"
+	}
+	if len(header) >= 4 &&
+		header[0] == 'P' && header[1] == 'K' &&
+		header[2] == 0x03 && header[3] == 0x04 {
+		return ".zip"
+	}
+	if header[0] == 0x1f && header[1] == 0x8b {
+		return ".gz"
+	}
+	if header[0] == 'B' && header[1] == 'Z' {
+		return ".bz2"
+	}
+	return ""
+}
+
 func listArchive(filePath string) ([]FileEntry, string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -106,27 +150,9 @@ func listArchive(filePath string) ([]FileEntry, string, error) {
 		return nil, "", err
 	}
 
-	ext := strings.ToLower(path.Ext(filePath))
-	var opener archiveOpener
-
-	if ext == ".gz" || ext == ".bz2" {
-		base := strings.TrimSuffix(filePath, ext)
-		innerExt := strings.ToLower(path.Ext(base))
-		if innerExt == ".tar" {
-			if ext == ".gz" {
-				opener = openTarGzip
-			} else {
-				return nil, "", fmt.Errorf("unsupported archive format: %s", ext)
-			}
-		} else {
-			return nil, "", fmt.Errorf("unsupported archive format: %s", ext)
-		}
-	} else {
-		var ok bool
-		opener, ok = archiveFormats[ext]
-		if !ok {
-			return nil, "", fmt.Errorf("unsupported archive format: %s", ext)
-		}
+	ext, opener, err := resolveArchiveFormat(f, fi.Size(), filePath)
+	if err != nil {
+		return nil, "", err
 	}
 
 	entries, err := opener(f, fi.Size())
@@ -137,12 +163,73 @@ func listArchive(filePath string) ([]FileEntry, string, error) {
 	return entries, ext, nil
 }
 
-func extractFileFromArchive(archivePath, targetPath string) (io.ReadCloser, int64, error) {
-	ext := strings.ToLower(path.Ext(archivePath))
-
-	if ext == ".zip" {
-		return extractFromZip(archivePath, targetPath)
+func resolveArchiveFormat(r io.ReaderAt, size int64, filePath string) (string, archiveOpener, error) {
+	header := make([]byte, 16)
+	if _, err := r.ReadAt(header, 0); err == nil {
+		if sniffed := sniffArchiveFormat(header); sniffed != "" {
+			switch sniffed {
+			case ".7z":
+				return ".7z", open7z, nil
+			case ".zip":
+				return ".zip", openZip, nil
+			case ".gz":
+				ext := strings.ToLower(path.Ext(filePath))
+				if ext == ".tgz" {
+					return ".tgz", openTarGzip, nil
+				}
+				if ext == ".gz" {
+					base := strings.TrimSuffix(strings.ToLower(filePath), ".gz")
+					if strings.ToLower(path.Ext(base)) == ".tar" {
+						return ".tar.gz", openTarGzip, nil
+					}
+				}
+			case ".bz2":
+				base := strings.TrimSuffix(strings.ToLower(filePath), ".bz2")
+				if strings.ToLower(path.Ext(base)) == ".tar" {
+					return "", nil, fmt.Errorf("unsupported archive format: .bz2")
+				}
+			}
+		}
 	}
+
+	ext := strings.ToLower(path.Ext(filePath))
+
+	if ext == ".gz" || ext == ".bz2" {
+		base := strings.TrimSuffix(filePath, ext)
+		innerExt := strings.ToLower(path.Ext(base))
+		if innerExt == ".tar" {
+			if ext == ".gz" {
+				return ".tar.gz", openTarGzip, nil
+			}
+			return "", nil, fmt.Errorf("unsupported archive format: %s", ext)
+		}
+		return "", nil, fmt.Errorf("unsupported archive format: %s", ext)
+	}
+
+	opener, ok := archiveFormats[ext]
+	if !ok {
+		return "", nil, fmt.Errorf("unsupported archive format: %s", ext)
+	}
+	return ext, opener, nil
+}
+
+func extractFileFromArchive(archivePath, targetPath string) (io.ReadCloser, int64, error) {
+	header := make([]byte, 16)
+	if f, err := os.Open(archivePath); err == nil {
+		f.Read(header)
+		f.Close()
+	}
+
+	switch sniffArchiveFormat(header) {
+	case ".zip":
+		return extractFromZip(archivePath, targetPath)
+	case ".7z":
+		return extractFrom7z(archivePath, targetPath)
+	case ".gz":
+		// Fall through to tar/gzip path below
+	}
+
+	ext := strings.ToLower(path.Ext(archivePath))
 
 	// tar-based formats
 	var tr *tar.Reader
@@ -237,6 +324,41 @@ func (z *zipReadCloser) Read(p []byte) (int, error) {
 }
 
 func (z *zipReadCloser) Close() error {
+	z.rc.Close()
+	return z.zr.Close()
+}
+
+func extractFrom7z(archivePath, targetPath string) (io.ReadCloser, int64, error) {
+	zr, err := sevenzip.OpenReader(archivePath)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, f := range zr.File {
+		if f.Name == targetPath {
+			rc, err := f.Open()
+			if err != nil {
+				zr.Close()
+				return nil, 0, err
+			}
+			return &sevenzipReadCloser{rc: rc, zr: zr}, int64(f.UncompressedSize), nil
+		}
+	}
+
+	zr.Close()
+	return nil, 0, os.ErrNotExist
+}
+
+type sevenzipReadCloser struct {
+	rc io.ReadCloser
+	zr *sevenzip.ReadCloser
+}
+
+func (z *sevenzipReadCloser) Read(p []byte) (int, error) {
+	return z.rc.Read(p)
+}
+
+func (z *sevenzipReadCloser) Close() error {
 	z.rc.Close()
 	return z.zr.Close()
 }

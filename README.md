@@ -4,10 +4,6 @@
   <b>AnonHost</b>
 </p>
 
-<p align="center">
-  <a href="https://anonhost.cc"><img src="./public/badge.png" alt="AnonHost"></a>
-</p>
-
 ---
 
 ## Quick start
@@ -47,6 +43,13 @@ anonhost.sh upload image.png
 ## Roadmap
 
 See [roadmap](https://anonhost.cc/roadmap) for planned improvements.
+
+---
+
+<p align="center">
+  <a href="https://anonhost.cc"><img src="./public/badge.png" alt="AnonHost"></a>
+</p>
+
 
 ## License
 

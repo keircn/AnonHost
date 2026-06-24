@@ -1,32 +1,53 @@
-# AnonHost
+<p align="center">
+  <img src="./public/brand/anonhost.svg" width="80" alt="AnonHost">
+  <br>
+  <b>AnonHost</b>
+</p>
 
-File hosting without the bullshit.
+<p align="center">
+  <a href="https://anonhost.cc"><img src="./public/brand/badge.png" alt="AnonHost"></a>
+</p>
 
-## Official instance
+---
 
-[![AnonHost Badge](./public/brand/badge.png)](https://anonhost.cc)
+## Quick start
 
-## Quick start (Docker Compose)
+We use docker. You can run it without but it's not recommended.
 
 ```bash
-cp .env.example .env # some are optional, most aren't
+cp .env.example .env # and fill them in obviously
 docker compose up -d --build
 ```
 
-Bind/port can be changed via `ANONHOST_BIND_IP` and `ANONHOST_PORT`
+## Stack
 
-You can run it manually but I don't recommend it at all lol
+- Go
+- SQLite
+- Cloudflare R2 (optional)
+- Docker
+
+## Features
+
+- Anonymous uploads
+- No persisted IP logging
+- File deletion via cryptographic tokens
+- Optional file expiration
+- Direct-to-R2 uploads via presigned URLs (faster uploads through the webui)
+- Archive previews with tree navigation
+- CLI tool
+- ShareX support
 
 ## CLI
 
 ```bash
 curl https://anonhost.cc/install | bash
+anonhost.sh upload image.png
 ```
 
-## Stuff I use
+## Roadmap
 
-- Next.js 16
-- Postgres + Drizzle
-- Cloudflare R2
-- Tailwind CSS
-- NextAuth
+See [roadmap](https://anonhost.cc/roadmap) for planned improvements.
+
+## License
+
+MIT

@@ -345,7 +345,7 @@
 {{else if .IsArchive}}
     <div class="archive-browser" id="archive-browser">
       <div class="archive-toolbar">
-        <span class="info"><strong>Archive</strong> ({{.ArchiveFormat}})<span id="archive-count"> &middot; {{len .ArchiveListing}} files</span></span>
+        <span class="info"><strong>Archive</strong><span id="archive-count"> &middot; {{len .ArchiveListing}} files</span></span>
         <a href="{{.FileURL}}" class="dl-all" download="{{.Filename}}">Download all</a>
       </div>
       <div class="archive-search">

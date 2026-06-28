@@ -24,6 +24,7 @@ type FileRecord struct {
 	IsArchive       bool
 	ArchiveFormat   string
 	ArchiveListing  string
+	IsEncrypted     bool
 }
 
 type DB struct {
@@ -72,7 +73,8 @@ func (d *DB) migrate() error {
 			expires_at TEXT,
 			is_archive INTEGER NOT NULL DEFAULT 0,
 			archive_format TEXT NOT NULL DEFAULT '',
-			archive_listing TEXT NOT NULL DEFAULT ''
+			archive_listing TEXT NOT NULL DEFAULT '',
+			is_encrypted INTEGER NOT NULL DEFAULT 0
 		);
 		CREATE INDEX IF NOT EXISTS idx_files_deletion_token ON files(deletion_token);
 		CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);
@@ -89,23 +91,28 @@ func (d *DB) migrate() error {
 	if err != nil {
 		// columns may already exist — ignore
 	}
+	_, err = d.db.Exec(`ALTER TABLE files ADD COLUMN is_encrypted INTEGER NOT NULL DEFAULT 0`)
+	if err != nil {
+		// column may already exist — ignore
+	}
 	return nil
 }
 
 func (d *DB) InsertFile(f *FileRecord) error {
 	_, err := d.db.Exec(
-		`INSERT INTO files (id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO files (id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		f.ID, f.Filename, f.Size, f.MimeType, f.StorageBackend, f.StoragePath,
 		f.Width, f.Height, f.DeletionToken, f.CreatedAt, f.ExpiresAt,
 		f.IsArchive, f.ArchiveFormat, f.ArchiveListing,
+		f.IsEncrypted,
 	)
 	return err
 }
 
 func (d *DB) GetFile(id string) (*FileRecord, error) {
 	row := d.db.QueryRow(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
 		 FROM files WHERE id = ?`, id,
 	)
 
@@ -116,7 +123,8 @@ func (d *DB) GetFile(id string) (*FileRecord, error) {
 	err := row.Scan(&f.ID, &f.Filename, &f.Size, &f.MimeType,
 		&f.StorageBackend, &f.StoragePath, &width, &height,
 		&f.DeletionToken, &f.CreatedAt, &expiresAt,
-		&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing)
+		&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
+		&f.IsEncrypted)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +145,7 @@ func (d *DB) GetFile(id string) (*FileRecord, error) {
 
 func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 	row := d.db.QueryRow(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
 		 FROM files WHERE deletion_token = ?`, token,
 	)
 
@@ -147,7 +155,9 @@ func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 
 	err := row.Scan(&f.ID, &f.Filename, &f.Size, &f.MimeType,
 		&f.StorageBackend, &f.StoragePath, &width, &height,
-		&f.DeletionToken, &f.CreatedAt, &expiresAt)
+		&f.DeletionToken, &f.CreatedAt, &expiresAt,
+		&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
+		&f.IsEncrypted)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +178,7 @@ func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 
 func (d *DB) ListFiles() ([]FileRecord, error) {
 	rows, err := d.db.Query(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
 		 FROM files ORDER BY created_at DESC`,
 	)
 	if err != nil {
@@ -185,7 +195,8 @@ func (d *DB) ListFiles() ([]FileRecord, error) {
 		err := rows.Scan(&f.ID, &f.Filename, &f.Size, &f.MimeType,
 			&f.StorageBackend, &f.StoragePath, &width, &height,
 			&f.DeletionToken, &f.CreatedAt, &expiresAt,
-			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing)
+			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
+			&f.IsEncrypted)
 		if err != nil {
 			return nil, err
 		}

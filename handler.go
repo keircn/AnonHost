@@ -165,6 +165,7 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		StoragePath:    storagePath,
 		DeletionToken:  deletionToken,
 		CreatedAt:      now,
+		IsEncrypted:    r.FormValue("encrypted") == "1",
 	}
 
 	if header.Size <= 500<<20 && isArchive(header.Filename) {
@@ -256,6 +257,7 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 		Filename  string `json:"filename"`
 		Size      int64  `json:"size"`
 		MimeType  string `json:"mime_type"`
+		Encrypted bool   `json:"encrypted"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.respondError(w, http.StatusBadRequest, "invalid JSON")
@@ -299,6 +301,7 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 		StoragePath:    req.ObjectKey,
 		DeletionToken:  deletionToken,
 		CreatedAt:      now,
+		IsEncrypted:    req.Encrypted,
 	}
 
 	if err := s.db.InsertFile(rec); err != nil {
@@ -382,6 +385,7 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 		"IsImage":             isImage,
 		"IsVideo":             playableVideo,
 		"IsAudio":             playableAudio,
+		"IsEncrypted":         rec.IsEncrypted,
 		"IsUnplayable":        (isVideo || isAudio) && !playableVideo && !playableAudio,
 		"IsArchive":           isArch,
 		"ArchiveFormat":       rec.ArchiveFormat,

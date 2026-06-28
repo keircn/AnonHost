@@ -333,7 +333,9 @@
   </div>
 
   <div class="media">
-{{if .IsImage}}
+{{if .IsEncrypted}}
+    <div class="placeholder" id="encrypt-notice">This file is encrypted. You need the decryption key which was included in the original URL.</div>
+{{else if .IsImage}}
     <img src="{{.FileURL}}" alt="{{.Filename}}">
 {{else if .IsVideo}}
     <video controls>
@@ -365,7 +367,7 @@
 {{end}}
   </div>
 
-{{if not .IsImage}}
+{{if and (not .IsImage) (not .IsEncrypted)}}
   <div class="actions">
     <a href="{{.FileURL}}" download="{{.Filename}}">Download</a>
   </div>
@@ -599,6 +601,87 @@
 })();
 </script>
 {{end}}
+
+<script>
+(function () {
+  var hash = window.location.hash;
+  if (!hash || hash.length <= 1) return;
+  var key = hash.substring(1);
+  if (!key.length) return;
+
+  var fileURL = '{{.FileURL}}';
+  var mimeType = '{{.MimeType}}';
+  var filename = '{{.Filename}}';
+  var isImage = {{.IsImage}};
+  var isVideo = {{.IsVideo}};
+  var isAudio = {{.IsAudio}};
+  var isArchive = {{.IsArchive}};
+
+  function base64urlDecode(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var t = atob(s), b = new Uint8Array(t.length), i = 0;
+    for (; i < t.length; i++) b[i] = t.charCodeAt(i);
+    return b;
+  }
+
+  var mediaEl = document.querySelector('.media');
+  if (!mediaEl) return;
+  mediaEl.innerHTML = '<div class="placeholder" style="padding:48px 24px;color:#999;font-size:13px;text-align:center">Decrypting...</div>';
+
+  fetch(fileURL).then(function (resp) {
+    if (!resp.ok) throw new Error('fetch failed');
+    return resp.arrayBuffer();
+  }).then(function (encrypted) {
+    var rawKey = base64urlDecode(key);
+    var iv = encrypted.slice(0, 12);
+    var ciphertext = encrypted.slice(12);
+    return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['decrypt'])
+      .then(function (cryptoKey) {
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, cryptoKey, ciphertext);
+      });
+  }).then(function (decrypted) {
+    mediaEl.innerHTML = '';
+    var blob = new Blob([decrypted], { type: mimeType });
+    var blobURL = URL.createObjectURL(blob);
+
+    if (isImage) {
+      var img = document.createElement('img');
+      img.src = blobURL;
+      mediaEl.appendChild(img);
+    } else if (isVideo) {
+      var video = document.createElement('video');
+      video.controls = true;
+      var source = document.createElement('source');
+      source.src = blobURL;
+      source.type = mimeType;
+      video.appendChild(source);
+      mediaEl.appendChild(video);
+    } else if (isAudio) {
+      var audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = blobURL;
+      mediaEl.appendChild(audio);
+    } else if (isArchive) {
+      var dl = document.createElement('a');
+      dl.href = blobURL;
+      dl.download = filename;
+      dl.textContent = 'Download decrypted archive';
+      dl.style.cssText = 'display:inline-block;padding:8px 24px;margin:24px;background:#eee;border:1px solid #999;color:#000;text-decoration:none;font-size:13px';
+      mediaEl.appendChild(dl);
+    } else {
+      var dl = document.createElement('a');
+      dl.href = blobURL;
+      dl.download = filename;
+      dl.textContent = 'Download';
+      dl.style.cssText = 'display:inline-block;padding:8px 24px;margin:24px;background:#eee;border:1px solid #999;color:#000;text-decoration:none;font-size:13px';
+      mediaEl.appendChild(dl);
+    }
+  }).catch(function () {
+    mediaEl.innerHTML = '<div class="placeholder" style="padding:48px 24px;color:#999;font-size:13px;text-align:center">Decryption failed — invalid or missing key</div>';
+  });
+})();
+</script>
 </div>
 </body>
 </html>

@@ -223,6 +223,7 @@
 <div class="section">
   <h3>upload a file</h3>
   <div class="section-inner">
+    <p style="font-size:11px;color:#888;margin-bottom:8px">Files are encrypted in your browser before upload.</p>
     {{template "uploadForm" .}}
   </div>
 </div>
@@ -266,6 +267,7 @@ chmod +x anonhost.sh
   var copyBtn = document.getElementById('copy-btn');
   var dzFile = document.getElementById('dz-file');
   var dzHint = document.getElementById('dz-hint');
+  var uploadKey = null;
 
   function updateFile() {
     if (input.files.length) {
@@ -308,9 +310,11 @@ chmod +x anonhost.sh
     btn.disabled = false;
     btn.textContent = 'Upload';
     result.className = 'result show';
-    rlink.href = data.url;
-    rlink.textContent = data.url;
-    rinput.value = data.url;
+    var url = data.url;
+    if (uploadKey) url += '#' + uploadKey;
+    rlink.href = url;
+    rlink.textContent = url;
+    rinput.value = url;
     rmeta.textContent = data.filename + ' (' + formatSize(data.size) + ')  |  ID: ' + data.id + '  |  Delete token: ' + data.deletion_token;
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -341,41 +345,45 @@ chmod +x anonhost.sh
         return;
       }
 
-      bar.style.width = '0%';
-      var put = new XMLHttpRequest();
-      put.upload.onprogress = function (e) {
-        if (e.lengthComputable) {
-          bar.style.width = (e.loaded / e.total * 100) + '%';
-        }
-      };
-      put.onload = function () {
-        if (put.status >= 200 && put.status < 300) {
-          var fin = new XMLHttpRequest();
-          fin.open('POST', '/api/upload/direct/finalize');
-          fin.setRequestHeader('Content-Type', 'application/json');
-          fin.onload = function () {
-            if (fin.status === 200) {
-              showResult(JSON.parse(fin.responseText));
-            } else {
-              showError('Finalize failed');
-            }
-          };
-          fin.onerror = function () { showError('Finalize network error'); };
-          fin.send(JSON.stringify({
-            id: resp.id,
-            object_key: resp.object_key,
-            filename: file.name,
-            size: file.size,
-            mime_type: file.type || 'application/octet-stream'
-          }));
-        } else {
-          uploadFallback(file);
-        }
-      };
-      put.onerror = function () { uploadFallback(file); };
-      put.open('PUT', resp.upload_url);
-      put.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-      put.send(file);
+      encryptFile(file).then(function (r) {
+        uploadKey = r.key;
+        bar.style.width = '0%';
+        var put = new XMLHttpRequest();
+        put.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            bar.style.width = (e.loaded / e.total * 100) + '%';
+          }
+        };
+        put.onload = function () {
+          if (put.status >= 200 && put.status < 300) {
+            var fin = new XMLHttpRequest();
+            fin.open('POST', '/api/upload/direct/finalize');
+            fin.setRequestHeader('Content-Type', 'application/json');
+            fin.onload = function () {
+              if (fin.status === 200) {
+                showResult(JSON.parse(fin.responseText));
+              } else {
+                showError('Finalize failed');
+              }
+            };
+            fin.onerror = function () { showError('Finalize network error'); };
+            fin.send(JSON.stringify({
+              id: resp.id,
+              object_key: resp.object_key,
+              filename: file.name,
+              size: file.size,
+              mime_type: file.type || 'application/octet-stream',
+              encrypted: true
+            }));
+          } else {
+            uploadFallback(file);
+          }
+        };
+        put.onerror = function () { uploadFallback(file); };
+        put.open('PUT', resp.upload_url);
+        put.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        put.send(r.blob);
+      }).catch(function (e) { showError('Encryption failed'); });
     };
     init.onerror = function () { uploadFallback(file); };
     init.send(JSON.stringify({
@@ -386,31 +394,35 @@ chmod +x anonhost.sh
   }
 
   function uploadFallback(file) {
-    prog.className = 'progress active';
-    bar.style.width = '0%';
-    var fd = new FormData();
-    fd.append('file', file);
-    var xhr = new XMLHttpRequest();
-    xhr.upload.onprogress = function (e) {
-      if (e.lengthComputable) {
-        bar.style.width = (e.loaded / e.total * 100) + '%';
-      }
-    };
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        showResult(JSON.parse(xhr.responseText));
-      } else {
-        try {
-          var err = JSON.parse(xhr.responseText);
-          showError(err.error || 'Upload failed');
-        } catch (e) {
-          showError('Upload failed');
+    encryptFile(file).then(function (r) {
+      uploadKey = r.key;
+      prog.className = 'progress active';
+      bar.style.width = '0%';
+      var fd = new FormData();
+      fd.append('file', r.blob, file.name);
+      fd.append('encrypted', '1');
+      var xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+          bar.style.width = (e.loaded / e.total * 100) + '%';
         }
-      }
-    };
-    xhr.onerror = function () { showError('Network error'); };
-    xhr.open('POST', '/api/upload');
-    xhr.send(fd);
+      };
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          showResult(JSON.parse(xhr.responseText));
+        } else {
+          try {
+            var err = JSON.parse(xhr.responseText);
+            showError(err.error || 'Upload failed');
+          } catch (e) {
+            showError('Upload failed');
+          }
+        }
+      };
+      xhr.onerror = function () { showError('Network error'); };
+      xhr.open('POST', '/api/upload');
+      xhr.send(fd);
+    }).catch(function (e) { showError('Encryption failed'); });
   }
 
   form.addEventListener('submit', function (e) {

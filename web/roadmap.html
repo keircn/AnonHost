@@ -165,6 +165,19 @@
     border-color: #36c;
     box-shadow: 0 0 0 3px rgba(51,102,204,0.15);
   }
+  .snake-item.completed {
+    opacity: 0.7;
+  }
+  .snake-item.completed h4::after {
+    content: ' \2713';
+    color: #090;
+    font-size: 14px;
+  }
+  .snake-item.completed::before {
+    background: #090;
+    border-color: #090;
+    box-shadow: 0 0 0 3px rgba(0,153,0,0.15);
+  }
   .snake-item.dim {
     opacity: 0.55;
   }
@@ -279,7 +292,7 @@
   <div class="section-inner">
     <p>AnonHost started out as a joke project in ~2023 to make fun of the state of image hosting in the modern day. It was an obscenely bloated Next.js app with a PostgreSQL database and thousands more lines of code than it needed. I started taking it seriously again in late 2025 and recently rewrote it into a tiny Go binary. This project wouldn't be possible without AltRetro, our unpaid QA guy, and the countless open source projects we are built upon. Here's to many more years of anonymous file hosting.</p>
     <p style="margin-top:6px">You can host your own instance if you want, the entire thing is <a href="https://github.com/keircn/AnonHost">open source</a> and fits in a single Docker container and you are always more than welcome to email me at <a href="mailto:root@roxylab.uk">root@roxylab.uk</a> with any questions you may have or just to say hello. You can also visit my <a href="https://roxylab.uk">personal website</a> if you want to know more about me. Happy hosting!</p>
-    <p style="margin-top:6px">{{.TotalUploads}} files uploaded so far, totalling ({{.TotalSizeHuman}}).</p>
+    <p style="margin-top:6px">{{.TotalUploads}} files uploaded so far, totalling {{.TotalSizeHuman}}.</p>
   </div>
 </div>
 
@@ -288,14 +301,8 @@
   <div class="section-inner" style="padding:10px 14px">
     <p class="rd-intro">Here's where we're heading. Nothing is guaranteed, priorities may shift. Feel free to <a href="mailto:root@roxylab.uk">email me</a> with suggestions.</p>
 
-    <div class="key">
-      <span class="key-item"><span class="key-dot active"></span>up next</span>
-      <span class="key-item"><span class="key-dot planned"></span>planned</span>
-      <span class="key-item"><span class="key-dot dim"></span>considering</span>
-    </div>
-
     <div class="snake">
-      <div class="snake-item active">
+      <div class="snake-item completed">
         <h4>Client-Side Encryption</h4>
         <p>Browser-side encrypt-before-upload so the server stores only ciphertext. The decryption key lives in the URL fragment (<code>#key</code>) and never touches the network. The operator genuinely cannot read your files. We're proudly open source if you wish to audit us!</p>
       </div>

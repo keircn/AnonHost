@@ -3,6 +3,10 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
@@ -27,6 +31,7 @@ type UploadResponse struct {
 	MimeType       string `json:"mime_type"`
 	DeletionToken  string `json:"deletion_token"`
 	CreatedAt      string `json:"created_at"`
+	Password       string `json:"password,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -122,12 +127,51 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	password := r.FormValue("password")
+
 	headerBuf := make([]byte, 512)
 	n, _ := io.ReadFull(file, headerBuf)
 	headerBuf = headerBuf[:n]
 	reader := io.MultiReader(bytes.NewReader(headerBuf), file)
 
 	mimeType := detectContentType(header.Filename, headerBuf)
+	storageMimeType := mimeType
+
+	if password != "" {
+		data, err := io.ReadAll(reader)
+		if err != nil {
+			s.respondError(w, http.StatusBadRequest, "failed to read file")
+			return
+		}
+
+		keyDerived := sha256.Sum256([]byte(password))
+		iv := make([]byte, 12)
+		if _, err := rand.Read(iv); err != nil {
+			s.respondError(w, http.StatusInternalServerError, "encryption error")
+			return
+		}
+
+		block, err := aes.NewCipher(keyDerived[:])
+		if err != nil {
+			s.respondError(w, http.StatusInternalServerError, "encryption error")
+			return
+		}
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+			s.respondError(w, http.StatusInternalServerError, "encryption error")
+			return
+		}
+
+		ciphertext := gcm.Seal(nil, iv, data, nil)
+		encrypted := make([]byte, 12+len(ciphertext))
+		copy(encrypted, iv)
+		copy(encrypted[12:], ciphertext)
+
+		reader = bytes.NewReader(encrypted)
+		header.Size = int64(len(encrypted))
+		storageMimeType = "application/octet-stream"
+	}
+
 	now := time.Now().UTC().Format(time.RFC3339)
 
 	id := GenerateID(10)
@@ -141,7 +185,7 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	if r2s, ok := s.storage.(*R2Storage); ok {
 		storageBackend = "r2"
 		storagePath = key
-		if err := r2s.Save(r.Context(), key, reader, header.Size, mimeType); err != nil {
+		if err := r2s.Save(r.Context(), key, reader, header.Size, storageMimeType); err != nil {
 			log.Printf("r2 upload error: %v", err)
 			s.respondError(w, http.StatusInternalServerError, "storage error")
 			return
@@ -149,12 +193,14 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	} else {
 		storageBackend = "local"
 		storagePath = key
-		if err := s.storage.Save(r.Context(), key, reader, header.Size, mimeType); err != nil {
+		if err := s.storage.Save(r.Context(), key, reader, header.Size, storageMimeType); err != nil {
 			log.Printf("local storage error: %v", err)
 			s.respondError(w, http.StatusInternalServerError, "storage error")
 			return
 		}
 	}
+
+	isEncrypted := r.FormValue("encrypted") == "1" || password != ""
 
 	rec := &FileRecord{
 		ID:             id,
@@ -165,10 +211,10 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		StoragePath:    storagePath,
 		DeletionToken:  deletionToken,
 		CreatedAt:      now,
-		IsEncrypted:    r.FormValue("encrypted") == "1",
+		IsEncrypted:    isEncrypted,
 	}
 
-	if header.Size <= 500<<20 && isArchive(header.Filename) {
+	if !isEncrypted && header.Size <= 500<<20 && isArchive(header.Filename) {
 		entries, fmtName, err := s.readArchiveListing(r.Context(), storagePath)
 		if err == nil {
 			rec.IsArchive = true
@@ -197,6 +243,7 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		MimeType:      mimeType,
 		DeletionToken: deletionToken,
 		CreatedAt:     now,
+		Password:      password,
 	}
 
 	s.respondJSON(w, http.StatusOK, resp)
@@ -798,7 +845,10 @@ func (s *Server) handleShareXConfig(w http.ResponseWriter, r *http.Request) {
   "Headers": {},
   "Body": "MultipartFormData",
   "FileFormName": "file",
-  "URL": "{json:url}",
+  "Arguments": {
+    "password": "%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra"
+  },
+  "URL": "{json:url}#{json:password}",
   "DeletionURL": "%s/api/media/{json:id}?token={json:deletion_token}",
   "ErrorMessage": "{json:error}"
 }

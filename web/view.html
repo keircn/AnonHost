@@ -629,17 +629,29 @@
   if (!mediaEl) return;
   mediaEl.innerHTML = '<div class="placeholder" style="padding:48px 24px;color:#999;font-size:13px;text-align:center">Decrypting...</div>';
 
+  function keyFromHash(h) {
+    if (h.length === 43) {
+      return Promise.resolve(base64urlDecode(h));
+    }
+    var buf = new Uint8Array(h.length);
+    for (var i = 0; i < h.length; i++) buf[i] = h.charCodeAt(i);
+    return crypto.subtle.digest('SHA-256', buf).then(function (k) {
+      return new Uint8Array(k);
+    });
+  }
+
   fetch(fileURL).then(function (resp) {
     if (!resp.ok) throw new Error('fetch failed');
     return resp.arrayBuffer();
   }).then(function (encrypted) {
-    var rawKey = base64urlDecode(key);
-    var iv = encrypted.slice(0, 12);
-    var ciphertext = encrypted.slice(12);
-    return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['decrypt'])
-      .then(function (cryptoKey) {
-        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, cryptoKey, ciphertext);
-      });
+    return keyFromHash(key).then(function (rawKey) {
+      var iv = encrypted.slice(0, 12);
+      var ciphertext = encrypted.slice(12);
+      return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['decrypt'])
+        .then(function (cryptoKey) {
+          return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, cryptoKey, ciphertext);
+        });
+    });
   }).then(function (decrypted) {
     mediaEl.innerHTML = '';
     var blob = new Blob([decrypted], { type: mimeType });

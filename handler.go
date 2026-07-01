@@ -859,6 +859,29 @@ func (s *Server) handleShareXConfig(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(cfg))
 }
 
+func (s *Server) handleShareXPlainConfig(w http.ResponseWriter, r *http.Request) {
+	apiURL := strings.TrimRight(s.cfg.PublicURL, "/")
+
+	cfg := fmt.Sprintf(`{
+  "Version": "17.0.0",
+  "Name": "AnonHost (plain)",
+  "DestinationType": "FileUploader, ImageUploader, TextUploader",
+  "RequestMethod": "POST",
+  "RequestURL": "%s/api/upload",
+  "Headers": {},
+  "Body": "MultipartFormData",
+  "FileFormName": "file",
+  "URL": "{json:url}",
+  "DeletionURL": "%s/api/media/{json:id}?token={json:deletion_token}",
+  "ErrorMessage": "{json:error}"
+}
+`, apiURL, apiURL)
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="sharex-anonhost-plain.sxcu"`)
+	w.Write([]byte(cfg))
+}
+
 func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")

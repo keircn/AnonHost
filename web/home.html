@@ -138,7 +138,19 @@
   .has-file .dz-file { display: block; }
   .has-file .dz-icon { display: none; }
 
-  .form-actions { margin-bottom: 10px; }
+  .form-actions { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .encrypt-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    user-select: none;
+  }
+  .encrypt-toggle input { margin: 0; cursor: pointer; }
+  .encrypt-toggle .encrypt-label { cursor: pointer; }
 
   .btn {
     padding: 6px 24px;
@@ -248,7 +260,7 @@
 <div class="section">
   <h3>upload</h3>
   <div class="section-inner">
-    <p style="font-size:11px;color:#888;margin-bottom:8px">Files are encrypted in your browser before upload.</p>
+    <p style="font-size:11px;color:#888;margin-bottom:8px">Files can be encrypted in your browser before upload. Toggle the Encrypt checkbox above.</p>
     {{template "uploadForm" .}}
   </div>
 </div>

@@ -124,7 +124,19 @@
   .has-file .dz-file { display: block; }
   .has-file .dz-icon { display: none; }
 
-  .form-actions { margin-bottom: 10px; }
+  .form-actions { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .encrypt-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    user-select: none;
+  }
+  .encrypt-toggle input { margin: 0; cursor: pointer; }
+  .encrypt-toggle .encrypt-label { cursor: pointer; }
 
   .btn {
     padding: 6px 24px;
@@ -223,7 +235,7 @@
 <div class="section">
   <h3>upload a file</h3>
   <div class="section-inner">
-    <p style="font-size:11px;color:#888;margin-bottom:8px">Files are encrypted in your browser before upload.</p>
+    <p style="font-size:11px;color:#888;margin-bottom:8px">Files can be encrypted in your browser before upload. Toggle the Encrypt checkbox above.</p>
     {{template "uploadForm" .}}
   </div>
 </div>
@@ -268,6 +280,14 @@ chmod +x anonhost.sh
   var dzFile = document.getElementById('dz-file');
   var dzHint = document.getElementById('dz-hint');
   var uploadKey = null;
+  var encryptCheckbox = document.getElementById('encrypt-checkbox');
+  function encryptEnabled() { return encryptCheckbox.checked; }
+  encryptCheckbox.addEventListener('change', function () {
+    localStorage.setItem('anonhost_encrypt', this.checked);
+  });
+  if (localStorage.getItem('anonhost_encrypt') === 'false') {
+    encryptCheckbox.checked = false;
+  }
 
   function updateFile() {
     if (input.files.length) {
@@ -345,8 +365,7 @@ chmod +x anonhost.sh
         return;
       }
 
-      encryptFile(file).then(function (r) {
-        uploadKey = r.key;
+      function doPut(data, encrypted) {
         bar.style.width = '0%';
         var put = new XMLHttpRequest();
         put.upload.onprogress = function (e) {
@@ -373,7 +392,7 @@ chmod +x anonhost.sh
               filename: file.name,
               size: file.size,
               mime_type: file.type || 'application/octet-stream',
-              encrypted: true
+              encrypted: encrypted
             }));
           } else {
             uploadFallback(file);
@@ -382,8 +401,17 @@ chmod +x anonhost.sh
         put.onerror = function () { uploadFallback(file); };
         put.open('PUT', resp.upload_url);
         put.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-        put.send(r.blob);
-      }).catch(function (e) { showError('Encryption failed'); });
+        put.send(data);
+      }
+
+      if (encryptEnabled()) {
+        encryptFile(file).then(function (r) {
+          uploadKey = r.key;
+          doPut(r.blob, true);
+        }).catch(function (e) { showError('Encryption failed'); });
+      } else {
+        doPut(file, false);
+      }
     };
     init.onerror = function () { uploadFallback(file); };
     init.send(JSON.stringify({
@@ -394,13 +422,13 @@ chmod +x anonhost.sh
   }
 
   function uploadFallback(file) {
-    encryptFile(file).then(function (r) {
-      uploadKey = r.key;
-      prog.className = 'progress active';
-      bar.style.width = '0%';
+    prog.className = 'progress active';
+    bar.style.width = '0%';
+
+    function doPost(data, name, encrypted) {
       var fd = new FormData();
-      fd.append('file', r.blob, file.name);
-      fd.append('encrypted', '1');
+      fd.append('file', data, name);
+      if (encrypted) fd.append('encrypted', '1');
       var xhr = new XMLHttpRequest();
       xhr.upload.onprogress = function (e) {
         if (e.lengthComputable) {
@@ -422,7 +450,16 @@ chmod +x anonhost.sh
       xhr.onerror = function () { showError('Network error'); };
       xhr.open('POST', '/api/upload');
       xhr.send(fd);
-    }).catch(function (e) { showError('Encryption failed'); });
+    }
+
+    if (encryptEnabled()) {
+      encryptFile(file).then(function (r) {
+        uploadKey = r.key;
+        doPost(r.blob, file.name, true);
+      }).catch(function (e) { showError('Encryption failed'); });
+    } else {
+      doPost(file, file.name, false);
+    }
   }
 
   form.addEventListener('submit', function (e) {

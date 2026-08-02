@@ -34,6 +34,7 @@ docker compose up -d --build
 ```bash
 curl https://anonhost.cc/install | bash
 anonhost.sh upload image.png
+anonhost.sh upload secret.txt --encrypt   # encrypted; key is appended to the URL fragment
 ```
 
 ## Roadmap

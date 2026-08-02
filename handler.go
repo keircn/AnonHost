@@ -766,13 +766,36 @@ check_deps() {
 }
 
 upload_file() {
-    local file="$1"
+    local encrypt=0
+    local file=""
+    while (( $# > 0 )); do
+        case "$1" in
+            -e|--encrypt) encrypt=1 ;;
+            -h|--help) usage; return 0 ;;
+            -*) print_error "Unknown option: $1"; usage; return 1 ;;
+            *) file="$1" ;;
+        esac
+        shift
+    done
+
+    if [[ -z "$file" ]]; then
+        print_error "No file specified"
+        usage
+        return 1
+    fi
     if [[ ! -f "$file" ]]; then print_error "File not found: $file"; return 1; fi
 
     echo "Uploading $(basename "$file")..."
 
-    local resp=$(curl -s -w "\n%{http_code}" -X POST "$API_URL/api/upload" \
-        -F "file=@$file")
+    local curl_args=(-s -w "\n%{http_code}" -X POST "$API_URL/api/upload" -F "file=@$file")
+    local password=""
+    if (( encrypt )); then
+        password=$(head -c 24 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | cut -c1-32)
+        curl_args+=(-F "password=$password")
+        echo "Encrypting (server-side password key, sent in the URL fragment)..."
+    fi
+
+    local resp=$(curl "${curl_args[@]}")
     local code=$(tail -n1 <<< "$resp")
     local body=$(sed '$ d' <<< "$resp")
 
@@ -785,6 +808,11 @@ upload_file() {
     local url=$(jq -r '.url // "N/A"' <<< "$body")
     local id=$(jq -r '.id // "N/A"' <<< "$body")
     local token=$(jq -r '.deletion_token // ""' <<< "$body")
+    local key=$(jq -r '.password // ""' <<< "$body")
+
+    if (( encrypt )); then
+        url="$url#$key"
+    fi
 
     printf "%s\n" "$url" | { command -v wl-copy >/dev/null 2>&1 && wl-copy || command -v xclip >/dev/null 2>&1 && xclip -selection clipboard || cat; } 2>/dev/null
     print_success "Uploaded: $url"
@@ -806,9 +834,9 @@ usage() {
     echo "Usage: $SCRIPT_NAME <command> [options]"
     echo ""
     echo "Commands:"
-    echo "  upload <file>             Upload a file"
-    echo "  delete <id> <token>       Delete a file by ID and deletion token"
-    echo "  help                      Show this help"
+    echo "  upload <file> [-e|--encrypt]  Upload a file (encrypt with -e)"
+    echo "  delete <id> <token>           Delete a file by ID and deletion token"
+    echo "  help                          Show this help"
     echo ""
     echo "Environment:"
     echo "  API_URL                   API base URL (default: $API_URL)"

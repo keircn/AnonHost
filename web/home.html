@@ -325,6 +325,8 @@
   var dzFile = document.getElementById('dz-file');
   var dzHint = document.getElementById('dz-hint');
   var uploadKey = null;
+  var encryptCheckbox = document.getElementById('encrypt-checkbox');
+  function encryptEnabled() { return encryptCheckbox.checked; }
 
   function updateFile() {
     if (input.files.length) {
@@ -402,8 +404,7 @@
         return;
       }
 
-      encryptFile(file).then(function (r) {
-        uploadKey = r.key;
+      function doPut(data, encrypted) {
         bar.style.width = '0%';
         var put = new XMLHttpRequest();
         put.upload.onprogress = function (e) {
@@ -430,7 +431,7 @@
               filename: file.name,
               size: file.size,
               mime_type: file.type || 'application/octet-stream',
-              encrypted: true
+              encrypted: encrypted
             }));
           } else {
             uploadFallback(file);
@@ -439,8 +440,18 @@
         put.onerror = function () { uploadFallback(file); };
         put.open('PUT', resp.upload_url);
         put.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-        put.send(r.blob);
-      }).catch(function (e) { showError('Encryption failed'); });
+        put.send(data);
+      }
+
+      if (encryptEnabled()) {
+        encryptFile(file).then(function (r) {
+          uploadKey = r.key;
+          doPut(r.blob, true);
+        }).catch(function (e) { showError('Encryption failed'); });
+      } else {
+        uploadKey = null;
+        doPut(file, false);
+      }
     };
     init.onerror = function () { uploadFallback(file); };
     init.send(JSON.stringify({
@@ -451,13 +462,42 @@
   }
 
   function uploadFallback(file) {
-    encryptFile(file).then(function (r) {
-      uploadKey = r.key;
+    if (encryptEnabled()) {
+      encryptFile(file).then(function (r) {
+        uploadKey = r.key;
+        prog.className = 'progress active';
+        bar.style.width = '0%';
+        var fd = new FormData();
+        fd.append('file', r.blob, file.name);
+        fd.append('encrypted', '1');
+        var xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            bar.style.width = (e.loaded / e.total * 100) + '%';
+          }
+        };
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            showResult(JSON.parse(xhr.responseText));
+          } else {
+            try {
+              var err = JSON.parse(xhr.responseText);
+              showError(err.error || 'Upload failed');
+            } catch (e) {
+              showError('Upload failed');
+            }
+          }
+        };
+        xhr.onerror = function () { showError('Network error'); };
+        xhr.open('POST', '/api/upload');
+        xhr.send(fd);
+      }).catch(function (e) { showError('Encryption failed'); });
+    } else {
+      uploadKey = null;
       prog.className = 'progress active';
       bar.style.width = '0%';
       var fd = new FormData();
-      fd.append('file', r.blob, file.name);
-      fd.append('encrypted', '1');
+      fd.append('file', file, file.name);
       var xhr = new XMLHttpRequest();
       xhr.upload.onprogress = function (e) {
         if (e.lengthComputable) {
@@ -479,7 +519,7 @@
       xhr.onerror = function () { showError('Network error'); };
       xhr.open('POST', '/api/upload');
       xhr.send(fd);
-    }).catch(function (e) { showError('Encryption failed'); });
+    }
   }
 
   form.addEventListener('submit', function (e) {

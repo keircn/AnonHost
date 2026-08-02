@@ -29,9 +29,9 @@ type UploadResponse struct {
 	Filename       string `json:"filename"`
 	Size           int64  `json:"size"`
 	MimeType       string `json:"mime_type"`
-	DeletionToken  string `json:"deletion_token"`
-	CreatedAt      string `json:"created_at"`
-	Password       string `json:"password,omitempty"`
+	DeletionURL     string `json:"deletion_url"`
+	CreatedAt       string `json:"created_at"`
+	Password        string `json:"password,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -71,6 +71,10 @@ func NewServer(cfg *Config, db *DB, storage Storage) (*Server, error) {
 		views:   views,
 		rl:      NewRateLimiter(cfg.RateLimit),
 	}, nil
+}
+
+func (s *Server) deletionURL(id, token string) string {
+	return fmt.Sprintf("%s/api/media/%s?token=%s", strings.TrimRight(s.cfg.PublicURL, "/"), id, token)
 }
 
 func (s *Server) respondJSON(w http.ResponseWriter, status int, data any) {
@@ -241,7 +245,7 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		Filename:      header.Filename,
 		Size:          header.Size,
 		MimeType:      mimeType,
-		DeletionToken: deletionToken,
+		DeletionURL:   s.deletionURL(id, deletionToken),
 		CreatedAt:     now,
 		Password:      password,
 	}
@@ -379,7 +383,7 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 		Filename:      req.Filename,
 		Size:          req.Size,
 		MimeType:      req.MimeType,
-		DeletionToken: deletionToken,
+		DeletionURL:   s.deletionURL(req.ID, deletionToken),
 		CreatedAt:     now,
 	}
 
@@ -807,7 +811,7 @@ upload_file() {
 
     local url=$(jq -r '.url // "N/A"' <<< "$body")
     local id=$(jq -r '.id // "N/A"' <<< "$body")
-    local token=$(jq -r '.deletion_token // ""' <<< "$body")
+    local delurl=$(jq -r '.deletion_url // ""' <<< "$body")
     local key=$(jq -r '.password // ""' <<< "$body")
 
     if (( encrypt )); then
@@ -817,8 +821,7 @@ upload_file() {
     printf "%s\n" "$url" | { command -v wl-copy >/dev/null 2>&1 && wl-copy || command -v xclip >/dev/null 2>&1 && xclip -selection clipboard || cat; } 2>/dev/null
     print_success "Uploaded: $url"
     echo "ID: $id"
-    [[ -n "$token" ]] && echo "Delete token: $token"
-    echo "Delete URL: $API_URL/api/media/$id?token=$token"
+    [[ -n "$delurl" ]] && echo "Delete URL: $delurl"
 }
 
 delete_file() {
@@ -877,10 +880,10 @@ func (s *Server) handleShareXConfig(w http.ResponseWriter, r *http.Request) {
     "password": "%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra%%ra"
   },
   "URL": "{json:url}#{json:password}",
-  "DeletionURL": "%s/api/media/{json:id}?token={json:deletion_token}",
+  "DeletionURL": "{json:deletion_url}",
   "ErrorMessage": "{json:error}"
 }
-`, apiURL, apiURL)
+`, apiURL)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="sharex-anonhost.sxcu"`)
@@ -900,10 +903,10 @@ func (s *Server) handleShareXPlainConfig(w http.ResponseWriter, r *http.Request)
   "Body": "MultipartFormData",
   "FileFormName": "file",
   "URL": "{json:url}",
-  "DeletionURL": "%s/api/media/{json:id}?token={json:deletion_token}",
+  "DeletionURL": "{json:deletion_url}",
   "ErrorMessage": "{json:error}"
 }
-`, apiURL, apiURL)
+`, apiURL)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="sharex-anonhost-plain.sxcu"`)

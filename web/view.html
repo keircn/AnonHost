@@ -286,6 +286,61 @@
   }
   .actions a:hover { background: #ddd; }
 
+  .decrypt-box {
+    background: #f4f4f4;
+    color: #333;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    text-align: left;
+    padding: 16px;
+  }
+  .decrypt-log {
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-bottom: 10px;
+    min-height: 44px;
+  }
+  .decrypt-log .err { color: #c00; font-weight: bold; }
+  .decrypt-log .ok { color: #060; font-weight: bold; }
+  .decrypt-bar {
+    border: 1px solid #999;
+    height: 16px;
+    background: #fff;
+    margin-bottom: 4px;
+  }
+  .decrypt-fill {
+    height: 100%;
+    width: 0;
+    background: repeating-linear-gradient(90deg, #333 0 6px, #999 6px 8px);
+  }
+  .decrypt-status {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    margin-bottom: 10px;
+  }
+  .decrypt-key { border-top: 1px dashed #bbb; padding-top: 10px; }
+  .decrypt-key-row { display: flex; gap: 6px; margin-top: 6px; }
+  .decrypt-key input {
+    flex: 1;
+    min-width: 0;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    border: 1px solid #999;
+    padding: 5px 8px;
+    background: #fff;
+  }
+  .decrypt-key button {
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    background: #eee;
+    border: 1px solid #999;
+    padding: 5px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .decrypt-key button:hover { background: #ddd; }
+
   .footer {
     border-top: 1px solid #c0c0c0;
     padding: 14px;
@@ -602,13 +657,9 @@
 </script>
 {{end}}
 
+<script src="/public/crypto.js"></script>
 <script>
 (function () {
-  var hash = window.location.hash;
-  if (!hash || hash.length <= 1) return;
-  var key = hash.substring(1);
-  if (!key.length) return;
-
   var fileURL = '{{.FileURL}}';
   var mimeType = '{{.MimeType}}';
   var filename = '{{.Filename}}';
@@ -617,49 +668,62 @@
   var isAudio = {{.IsAudio}};
   var isArchive = {{.IsArchive}};
 
-  function base64urlDecode(s) {
-    s = s.replace(/-/g, '+').replace(/_/g, '/');
-    while (s.length % 4) s += '=';
-    var t = atob(s), b = new Uint8Array(t.length), i = 0;
-    for (; i < t.length; i++) b[i] = t.charCodeAt(i);
-    return b;
-  }
-
   var mediaEl = document.querySelector('.media');
   if (!mediaEl) return;
-  mediaEl.innerHTML = '<div class="placeholder" style="padding:48px 24px;color:#999;font-size:13px;text-align:center">Decrypting...</div>';
 
-  function keyFromHash(h) {
-    if (h.length === 43) {
-      return Promise.resolve(base64urlDecode(h));
-    }
-    var buf = new Uint8Array(h.length);
-    for (var i = 0; i < h.length; i++) buf[i] = h.charCodeAt(i);
-    return crypto.subtle.digest('SHA-256', buf).then(function (k) {
-      return new Uint8Array(k);
-    });
+  mediaEl.innerHTML =
+    '<div class="decrypt-box" id="decrypt-box">' +
+      '<div class="decrypt-log" id="decrypt-log"></div>' +
+      '<div class="decrypt-bar"><div class="decrypt-fill" id="decrypt-fill"></div></div>' +
+      '<div class="decrypt-status"><span id="decrypt-status">INIT</span><span id="decrypt-pct">0%</span></div>' +
+      '<div class="decrypt-key" id="decrypt-key" hidden>' +
+        '<div>ENTER DECRYPTION KEY OR PASSWORD:</div>' +
+        '<div class="decrypt-key-row">' +
+          '<input id="decrypt-input" type="text" autocomplete="off" spellcheck="false" placeholder="key from the original URL...">' +
+          '<button id="decrypt-go" type="button">DECRYPT</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  var logEl = document.getElementById('decrypt-log');
+  var fillEl = document.getElementById('decrypt-fill');
+  var statusEl = document.getElementById('decrypt-status');
+  var pctEl = document.getElementById('decrypt-pct');
+  var keyWrap = document.getElementById('decrypt-key');
+  var keyInput = document.getElementById('decrypt-input');
+  var keyBtn = document.getElementById('decrypt-go');
+
+  function log(msg, cls) {
+    var d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = (cls === 'err' ? '! ' : '> ') + msg;
+    logEl.appendChild(d);
   }
 
-  fetch(fileURL).then(function (resp) {
-    if (!resp.ok) throw new Error('fetch failed');
-    return resp.arrayBuffer();
-  }).then(function (encrypted) {
-    return keyFromHash(key).then(function (rawKey) {
-      var iv = encrypted.slice(0, 12);
-      var ciphertext = encrypted.slice(12);
-      return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['decrypt'])
-        .then(function (cryptoKey) {
-          return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, cryptoKey, ciphertext);
-        });
-    });
-  }).then(function (decrypted) {
-    mediaEl.innerHTML = '';
-    var blob = new Blob([decrypted], { type: mimeType });
+  function setBar(pct, status) {
+    if (pct < 0) pct = 0;
+    if (pct > 100) pct = 100;
+    fillEl.style.width = pct + '%';
+    pctEl.textContent = Math.floor(pct) + '%';
+    if (status) statusEl.textContent = status;
+  }
+
+  function formatSize(b) {
+    if (b >= 1073741824) return (b / 1073741824).toFixed(1) + ' GB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
+    return b + ' B';
+  }
+
+  function renderDecrypted(plainParts, plainSize) {
+    var blob = new Blob(plainParts, { type: mimeType });
     var blobURL = URL.createObjectURL(blob);
+    mediaEl.innerHTML = '';
 
     if (isImage) {
       var img = document.createElement('img');
       img.src = blobURL;
+      img.alt = filename;
       mediaEl.appendChild(img);
     } else if (isVideo) {
       var video = document.createElement('video');
@@ -674,26 +738,113 @@
       audio.controls = true;
       audio.src = blobURL;
       mediaEl.appendChild(audio);
-    } else if (isArchive) {
-      var dl = document.createElement('a');
-      dl.href = blobURL;
-      dl.download = filename;
-      dl.textContent = 'Download decrypted archive';
-      dl.style.cssText = 'display:inline-block;padding:8px 24px;margin:24px;background:#eee;border:1px solid #999;color:#000;text-decoration:none;font-size:13px';
-      mediaEl.appendChild(dl);
     } else {
       var dl = document.createElement('a');
       dl.href = blobURL;
       dl.download = filename;
-      dl.textContent = 'Download';
+      dl.textContent = isArchive ? 'Download decrypted archive' : 'Download ' + filename + ' (' + formatSize(plainSize) + ')';
       dl.style.cssText = 'display:inline-block;padding:8px 24px;margin:24px;background:#eee;border:1px solid #999;color:#000;text-decoration:none;font-size:13px';
       mediaEl.appendChild(dl);
     }
-  }).catch(function () {
-    mediaEl.innerHTML = '<div class="placeholder" style="padding:48px 24px;color:#999;font-size:13px;text-align:center">Decryption failed — invalid or missing key</div>';
+  }
+
+  function fail(msg, showPrompt) {
+    setBar(0, 'FAILED');
+    log(msg, 'err');
+    if (showPrompt) {
+      keyWrap.hidden = false;
+      setBar(0, 'AWAITING KEY');
+      keyInput.focus();
+    }
+  }
+
+  function run(key) {
+    keyWrap.hidden = true;
+    setBar(0, 'FETCHING');
+    log('FETCHING ENCRYPTED FILE...');
+
+    fetch(fileURL).then(function (resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var prog = AnonCrypto.responseChunks(resp, function () {});
+      var total = prog.total;
+      var consumed = 0;
+      var base = prog.iter[Symbol.asyncIterator]();
+      var counting = {};
+      counting[Symbol.asyncIterator] = function () {
+        return {
+          next: function () {
+            return base.next().then(function (r) {
+              if (!r.done && r.value) {
+                consumed += r.value.length;
+                if (total > 0) {
+                  setBar(consumed / total * 100, 'FETCHING ' + formatSize(consumed) + ' / ' + formatSize(total));
+                } else {
+                  setBar(-1, 'FETCHING ' + formatSize(consumed));
+                  fillEl.style.width = '100%';
+                }
+              }
+              return r;
+            });
+          }
+        };
+      };
+      setBar(0, total > 0 ? 'FETCHING 0 / ' + formatSize(total) : 'FETCHING');
+      return AnonCrypto.decryptStream(counting, key, function (stage, done) {
+        if (stage === 'key') {
+          setBar(consumed / (total > 0 ? total : 1) * 100, 'DERIVING KEY...');
+          log('DERIVING KEY...');
+        } else if (stage === 'chunk') {
+          if (total > 0) {
+            setBar(consumed / total * 100, 'DECRYPTING CHUNK ' + done + '...');
+          } else {
+            setBar(-1, 'DECRYPTING CHUNK ' + done + '...');
+            fillEl.style.width = '100%';
+          }
+        }
+      });
+    }).then(function (res) {
+      setBar(100, 'DONE');
+      log('DECRYPTED OK (v' + res.version + ', ' + res.chunks + ' CHUNK' + (res.chunks === 1 ? '' : 'S') + ', ' + formatSize(res.plainSize) + ')', 'ok');
+      renderDecrypted(res.blobParts, res.plainSize);
+    }).catch(function (e) {
+      var msg = (e && e.message) || 'decryption failed';
+      if (/missing decryption key/i.test(msg)) {
+        log('NO KEY IN URL.');
+        fail('PASTE THE KEY OR PASSWORD TO CONTINUE.', true);
+      } else if (/wrong key|corrupt|auth/i.test(msg)) {
+        fail('DECRYPTION FAILED: WRONG KEY OR CORRUPTED FILE.', false);
+      } else if (/truncat|fetch|network|HTTP/i.test(msg)) {
+        fail('DOWNLOAD FAILED: ' + msg + ' (TRY AGAIN)', false);
+      } else if (/WebCrypto/i.test(msg)) {
+        fail(msg.toUpperCase(), false);
+      } else {
+        fail('ERROR: ' + msg, false);
+      }
+    });
+  }
+
+  keyBtn.addEventListener('click', function () {
+    var v = keyInput.value.trim();
+    var h = v.indexOf('#');
+    if (h >= 0) v = v.slice(h + 1).trim();
+    if (!v) return;
+    try { history.replaceState(null, '', '#' + v); } catch (e) {}
+    logEl.innerHTML = '';
+    run(v);
   });
+  keyInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') keyBtn.click();
+  });
+
+  var initial = window.location.hash ? window.location.hash.substring(1) : '';
+  if (!initial) {
+    log('ENCRYPTED FILE.');
+    fail('NO KEY IN URL.', true);
+    return;
+  }
+  run(initial);
 })();
 </script>
-</div>
+
 </body>
 </html>

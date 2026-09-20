@@ -3,10 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
@@ -20,18 +16,20 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 type UploadResponse struct {
-	ID             string `json:"id"`
-	URL            string `json:"url"`
-	Filename       string `json:"filename"`
-	Size           int64  `json:"size"`
-	MimeType       string `json:"mime_type"`
-	DeletionURL     string `json:"deletion_url"`
-	CreatedAt       string `json:"created_at"`
-	Password        string `json:"password,omitempty"`
+	ID          string `json:"id"`
+	URL         string `json:"url"`
+	Filename    string `json:"filename"`
+	Size        int64  `json:"size"`
+	MimeType    string `json:"mime_type"`
+	DeletionURL string `json:"deletion_url"`
+	CreatedAt   string `json:"created_at"`
+	Password    string `json:"password,omitempty"`
+	EncVersion  int    `json:"enc_version,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -140,40 +138,64 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 	mimeType := detectContentType(header.Filename, headerBuf)
 	storageMimeType := mimeType
+	encVersion := 0
 
 	if password != "" {
-		data, err := io.ReadAll(reader)
+		tmpIn, err := os.CreateTemp("", "anonhost-plain-*")
 		if err != nil {
+			s.respondError(w, http.StatusInternalServerError, "storage error")
+			return
+		}
+		plainSize, err := io.Copy(tmpIn, reader)
+		tmpIn.Close()
+		if err != nil {
+			os.Remove(tmpIn.Name())
 			s.respondError(w, http.StatusBadRequest, "failed to read file")
 			return
 		}
-
-		keyDerived := sha256.Sum256([]byte(password))
-		iv := make([]byte, 12)
-		if _, err := rand.Read(iv); err != nil {
-			s.respondError(w, http.StatusInternalServerError, "encryption error")
+		if plainSize > s.cfg.MaxFileSize {
+			os.Remove(tmpIn.Name())
+			s.respondError(w, http.StatusRequestEntityTooLarge,
+				fmt.Sprintf("file exceeds maximum size of %d bytes", s.cfg.MaxFileSize))
 			return
 		}
 
-		block, err := aes.NewCipher(keyDerived[:])
+		tmpEnc, err := os.CreateTemp("", "anonhost-enc-*")
 		if err != nil {
+			os.Remove(tmpIn.Name())
+			s.respondError(w, http.StatusInternalServerError, "storage error")
+			return
+		}
+		_, encErr := func() (Header, error) {
+			defer os.Remove(tmpIn.Name())
+			defer tmpEnc.Close()
+			in, err := os.Open(tmpIn.Name())
+			if err != nil {
+				return Header{}, err
+			}
+			defer in.Close()
+			return EncryptPasswordStream(password, in, tmpEnc, DefaultChunkSize)
+		}()
+		if encErr != nil {
+			os.Remove(tmpEnc.Name())
+			log.Printf("encryption error: %v", encErr)
 			s.respondError(w, http.StatusInternalServerError, "encryption error")
 			return
 		}
-		gcm, err := cipher.NewGCM(block)
+
+		encFile, err := os.Open(tmpEnc.Name())
 		if err != nil {
-			s.respondError(w, http.StatusInternalServerError, "encryption error")
+			os.Remove(tmpEnc.Name())
+			s.respondError(w, http.StatusInternalServerError, "storage error")
 			return
 		}
+		defer os.Remove(tmpEnc.Name())
+		defer encFile.Close()
 
-		ciphertext := gcm.Seal(nil, iv, data, nil)
-		encrypted := make([]byte, 12+len(ciphertext))
-		copy(encrypted, iv)
-		copy(encrypted[12:], ciphertext)
-
-		reader = bytes.NewReader(encrypted)
-		header.Size = int64(len(encrypted))
+		reader = encFile
+		header.Size = StoredSizeDefault(plainSize)
 		storageMimeType = "application/octet-stream"
+		encVersion = 2
 	}
 
 	now := time.Now().UTC().Format(time.RFC3339)
@@ -205,6 +227,14 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isEncrypted := r.FormValue("encrypted") == "1" || password != ""
+	if isEncrypted && encVersion == 0 {
+		switch r.FormValue("enc_version") {
+		case "2":
+			encVersion = 2
+		case "1":
+			encVersion = 1
+		}
+	}
 
 	rec := &FileRecord{
 		ID:             id,
@@ -240,14 +270,15 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	fileURL := fmt.Sprintf("%s/%s", strings.TrimRight(s.cfg.PublicURL, "/"), id)
 
 	resp := UploadResponse{
-		ID:            id,
-		URL:           fileURL,
-		Filename:      header.Filename,
-		Size:          header.Size,
-		MimeType:      mimeType,
-		DeletionURL:   s.deletionURL(id, deletionToken),
-		CreatedAt:     now,
-		Password:      password,
+		ID:          id,
+		URL:         fileURL,
+		Filename:    header.Filename,
+		Size:        header.Size,
+		MimeType:    mimeType,
+		DeletionURL: s.deletionURL(id, deletionToken),
+		CreatedAt:   now,
+		Password:    password,
+		EncVersion:  encVersion,
 	}
 
 	s.respondJSON(w, http.StatusOK, resp)
@@ -303,12 +334,15 @@ func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		ID        string `json:"id"`
-		ObjectKey string `json:"object_key"`
-		Filename  string `json:"filename"`
-		Size      int64  `json:"size"`
-		MimeType  string `json:"mime_type"`
-		Encrypted bool   `json:"encrypted"`
+		ID         string `json:"id"`
+		ObjectKey  string `json:"object_key"`
+		Filename   string `json:"filename"`
+		Size       int64  `json:"size"`
+		StoredSize int64  `json:"stored_size"`
+		PlainSize  int64  `json:"plain_size"`
+		EncVersion int    `json:"enc_version"`
+		MimeType   string `json:"mime_type"`
+		Encrypted  bool   `json:"encrypted"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.respondError(w, http.StatusBadRequest, "invalid JSON")
@@ -317,6 +351,34 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 
 	if req.ID == "" || req.ObjectKey == "" || req.Filename == "" {
 		s.respondError(w, http.StatusBadRequest, "missing required fields")
+		return
+	}
+
+	if !strings.HasPrefix(req.ObjectKey, req.ID) {
+		s.respondError(w, http.StatusBadRequest, "object key does not match id")
+		return
+	}
+
+	storedSize := req.StoredSize
+	if storedSize <= 0 {
+		storedSize = req.Size
+	}
+	if storedSize <= 0 {
+		s.respondError(w, http.StatusBadRequest, "missing size")
+		return
+	}
+	plainSize := req.PlainSize
+	if plainSize <= 0 {
+		plainSize = req.Size
+	}
+	const maxOverhead = 2 << 20
+	if storedSize < plainSize || storedSize > plainSize+maxOverhead {
+		s.respondError(w, http.StatusBadRequest, "size mismatch")
+		return
+	}
+	if storedSize > s.cfg.MaxFileSize+maxOverhead {
+		s.respondError(w, http.StatusRequestEntityTooLarge,
+			fmt.Sprintf("file exceeds maximum size of %d bytes", s.cfg.MaxFileSize))
 		return
 	}
 
@@ -346,7 +408,7 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 	rec := &FileRecord{
 		ID:             req.ID,
 		Filename:       req.Filename,
-		Size:           req.Size,
+		Size:           storedSize,
 		MimeType:       req.MimeType,
 		StorageBackend: "r2",
 		StoragePath:    req.ObjectKey,
@@ -362,7 +424,7 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Size <= 500<<20 && isArchive(req.Filename) {
+	if !req.Encrypted && storedSize <= 500<<20 && isArchive(req.Filename) {
 		entries, fmtName, err := s.readArchiveListing(r.Context(), req.ObjectKey)
 		if err == nil {
 			rec.IsArchive = true
@@ -378,13 +440,14 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 	fileURL := fmt.Sprintf("%s/%s", strings.TrimRight(s.cfg.PublicURL, "/"), req.ID)
 
 	resp := UploadResponse{
-		ID:            req.ID,
-		URL:           fileURL,
-		Filename:      req.Filename,
-		Size:          req.Size,
-		MimeType:      req.MimeType,
-		DeletionURL:   s.deletionURL(req.ID, deletionToken),
-		CreatedAt:     now,
+		ID:          req.ID,
+		URL:         fileURL,
+		Filename:    req.Filename,
+		Size:        storedSize,
+		MimeType:    req.MimeType,
+		DeletionURL: s.deletionURL(req.ID, deletionToken),
+		CreatedAt:   now,
+		EncVersion:  req.EncVersion,
 	}
 
 	s.respondJSON(w, http.StatusOK, resp)
@@ -428,23 +491,23 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	s.views.ExecuteTemplate(w, "view", map[string]any{
-		"ID":                  rec.ID,
-		"Filename":            rec.Filename,
-		"Size":                rec.Size,
-		"MimeType":            rec.MimeType,
-		"FileURL":             fileURL,
-		"IsImage":             isImage,
-		"IsVideo":             playableVideo,
-		"IsAudio":             playableAudio,
-		"IsEncrypted":         rec.IsEncrypted,
-		"IsUnplayable":        (isVideo || isAudio) && !playableVideo && !playableAudio,
-		"IsArchive":           isArch,
-		"ArchiveFormat":       rec.ArchiveFormat,
-		"ArchiveListing":      listing,
-		"ArchiveListingJSON":  template.JS(rec.ArchiveListing),
-		"Width":               rec.Width,
-		"Height":              rec.Height,
-		"BaseURL":             strings.TrimRight(s.cfg.PublicURL, "/"),
+		"ID":                 rec.ID,
+		"Filename":           rec.Filename,
+		"Size":               rec.Size,
+		"MimeType":           rec.MimeType,
+		"FileURL":            fileURL,
+		"IsImage":            isImage,
+		"IsVideo":            playableVideo,
+		"IsAudio":            playableAudio,
+		"IsEncrypted":        rec.IsEncrypted,
+		"IsUnplayable":       (isVideo || isAudio) && !playableVideo && !playableAudio,
+		"IsArchive":          isArch,
+		"ArchiveFormat":      rec.ArchiveFormat,
+		"ArchiveListing":     listing,
+		"ArchiveListingJSON": template.JS(rec.ArchiveListing),
+		"Width":              rec.Width,
+		"Height":             rec.Height,
+		"BaseURL":            strings.TrimRight(s.cfg.PublicURL, "/"),
 	})
 }
 
@@ -699,8 +762,8 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 	totalSize, _ := s.db.TotalSize()
 
 	s.respondJSON(w, http.StatusOK, map[string]any{
-		"total_uploads":  count,
-		"total_size":     totalSize,
+		"total_uploads": count,
+		"total_size":    totalSize,
 	})
 }
 
@@ -1084,14 +1147,15 @@ func extractIP(r *http.Request) string {
 }
 
 type RateLimiter struct {
+	mu       sync.Mutex
 	limit    int
 	window   time.Duration
 	requests map[string]*rateEntry
 }
 
 type rateEntry struct {
-	count    int
-	resetAt  time.Time
+	count   int
+	resetAt time.Time
 }
 
 func NewRateLimiter(limit int) *RateLimiter {
@@ -1105,7 +1169,9 @@ func NewRateLimiter(limit int) *RateLimiter {
 }
 
 func (rl *RateLimiter) Allow(key string) bool {
-	rl.cleanup()
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	rl.sweep()
 	now := time.Now()
 
 	entry, ok := rl.requests[key]
@@ -1122,12 +1188,20 @@ func (rl *RateLimiter) Allow(key string) bool {
 	return true
 }
 
-func (rl *RateLimiter) cleanup() {
+func (rl *RateLimiter) sweep() {
 	now := time.Now()
 	for k, v := range rl.requests {
 		if now.After(v.resetAt) {
 			delete(rl.requests, k)
 		}
+	}
+}
+
+func (rl *RateLimiter) cleanup() {
+	for range time.Tick(time.Minute) {
+		rl.mu.Lock()
+		rl.sweep()
+		rl.mu.Unlock()
 	}
 }
 

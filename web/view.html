@@ -286,6 +286,21 @@
   }
   .actions a:hover { background: #ddd; }
 
+  .delete-box {
+    border-top: 1px dashed #c00;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .delete-label {
+    color: #c00;
+    font-weight: bold;
+    font-size: 11px;
+    margin-right: 10px;
+  }
+  .delete-ok { color: #060; font-weight: bold; }
+  .delete-err { color: #c00; margin-top: 6px; }
+
   .decrypt-box {
     background: #f4f4f4;
     color: #333;
@@ -426,6 +441,39 @@
   <div class="actions">
     <a href="{{.FileURL}}" download="{{.Filename}}">Download</a>
   </div>
+{{end}}
+{{if .CanDelete}}
+  <div class="delete-box" id="delete-box">
+    <span class="delete-label">DANGER ZONE</span>
+    <button class="btn-small" id="delete-btn" type="button">Delete this file</button>
+  </div>
+  <script>
+  (function () {
+    var btn = document.getElementById('delete-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      if (!confirm('Permanently delete this file?')) return;
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+      fetch(window.location.pathname + window.location.search, { method: 'DELETE' }).then(function (resp) {
+        var box = document.getElementById('delete-box');
+        if (resp.ok) {
+          box.innerHTML = '<span class="delete-ok">FILE DELETED.</span>';
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Delete this file';
+          var err = document.createElement('div');
+          err.className = 'delete-err';
+          err.textContent = 'Delete failed. Try again.';
+          box.appendChild(err);
+        }
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Delete this file';
+      });
+    });
+  })();
+  </script>
 {{end}}
 </div>
 
@@ -761,7 +809,6 @@
   function run(key) {
     keyWrap.hidden = true;
     setBar(0, 'FETCHING');
-    log('FETCHING ENCRYPTED FILE...');
 
     fetch(fileURL).then(function (resp) {
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -792,7 +839,6 @@
       return AnonCrypto.decryptStream(counting, key, function (stage, done) {
         if (stage === 'key') {
           setBar(consumed / (total > 0 ? total : 1) * 100, 'DERIVING KEY...');
-          log('DERIVING KEY...');
         } else if (stage === 'chunk') {
           if (total > 0) {
             setBar(consumed / total * 100, 'DECRYPTING CHUNK ' + done + '...');

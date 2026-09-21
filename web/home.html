@@ -202,6 +202,9 @@
   .result-url { font-size: 12px; margin-bottom: 6px; }
   .result-url a { font-weight: 700; word-break: break-all; }
   .result-meta { font-size: 11px; color: #666; margin-bottom: 6px; }
+  .result-del { font-size: 11px; color: #666; margin-bottom: 6px; display: none; }
+  .result-del.show { display: block; }
+  .result-del a { word-break: break-all; }
 
   .result-row {
     display: flex;
@@ -330,6 +333,8 @@
   var result = document.getElementById('result');
   var rlink = document.getElementById('result-link');
   var rmeta = document.getElementById('result-meta');
+  var rdel = document.getElementById('result-del');
+  var rdellink = document.getElementById('result-del-link');
   var rinput = document.getElementById('result-url-input');
   var copyBtn = document.getElementById('copy-btn');
   var dzFile = document.getElementById('dz-file');
@@ -398,7 +403,10 @@
     rlink.href = url;
     rlink.textContent = url;
     rinput.value = url;
-    rmeta.textContent = data.filename + ' (' + formatSize(data.size) + ')  |  ID: ' + data.id + '  |  Delete URL: ' + data.deletion_url;
+    rmeta.textContent = data.filename + ' (' + formatSize(data.size) + ')  |  ID: ' + data.id;
+    rdel.className = 'result-del show';
+    rdellink.href = data.deletion_url;
+    rdellink.textContent = data.deletion_url;
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -409,6 +417,7 @@
     result.className = 'result error show';
     rlink.textContent = msg;
     rmeta.textContent = '';
+    rdel.className = 'result-del';
     rinput.value = '';
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }

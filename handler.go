@@ -481,6 +481,9 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 	isVideo := strings.HasPrefix(rec.MimeType, "video/")
 	isAudio := strings.HasPrefix(rec.MimeType, "audio/")
 
+	token := r.URL.Query().Get("token")
+	canDelete := token != "" && subtle.ConstantTimeCompare([]byte(token), []byte(rec.DeletionToken)) == 1
+
 	playableVideo := isVideo && isPlayableVideo(rec.MimeType)
 	playableAudio := isAudio && isPlayableAudio(rec.MimeType)
 	isArch := rec.IsArchive
@@ -508,6 +511,7 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 		"Width":              rec.Width,
 		"Height":             rec.Height,
 		"BaseURL":            strings.TrimRight(s.cfg.PublicURL, "/"),
+		"CanDelete":          canDelete,
 	})
 }
 

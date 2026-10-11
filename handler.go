@@ -42,6 +42,7 @@ type Server struct {
 	storage Storage
 	views   *template.Template
 	rl      *RateLimiter
+	orphans orphanJobState
 }
 
 func NewServer(cfg *Config, db *DB, storage Storage) (*Server, error) {

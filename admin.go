@@ -18,6 +18,7 @@ func (s *Server) adminHandler() http.Handler {
 	mux.HandleFunc("POST /api/cleanup", s.handleAdminCleanup)
 	mux.HandleFunc("POST /api/dedup", s.handleAdminDedup)
 	mux.HandleFunc("POST /api/orphans", s.handleAdminOrphans)
+	mux.HandleFunc("GET /api/orphans/status", s.handleAdminOrphansStatus)
 	mux.HandleFunc("POST /api/upload", s.handleAdminUpload)
 	mux.HandleFunc("POST /api/backfill/archive/{id}", s.handleBackfillArchive)
 	mux.HandleFunc("POST /api/backfill/archives", s.handleRescanArchives)
@@ -199,14 +200,60 @@ func (s *Server) handleAdminOrphans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	dryRun := r.URL.Query().Get("dry_run") == "1"
-	res, err := s.runOrphanCheck(context.WithoutCancel(r.Context()), dryRun)
-	if err != nil {
-		s.respondJSON(w, http.StatusConflict, map[string]any{
-			"error":    err.Error(),
-			"checked":  res.Checked,
-			"orphaned": res.Orphaned,
-		})
+
+	st := &s.orphans
+	st.mu.Lock()
+	if st.running {
+		st.mu.Unlock()
+		s.respondError(w, http.StatusConflict, "orphan check already running")
 		return
 	}
-	s.respondJSON(w, http.StatusOK, res)
+	st.running = true
+	st.done = false
+	st.dryRun = dryRun
+	st.checked, st.orphaned, st.pruned = 0, 0, 0
+	st.ids = []string{}
+	st.errMsg = ""
+	st.mu.Unlock()
+
+	go func() {
+		res, err := s.runOrphanCheck(context.Background(), dryRun, func(checked, orphaned int) {
+			st.mu.Lock()
+			st.checked, st.orphaned = checked, orphaned
+			st.mu.Unlock()
+		})
+		st.mu.Lock()
+		st.checked, st.orphaned, st.pruned, st.ids = res.Checked, res.Orphaned, res.Pruned, res.IDs
+		if err != nil {
+			st.errMsg = err.Error()
+		}
+		st.running = false
+		st.done = true
+		st.mu.Unlock()
+	}()
+
+	s.respondJSON(w, http.StatusAccepted, map[string]any{
+		"started": true,
+		"dry_run": dryRun,
+	})
+}
+
+func (s *Server) handleAdminOrphansStatus(w http.ResponseWriter, r *http.Request) {
+	if !s.requireAdmin(w, r) {
+		return
+	}
+	st := &s.orphans
+	st.mu.Lock()
+	snapshot := map[string]any{
+		"running":    st.running,
+		"done":       st.done,
+		"checked":    st.checked,
+		"orphaned":   st.orphaned,
+		"pruned":     st.pruned,
+		"pruned_ids": st.ids,
+		"dry_run":    st.dryRun,
+		"error":      st.errMsg,
+	}
+	st.mu.Unlock()
+	s.respondJSON(w, http.StatusOK, snapshot)
 }

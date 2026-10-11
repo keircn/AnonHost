@@ -149,21 +149,51 @@
       .then(function (d) { setMsg('Dedup: ' + d.deduped + ' merged in ' + d.groups + ' groups, freed ' + d.freed_bytes + ' bytes.', true); load(); })
       .catch(function (e) { setMsg('Dedup failed: ' + e.message, false); });
   });
-  document.getElementById('btn-orphans-dry').addEventListener('click', function () {
-    setMsg('Checking for orphans...', true);
-    fetch('/api/orphans' + authQs('?dry_run=1'), { method: 'POST', headers: authHeaders() })
+  function orphanIDText(d) {
+    var ids = d.pruned_ids || [];
+    if (!ids.length) return '';
+    var shown = ids.slice(0, 200);
+    var t = ' IDs: ' + shown.join(', ');
+    if (ids.length > shown.length) t += ' (+' + (ids.length - shown.length) + ' more)';
+    return t;
+  }
+  function pollOrphans(done) {
+    fetch('/api/orphans/status' + authQs(), { headers: authHeaders() })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (d) { setMsg('Orphans: ' + d.orphaned + ' of ' + d.checked + ' rows point at missing objects.' + (d.pruned_ids && d.pruned_ids.length ? ' IDs: ' + d.pruned_ids.join(', ') : ''), true); load(); })
+      .then(function (d) {
+        if (d.running) {
+          setMsg('Orphans: checked ' + d.checked + ', ' + d.orphaned + ' missing so far...', true);
+          setTimeout(function () { pollOrphans(done); }, 2000);
+        } else if (d.error) {
+          setMsg('Orphan job refused: ' + d.error + ' (checked ' + d.checked + ', ' + d.orphaned + ' missing)', false);
+          load();
+        } else {
+          done(d);
+          load();
+        }
+      })
+      .catch(function (e) { setMsg('Orphan status failed: ' + e.message, false); });
+  }
+  document.getElementById('btn-orphans-dry').addEventListener('click', function () {
+    setMsg('Starting orphan check...', true);
+    fetch('/api/orphans' + authQs('?dry_run=1'), { method: 'POST', headers: authHeaders() })
+      .then(function () {
+        pollOrphans(function (d) {
+          setMsg('Orphans: ' + d.orphaned + ' of ' + d.checked + ' rows point at missing objects.' + orphanIDText(d), true);
+        });
+      })
       .catch(function (e) { setMsg('Orphan check failed: ' + e.message, false); });
   });
   document.getElementById('btn-orphans').addEventListener('click', function () {
-    if (!confirm('Delete DB rows whose storage objects are missing? Files already gone from storage are unaffected.')) return;
-    setMsg('Pruning orphans...', true);
+    if (!confirm('Delete DB rows whose storage objects are missing? This runs in the background; watch the status below.')) return;
+    setMsg('Starting orphan prune...', true);
     fetch('/api/orphans' + authQs(), { method: 'POST', headers: authHeaders() })
-      .then(function (r) { return r.json().then(function (d) { return { status: r.status, body: d }; }); })
-      .then(function (t) {
-        if (t.status !== 200) throw new Error(t.body.error || ('HTTP ' + t.status));
-        setMsg('Orphans pruned: ' + t.body.pruned + ' of ' + t.body.orphaned + ' found.', true); load();
+      .then(function (r) {
+        if (r.status === 409) throw new Error('an orphan job is already running');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        pollOrphans(function (d) {
+          setMsg('Orphans pruned: ' + d.pruned + ' of ' + d.orphaned + ' found.' + orphanIDText(d), true);
+        });
       })
       .catch(function (e) { setMsg('Orphan prune failed: ' + e.message, false); });
   });

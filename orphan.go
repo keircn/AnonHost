@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
+	"time"
 )
 
 type orphanResult struct {
@@ -14,7 +16,19 @@ type orphanResult struct {
 	DryRun   bool     `json:"dry_run"`
 }
 
-func (s *Server) runOrphanCheck(ctx context.Context, dryRun bool) (orphanResult, error) {
+type orphanJobState struct {
+	mu       sync.Mutex
+	running  bool
+	done     bool
+	dryRun   bool
+	checked  int
+	orphaned int
+	pruned   int
+	ids      []string
+	errMsg   string
+}
+
+func (s *Server) runOrphanCheck(ctx context.Context, dryRun bool, progress func(checked, orphaned int)) (orphanResult, error) {
 	res := orphanResult{DryRun: dryRun, IDs: []string{}}
 
 	files, err := s.db.ListFiles()
@@ -22,24 +36,52 @@ func (s *Server) runOrphanCheck(ctx context.Context, dryRun bool) (orphanResult,
 		return res, err
 	}
 
+	const workers = 24
+	var mu sync.Mutex
 	var orphans []FileRecord
+	queue := make(chan FileRecord)
+	var wg sync.WaitGroup
+	for w := 0; w < workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for rec := range queue {
+				cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+				exists, err := s.storage.Exists(cctx, rec.StoragePath)
+				cancel()
+				mu.Lock()
+				if err != nil {
+					if ctx.Err() == nil {
+						log.Printf("orphans: exists %s (%s): %v", rec.ID, rec.StoragePath, err)
+					}
+				} else {
+					res.Checked++
+					if !exists {
+						res.Orphaned++
+						orphans = append(orphans, rec)
+						res.IDs = append(res.IDs, rec.ID)
+					}
+					if progress != nil {
+						progress(res.Checked, res.Orphaned)
+					}
+				}
+				mu.Unlock()
+			}
+		}()
+	}
+
+send:
 	for _, rec := range files {
-		if ctx.Err() != nil {
-			log.Printf("orphans: check aborted (%v), resuming next run", ctx.Err())
-			break
+		select {
+		case <-ctx.Done():
+			break send
+		case queue <- rec:
 		}
-		exists, err := s.storage.Exists(ctx, rec.StoragePath)
-		if err != nil {
-			log.Printf("orphans: exists %s (%s): %v", rec.ID, rec.StoragePath, err)
-			continue
-		}
-		res.Checked++
-		if exists {
-			continue
-		}
-		res.Orphaned++
-		orphans = append(orphans, rec)
-		res.IDs = append(res.IDs, rec.ID)
+	}
+	close(queue)
+	wg.Wait()
+	if ctx.Err() != nil {
+		log.Printf("orphans: check aborted (%v), resuming next run", ctx.Err())
 	}
 
 	if dryRun {

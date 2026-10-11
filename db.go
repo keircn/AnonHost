@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -37,10 +38,12 @@ func OpenDB(path string) (*DB, error) {
 		return nil, err
 	}
 
-	db, err := sql.Open("sqlite", path+"?_journal_mode=WAL&_busy_timeout=5000")
+	db, err := sql.Open("sqlite", path+"?_pragma=journal_mode(WAL)&_pragma=busy_timeout(10000)")
 	if err != nil {
 		return nil, err
 	}
+
+	db.SetMaxOpenConns(1)
 
 	if err := db.Ping(); err != nil {
 		return nil, err
@@ -105,16 +108,32 @@ func (d *DB) migrate() error {
 	return nil
 }
 
-func (d *DB) InsertFile(f *FileRecord) error {
-	_, err := d.db.Exec(
-		`INSERT INTO files (id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		f.ID, f.Filename, f.Size, f.MimeType, f.StorageBackend, f.StoragePath,
-		f.Width, f.Height, f.DeletionToken, f.CreatedAt, f.ExpiresAt,
-		f.IsArchive, f.ArchiveFormat, f.ArchiveListing,
-		f.IsEncrypted, f.ContentHash,
-	)
+func execBusyRetry(exec func() error) error {
+	var err error
+	for i := 0; i < 6; i++ {
+		if i > 0 {
+			time.Sleep(time.Duration(20<<uint(i-1)) * time.Millisecond)
+		}
+		err = exec()
+		if err == nil || !strings.Contains(err.Error(), "SQLITE_BUSY") {
+			return err
+		}
+	}
 	return err
+}
+
+func (d *DB) InsertFile(f *FileRecord) error {
+	return execBusyRetry(func() error {
+		_, err := d.db.Exec(
+			`INSERT INTO files (id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			f.ID, f.Filename, f.Size, f.MimeType, f.StorageBackend, f.StoragePath,
+			f.Width, f.Height, f.DeletionToken, f.CreatedAt, f.ExpiresAt,
+			f.IsArchive, f.ArchiveFormat, f.ArchiveListing,
+			f.IsEncrypted, f.ContentHash,
+		)
+		return err
+	})
 }
 
 func (d *DB) GetFile(id string) (*FileRecord, error) {
@@ -225,16 +244,20 @@ func (d *DB) ListFiles() ([]FileRecord, error) {
 }
 
 func (d *DB) UpdateArchive(id string, isArchive bool, format, listing string) error {
-	_, err := d.db.Exec(
-		`UPDATE files SET is_archive = ?, archive_format = ?, archive_listing = ? WHERE id = ?`,
-		isArchive, format, listing, id,
-	)
-	return err
+	return execBusyRetry(func() error {
+		_, err := d.db.Exec(
+			`UPDATE files SET is_archive = ?, archive_format = ?, archive_listing = ? WHERE id = ?`,
+			isArchive, format, listing, id,
+		)
+		return err
+	})
 }
 
 func (d *DB) DeleteFile(id string) error {
-	_, err := d.db.Exec(`DELETE FROM files WHERE id = ?`, id)
-	return err
+	return execBusyRetry(func() error {
+		_, err := d.db.Exec(`DELETE FROM files WHERE id = ?`, id)
+		return err
+	})
 }
 
 func (d *DB) Count() (int, error) {
@@ -267,14 +290,18 @@ func (d *DB) ListOlderThan(cutoff string) ([]FileRecord, error) {
 }
 
 func (d *DB) UpdateContentHash(id, hash string) error {
-	_, err := d.db.Exec(`UPDATE files SET content_hash = ? WHERE id = ?`, hash, id)
-	return err
+	return execBusyRetry(func() error {
+		_, err := d.db.Exec(`UPDATE files SET content_hash = ? WHERE id = ?`, hash, id)
+		return err
+	})
 }
 
 func (d *DB) UpdateStoragePath(id, backend, storagePath string) error {
-	_, err := d.db.Exec(`UPDATE files SET storage_backend = ?, storage_path = ? WHERE id = ?`,
-		backend, storagePath, id)
-	return err
+	return execBusyRetry(func() error {
+		_, err := d.db.Exec(`UPDATE files SET storage_backend = ?, storage_path = ? WHERE id = ?`,
+			backend, storagePath, id)
+		return err
+	})
 }
 
 func (d *DB) CountByStoragePath(storagePath string) (int, error) {

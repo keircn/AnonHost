@@ -17,6 +17,7 @@ func (s *Server) adminHandler() http.Handler {
 	mux.HandleFunc("DELETE /api/files/{id}", s.handleAdminDelete)
 	mux.HandleFunc("POST /api/cleanup", s.handleAdminCleanup)
 	mux.HandleFunc("POST /api/dedup", s.handleAdminDedup)
+	mux.HandleFunc("POST /api/upload", s.handleAdminUpload)
 	mux.HandleFunc("POST /api/backfill/archive/{id}", s.handleBackfillArchive)
 	mux.HandleFunc("POST /api/backfill/archives", s.handleRescanArchives)
 

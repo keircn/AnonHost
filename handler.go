@@ -109,6 +109,22 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.doUpload(w, r)
+}
+
+func (s *Server) handleAdminUpload(w http.ResponseWriter, r *http.Request) {
+	if !s.requireAdmin(w, r) {
+		return
+	}
+	if r.Method != "POST" {
+		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	s.doUpload(w, r)
+}
+
+func (s *Server) doUpload(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxFileSize+1<<20)
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {

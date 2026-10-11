@@ -13,12 +13,18 @@ func retentionCutoff(days int) string {
 	return time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour).Format(time.RFC3339)
 }
 
-// deleteRecord removes the object from storage and then the DB row.
-// Storage errors are logged but do not block the DB delete, otherwise
-// orphan rows would accumulate when the object is already gone.
+// deleteRecord removes the DB row and, when no other row references the
+// same storage object (see runDedup aliasing), the object itself. Keeping
+// the bytes while aliases exist is what keeps duplicate IDs serving after
+// one of them is deleted.
 func (s *Server) deleteRecord(ctx context.Context, rec FileRecord) error {
 	if rec.StoragePath != "" {
-		if err := s.storage.Delete(ctx, rec.StoragePath); err != nil {
+		n, err := s.db.CountByStoragePath(rec.StoragePath)
+		if err != nil {
+			log.Printf("cleanup: refcount %s (%s): %v", rec.ID, rec.StoragePath, err)
+		} else if n > 1 {
+			log.Printf("cleanup: keeping shared object %s (%d references)", rec.StoragePath, n)
+		} else if err := s.storage.Delete(ctx, rec.StoragePath); err != nil {
 			log.Printf("cleanup: storage delete %s (%s): %v", rec.ID, rec.StoragePath, err)
 		}
 	}
@@ -26,14 +32,17 @@ func (s *Server) deleteRecord(ctx context.Context, rec FileRecord) error {
 }
 
 type cleanupResult struct {
-	Expired  int   `json:"expired"`
-	Aged     int   `json:"aged"`
-	Total    int   `json:"total"`
-	Freed    int64 `json:"freed_bytes"`
+	Expired     int   `json:"expired"`
+	Aged        int   `json:"aged"`
+	Total       int   `json:"total"`
+	Freed       int64 `json:"freed_bytes"`
+	DedupGroups int   `json:"dedup_groups"`
+	Deduped     int   `json:"deduped"`
+	DedupFreed  int64 `json:"dedup_freed_bytes"`
 }
 
-// runCleanup deletes expired rows and rows older than retentionDays.
-// It returns per-category counts and total bytes freed.
+// runCleanup deletes expired rows and rows older than retentionDays, then
+// runs the dedup hook to merge byte-identical files.
 func (s *Server) runCleanup(ctx context.Context, retentionDays int) (cleanupResult, error) {
 	var res cleanupResult
 
@@ -72,6 +81,15 @@ func (s *Server) runCleanup(ctx context.Context, retentionDays int) (cleanupResu
 		log.Printf("cleanup: deleted %d files (%d expired, %d aged), freed %d bytes",
 			res.Total, res.Expired, res.Aged, res.Freed)
 	}
+
+	dedup, err := s.runDedup(ctx)
+	if err != nil {
+		log.Printf("cleanup: dedup: %v", err)
+		return res, nil
+	}
+	res.DedupGroups = dedup.Groups
+	res.Deduped = dedup.Deduped
+	res.DedupFreed = dedup.Freed
 	return res, nil
 }
 

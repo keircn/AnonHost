@@ -469,8 +469,7 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 	if rec.ExpiresAt != nil {
 		expires, err := time.Parse(time.RFC3339, *rec.ExpiresAt)
 		if err == nil && time.Now().UTC().After(expires) {
-			s.storage.Delete(r.Context(), rec.StoragePath)
-			s.db.DeleteFile(rec.ID)
+			s.deleteRecord(r.Context(), *rec)
 			s.respondError(w, http.StatusNotFound, "file has expired")
 			return
 		}
@@ -757,8 +756,8 @@ func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.storage.Delete(r.Context(), rec.StoragePath)
-	s.db.DeleteFile(id)
+	// Refcount-aware: shared (deduped) bytes survive until the last ID is gone.
+	s.deleteRecord(r.Context(), *rec)
 
 	s.respondJSON(w, http.StatusOK, map[string]bool{"deleted": true})
 }
@@ -996,10 +995,13 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.respondJSON(w, http.StatusOK, map[string]any{
-		"deleted": res.Total,
-		"expired": res.Expired,
-		"aged":    res.Aged,
-		"freed":   res.Freed,
+		"deleted":           res.Total,
+		"expired":           res.Expired,
+		"aged":              res.Aged,
+		"freed":             res.Freed,
+		"dedup_groups":      res.DedupGroups,
+		"deduped":           res.Deduped,
+		"dedup_freed":       res.DedupFreed,
 	})
 }
 

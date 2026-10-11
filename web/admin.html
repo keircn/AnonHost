@@ -42,10 +42,11 @@
       <div class="stat">bytes<b id="stat-size">{{.TotalHuman}}</b></div>
       <div class="stat">retention<b>{{.RetentionDays}} days</b></div>
     </div>
-    <p style="font-size:11px;color:#666;margin:8px 0">Files older than {{.RetentionDays}} days (before {{.Cutoff}}) are deleted by the background job every hour. Expired files (expires_at in the past) are deleted too. Both wipe the storage object and the DB row.</p>
+    <p style="font-size:11px;color:#666;margin:8px 0">Files older than {{.RetentionDays}} days (before {{.Cutoff}}) are deleted by the background job every hour. Expired files (expires_at in the past) are deleted too. Both wipe the storage object and the DB row. Each run ends with a dedup pass: byte-identical files share one master copy and every ID keeps working.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" id="btn-refresh" type="button">Refresh</button>
       <button class="btn" id="btn-cleanup" type="button">Run cleanup now</button>
+      <button class="btn" id="btn-dedup" type="button">Run dedup now</button>
       <button class="btn" id="btn-rescan" type="button">Rescan archives</button>
     </div>
     <div class="msg" id="action-msg"></div>
@@ -136,8 +137,15 @@
     setMsg('Running cleanup...', true);
     fetch('/api/cleanup' + authQs(), { method: 'POST', headers: authHeaders() })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (d) { setMsg('Cleanup: ' + d.total + ' deleted (' + d.expired + ' expired, ' + d.aged + ' aged), freed ' + d.freed_bytes + ' bytes.', true); load(); })
+      .then(function (d) { setMsg('Cleanup: ' + d.total + ' deleted (' + d.expired + ' expired, ' + d.aged + ' aged), freed ' + d.freed_bytes + ' bytes; dedup: ' + d.deduped + ' merged in ' + d.dedup_groups + ' groups, freed ' + d.dedup_freed_bytes + ' bytes.', true); load(); })
       .catch(function (e) { setMsg('Cleanup failed: ' + e.message, false); });
+  });
+  document.getElementById('btn-dedup').addEventListener('click', function () {
+    setMsg('Running dedup...', true);
+    fetch('/api/dedup' + authQs(), { method: 'POST', headers: authHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { setMsg('Dedup: ' + d.deduped + ' merged in ' + d.groups + ' groups, freed ' + d.freed_bytes + ' bytes.', true); load(); })
+      .catch(function (e) { setMsg('Dedup failed: ' + e.message, false); });
   });
   document.getElementById('btn-rescan').addEventListener('click', function () {
     setMsg('Rescanning archives...', true);

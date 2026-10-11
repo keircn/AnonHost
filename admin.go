@@ -15,6 +15,7 @@ func (s *Server) adminHandler() http.Handler {
 	mux.HandleFunc("GET /api/files", s.handleAdminList)
 	mux.HandleFunc("DELETE /api/files/{id}", s.handleAdminDelete)
 	mux.HandleFunc("POST /api/cleanup", s.handleAdminCleanup)
+	mux.HandleFunc("POST /api/dedup", s.handleAdminDedup)
 	mux.HandleFunc("POST /api/backfill/archive/{id}", s.handleBackfillArchive)
 	mux.HandleFunc("POST /api/backfill/archives", s.handleRescanArchives)
 
@@ -165,6 +166,22 @@ func (s *Server) handleAdminCleanup(w http.ResponseWriter, r *http.Request) {
 	res, err := s.runCleanup(r.Context(), s.cfg.RetentionDays)
 	if err != nil {
 		s.respondError(w, http.StatusInternalServerError, "cleanup failed")
+		return
+	}
+	s.respondJSON(w, http.StatusOK, res)
+}
+
+func (s *Server) handleAdminDedup(w http.ResponseWriter, r *http.Request) {
+	if !s.requireAdmin(w, r) {
+		return
+	}
+	if r.Method != "POST" {
+		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	res, err := s.runDedup(r.Context())
+	if err != nil {
+		s.respondError(w, http.StatusInternalServerError, "dedup failed")
 		return
 	}
 	s.respondJSON(w, http.StatusOK, res)

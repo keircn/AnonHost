@@ -25,6 +25,7 @@ type FileRecord struct {
 	ArchiveFormat   string
 	ArchiveListing  string
 	IsEncrypted     bool
+	ContentHash     string
 }
 
 type DB struct {
@@ -74,7 +75,8 @@ func (d *DB) migrate() error {
 			is_archive INTEGER NOT NULL DEFAULT 0,
 			archive_format TEXT NOT NULL DEFAULT '',
 			archive_listing TEXT NOT NULL DEFAULT '',
-			is_encrypted INTEGER NOT NULL DEFAULT 0
+			is_encrypted INTEGER NOT NULL DEFAULT 0,
+			content_hash TEXT NOT NULL DEFAULT ''
 		);
 		CREATE INDEX IF NOT EXISTS idx_files_deletion_token ON files(deletion_token);
 		CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);
@@ -95,24 +97,32 @@ func (d *DB) migrate() error {
 	if err != nil {
 		// column may already exist — ignore
 	}
+	_, err = d.db.Exec(`ALTER TABLE files ADD COLUMN content_hash TEXT NOT NULL DEFAULT ''`)
+	if err != nil {
+		// column may already exist — ignore
+	}
+	_, err = d.db.Exec(`CREATE INDEX IF NOT EXISTS idx_files_content_hash ON files(content_hash)`)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (d *DB) InsertFile(f *FileRecord) error {
 	_, err := d.db.Exec(
-		`INSERT INTO files (id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO files (id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		f.ID, f.Filename, f.Size, f.MimeType, f.StorageBackend, f.StoragePath,
 		f.Width, f.Height, f.DeletionToken, f.CreatedAt, f.ExpiresAt,
 		f.IsArchive, f.ArchiveFormat, f.ArchiveListing,
-		f.IsEncrypted,
+		f.IsEncrypted, f.ContentHash,
 	)
 	return err
 }
 
 func (d *DB) GetFile(id string) (*FileRecord, error) {
 	row := d.db.QueryRow(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash
 		 FROM files WHERE id = ?`, id,
 	)
 
@@ -124,7 +134,7 @@ func (d *DB) GetFile(id string) (*FileRecord, error) {
 		&f.StorageBackend, &f.StoragePath, &width, &height,
 		&f.DeletionToken, &f.CreatedAt, &expiresAt,
 		&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
-		&f.IsEncrypted)
+		&f.IsEncrypted, &f.ContentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +155,7 @@ func (d *DB) GetFile(id string) (*FileRecord, error) {
 
 func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 	row := d.db.QueryRow(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash
 		 FROM files WHERE deletion_token = ?`, token,
 	)
 
@@ -157,7 +167,7 @@ func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 		&f.StorageBackend, &f.StoragePath, &width, &height,
 		&f.DeletionToken, &f.CreatedAt, &expiresAt,
 		&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
-		&f.IsEncrypted)
+		&f.IsEncrypted, &f.ContentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +188,7 @@ func (d *DB) GetFileByDeletionToken(token string) (*FileRecord, error) {
 
 func (d *DB) ListFiles() ([]FileRecord, error) {
 	rows, err := d.db.Query(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash
 		 FROM files ORDER BY created_at DESC`,
 	)
 	if err != nil {
@@ -196,7 +206,7 @@ func (d *DB) ListFiles() ([]FileRecord, error) {
 			&f.StorageBackend, &f.StoragePath, &width, &height,
 			&f.DeletionToken, &f.CreatedAt, &expiresAt,
 			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
-			&f.IsEncrypted)
+			&f.IsEncrypted, &f.ContentHash)
 		if err != nil {
 			return nil, err
 		}
@@ -259,9 +269,61 @@ func (d *DB) ListOlderThan(cutoff string) ([]FileRecord, error) {
 	return d.listWhere(`created_at <= ?`, cutoff)
 }
 
+func (d *DB) UpdateContentHash(id, hash string) error {
+	_, err := d.db.Exec(`UPDATE files SET content_hash = ? WHERE id = ?`, hash, id)
+	return err
+}
+
+func (d *DB) UpdateStoragePath(id, backend, storagePath string) error {
+	_, err := d.db.Exec(`UPDATE files SET storage_backend = ?, storage_path = ? WHERE id = ?`,
+		backend, storagePath, id)
+	return err
+}
+
+// CountByStoragePath reports how many rows reference a storage object.
+// Used to avoid deleting shared bytes while aliases still point at them.
+func (d *DB) CountByStoragePath(storagePath string) (int, error) {
+	var n int
+	err := d.db.QueryRow(`SELECT COUNT(*) FROM files WHERE storage_path = ?`, storagePath).Scan(&n)
+	return n, err
+}
+
+// ListUnhashedPlaintext returns non-encrypted rows with no content hash yet.
+// Encrypted uploads are skipped: per-upload random salt/IV means identical
+// plaintexts never produce identical stored bytes, so hashing them only
+// wastes I/O (a full download on R2) with no possible match.
+func (d *DB) ListUnhashedPlaintext() ([]FileRecord, error) {
+	return d.listWhere(`is_encrypted = 0 AND (content_hash IS NULL OR content_hash = '')`)
+}
+
+// DuplicateHashes returns content hashes shared by more than one row.
+func (d *DB) DuplicateHashes() ([]string, error) {
+	rows, err := d.db.Query(
+		`SELECT content_hash FROM files
+		 WHERE content_hash IS NOT NULL AND content_hash != ''
+		 GROUP BY content_hash HAVING COUNT(*) > 1`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []string
+	for rows.Next() {
+		var h string
+		if err := rows.Scan(&h); err != nil {
+			return nil, err
+		}
+		out = append(out, h)
+	}
+	return out, rows.Err()
+}
+
+func (d *DB) ListByContentHash(hash string) ([]FileRecord, error) {
+	return d.listWhere(`content_hash = ?`, hash)
+}
+
 func (d *DB) listWhere(where string, args ...any) ([]FileRecord, error) {
 	rows, err := d.db.Query(
-		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash
 		 FROM files WHERE `+where+` ORDER BY created_at ASC`,
 		args...,
 	)
@@ -280,7 +342,7 @@ func (d *DB) listWhere(where string, args ...any) ([]FileRecord, error) {
 			&f.StorageBackend, &f.StoragePath, &width, &height,
 			&f.DeletionToken, &f.CreatedAt, &expiresAt,
 			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
-			&f.IsEncrypted)
+			&f.IsEncrypted, &f.ContentHash)
 		if err != nil {
 			return nil, err
 		}

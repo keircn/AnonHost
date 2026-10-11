@@ -17,6 +17,7 @@ func (s *Server) adminHandler() http.Handler {
 	mux.HandleFunc("DELETE /api/files/{id}", s.handleAdminDelete)
 	mux.HandleFunc("POST /api/cleanup", s.handleAdminCleanup)
 	mux.HandleFunc("POST /api/dedup", s.handleAdminDedup)
+	mux.HandleFunc("POST /api/orphans", s.handleAdminOrphans)
 	mux.HandleFunc("POST /api/upload", s.handleAdminUpload)
 	mux.HandleFunc("POST /api/backfill/archive/{id}", s.handleBackfillArchive)
 	mux.HandleFunc("POST /api/backfill/archives", s.handleRescanArchives)
@@ -184,6 +185,27 @@ func (s *Server) handleAdminDedup(w http.ResponseWriter, r *http.Request) {
 	res, err := s.runDedup(context.WithoutCancel(r.Context()))
 	if err != nil {
 		s.respondError(w, http.StatusInternalServerError, "dedup failed")
+		return
+	}
+	s.respondJSON(w, http.StatusOK, res)
+}
+
+func (s *Server) handleAdminOrphans(w http.ResponseWriter, r *http.Request) {
+	if !s.requireAdmin(w, r) {
+		return
+	}
+	if r.Method != "POST" {
+		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	dryRun := r.URL.Query().Get("dry_run") == "1"
+	res, err := s.runOrphanCheck(context.WithoutCancel(r.Context()), dryRun)
+	if err != nil {
+		s.respondJSON(w, http.StatusConflict, map[string]any{
+			"error":    err.Error(),
+			"checked":  res.Checked,
+			"orphaned": res.Orphaned,
+		})
 		return
 	}
 	s.respondJSON(w, http.StatusOK, res)

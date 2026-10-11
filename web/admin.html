@@ -47,6 +47,8 @@
       <button class="btn" id="btn-refresh" type="button">Refresh</button>
       <button class="btn" id="btn-cleanup" type="button">Run cleanup now</button>
       <button class="btn" id="btn-dedup" type="button">Run dedup now</button>
+      <button class="btn" id="btn-orphans-dry" type="button">Preview orphans</button>
+      <button class="btn btn-danger" id="btn-orphans" type="button">Prune orphans</button>
       <button class="btn" id="btn-rescan" type="button">Rescan archives</button>
     </div>
     <div class="msg" id="action-msg"></div>
@@ -146,6 +148,24 @@
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (d) { setMsg('Dedup: ' + d.deduped + ' merged in ' + d.groups + ' groups, freed ' + d.freed_bytes + ' bytes.', true); load(); })
       .catch(function (e) { setMsg('Dedup failed: ' + e.message, false); });
+  });
+  document.getElementById('btn-orphans-dry').addEventListener('click', function () {
+    setMsg('Checking for orphans...', true);
+    fetch('/api/orphans' + authQs('?dry_run=1'), { method: 'POST', headers: authHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { setMsg('Orphans: ' + d.orphaned + ' of ' + d.checked + ' rows point at missing objects.' + (d.pruned_ids && d.pruned_ids.length ? ' IDs: ' + d.pruned_ids.join(', ') : ''), true); load(); })
+      .catch(function (e) { setMsg('Orphan check failed: ' + e.message, false); });
+  });
+  document.getElementById('btn-orphans').addEventListener('click', function () {
+    if (!confirm('Delete DB rows whose storage objects are missing? Files already gone from storage are unaffected.')) return;
+    setMsg('Pruning orphans...', true);
+    fetch('/api/orphans' + authQs(), { method: 'POST', headers: authHeaders() })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, body: d }; }); })
+      .then(function (t) {
+        if (t.status !== 200) throw new Error(t.body.error || ('HTTP ' + t.status));
+        setMsg('Orphans pruned: ' + t.body.pruned + ' of ' + t.body.orphaned + ' found.', true); load();
+      })
+      .catch(function (e) { setMsg('Orphan prune failed: ' + e.message, false); });
   });
   document.getElementById('btn-rescan').addEventListener('click', function () {
     setMsg('Rescanning archives...', true);

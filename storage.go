@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -16,12 +17,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
 )
 
 type Storage interface {
 	Save(ctx context.Context, key string, file io.Reader, size int64, contentType string) error
 	GetWithSize(ctx context.Context, key string) (io.ReadCloser, int64, error)
 	Delete(ctx context.Context, key string) error
+	Exists(ctx context.Context, key string) (bool, error)
 	URL(key string) string
 }
 
@@ -64,6 +67,17 @@ func (s *LocalStorage) GetWithSize(_ context.Context, key string) (io.ReadCloser
 
 func (s *LocalStorage) Delete(_ context.Context, key string) error {
 	return os.Remove(filepath.Join(s.baseDir, key))
+}
+
+func (s *LocalStorage) Exists(_ context.Context, key string) (bool, error) {
+	_, err := os.Stat(filepath.Join(s.baseDir, key))
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func (s *LocalStorage) URL(key string) string {
@@ -151,12 +165,24 @@ func (s *R2Storage) PresignedPutURL(ctx context.Context, key, contentType string
 }
 
 func (s *R2Storage) VerifyObject(ctx context.Context, key string) (bool, error) {
+	exists, err := s.Exists(ctx, key)
+	if err != nil {
+		return false, nil
+	}
+	return exists, nil
+}
+
+func (s *R2Storage) Exists(ctx context.Context, key string) (bool, error) {
 	_, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return false, nil
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "NotFound" {
+			return false, nil
+		}
+		return false, err
 	}
 	return true, nil
 }

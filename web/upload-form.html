@@ -43,4 +43,15 @@ function encryptFile(file, onProgress) {
     <button class="btn-small" id="copy-btn">Copy</button>
   </div>
 </div>
+
+<style>
+  .upload-error { border: 1px solid #c00; background: #fee; padding: 10px; display: none; }
+  .upload-error.show { display: block; }
+  .upload-error-title { font-weight: 700; color: #c00; font-size: 12px; margin-bottom: 4px; }
+  .upload-error-msg { font-size: 12px; color: #333; }
+</style>
+<div class="upload-error" id="upload-error">
+  <div class="upload-error-title" id="upload-error-title"></div>
+  <div class="upload-error-msg" id="upload-error-msg"></div>
+</div>
 {{end}}

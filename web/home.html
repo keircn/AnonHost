@@ -337,6 +337,9 @@
   var rdellink = document.getElementById('result-del-link');
   var rinput = document.getElementById('result-url-input');
   var copyBtn = document.getElementById('copy-btn');
+  var errBox = document.getElementById('upload-error');
+  var errTitle = document.getElementById('upload-error-title');
+  var errMsg = document.getElementById('upload-error-msg');
   var dzFile = document.getElementById('dz-file');
   var dzHint = document.getElementById('dz-hint');
   var uploadKey = null;
@@ -406,6 +409,7 @@
     btn.disabled = false;
     btn.textContent = 'Upload';
     result.className = 'result show';
+    errBox.className = 'upload-error';
     var url = data.url;
     if (uploadKey) url += '#' + uploadKey;
     rlink.href = url;
@@ -418,16 +422,46 @@
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  function showError(msg) {
+  function uploadErrorText(status, serverMsg) {
+    var detail = serverMsg || '';
+    if (status === 'encrypt') {
+      return ['Browser encryption failed',
+        'Your browser could not encrypt the file (WebCrypto needs HTTPS or localhost). ' +
+        'Try again, or untick Encrypt for a plain upload.' + (detail ? ' ' + detail : '')];
+    }
+    if (status === 0) {
+      return ['Network error',
+        'The upload never reached the server. Check your connection and try again.' + (detail ? ' ' + detail : '')];
+    }
+    if (status === 429) {
+      return ['Rate limited',
+        'Too many uploads in a short time. Wait a minute and try again.' + (detail ? ' Server said: ' + detail : '')];
+    }
+    if (status === 413) {
+      return ['File too large',
+        (detail ? detail + ' ' : '') + 'Try a smaller file, compress it, or split it up.'];
+    }
+    if (status >= 500) {
+      return ['Server error',
+        'The server failed to store your file' + (detail ? ': ' + detail + '. ' : '. ') +
+        'Try again, and email root@roxylab.uk if it keeps failing.'];
+    }
+    if (detail && detail !== 'Upload failed') {
+      return ['Upload failed', detail + ' Try again, and email root@roxylab.uk if it keeps failing.'];
+    }
+    return ['Upload failed', 'The server rejected the upload. Try again, and email root@roxylab.uk if it keeps failing.'];
+  }
+
+  function showError(status, serverMsg) {
     clearProgress();
     btn.disabled = false;
     btn.textContent = 'Upload';
-    result.className = 'result error show';
-    rlink.textContent = msg;
-    rmeta.textContent = '';
-    rdel.className = 'result-del';
-    rinput.value = '';
-    result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    result.className = 'result';
+    var text = uploadErrorText(status, serverMsg);
+    errTitle.textContent = text[0];
+    errMsg.textContent = text[1];
+    errBox.className = 'upload-error show';
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function uploadDirect(file) {
@@ -463,10 +497,12 @@
               if (fin.status === 200) {
                 showResult(JSON.parse(fin.responseText));
               } else {
-                showError('Finalize failed');
+                var finErr = '';
+                try { finErr = JSON.parse(fin.responseText).error || ''; } catch (e) {}
+                showError(fin.status, finErr || 'The file reached storage but was not registered. Try uploading again.');
               }
             };
-            fin.onerror = function () { showError('Finalize network error'); };
+            fin.onerror = function () { showError(0, 'The file reached storage but was not registered. Try uploading again.'); };
             fin.send(JSON.stringify({
               id: resp.id,
               object_key: resp.object_key,
@@ -496,7 +532,7 @@
         }).then(function (r) {
           uploadKey = r.key;
           doPut(r.blob, true, r);
-        }).catch(function (e) { showError('Encryption failed'); });
+        }).catch(function (e) { showError('encrypt', (e && e.message) || ''); });
       } else {
         uploadKey = null;
         doPut(file, false, null);
@@ -532,13 +568,13 @@
         } else {
           try {
             var err = JSON.parse(xhr.responseText);
-            showError(err.error || 'Upload failed');
+            showError(xhr.status, err.error || '');
           } catch (e) {
-            showError('Upload failed');
+            showError(xhr.status, '');
           }
         }
       };
-      xhr.onerror = function () { showError('Network error'); };
+      xhr.onerror = function () { showError(0, ''); };
       xhr.open('POST', '/api/upload');
       xhr.send(fd);
     }
@@ -551,7 +587,7 @@
       }).then(function (r) {
         uploadKey = r.key;
         doPost(r.blob, file.name, true);
-      }).catch(function (e) { showError('Encryption failed'); });
+      }).catch(function (e) { showError('encrypt', (e && e.message) || ''); });
     } else {
       uploadKey = null;
       doPost(file, file.name, false);
@@ -565,6 +601,7 @@
     btn.textContent = 'Uploading...';
     setProgress(0, 'PREPARING...');
     result.className = 'result';
+    errBox.className = 'upload-error';
     uploadDirect(input.files[0]);
   });
 

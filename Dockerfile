@@ -12,5 +12,5 @@ WORKDIR /app
 COPY --from=builder /app/anonhost .
 COPY --from=builder /app/public ./public
 RUN mkdir -p /app/uploads /app/data
-EXPOSE 1984
+EXPOSE 1984 1985
 CMD ["/app/anonhost"]

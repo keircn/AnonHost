@@ -298,11 +298,13 @@ chmod +x anonhost.sh
   var encryptCheckbox = document.getElementById('encrypt-checkbox');
   function encryptEnabled() { return encryptCheckbox.checked; }
   encryptCheckbox.addEventListener('change', function () {
-    localStorage.setItem('anonhost_encrypt', this.checked);
+    try { localStorage.setItem('anonhost_encrypt', this.checked ? '1' : '0'); } catch (e) {}
   });
-  if (localStorage.getItem('anonhost_encrypt') === 'false') {
-    encryptCheckbox.checked = false;
-  }
+  try {
+    var saved = localStorage.getItem('anonhost_encrypt');
+    if (saved === '0' || saved === 'false') encryptCheckbox.checked = false;
+    else if (saved === '1' || saved === 'true') encryptCheckbox.checked = true;
+  } catch (e) {}
 
   function updateFile() {
     if (input.files.length) {

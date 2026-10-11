@@ -28,6 +28,8 @@ docker compose up -d --build
 - Archive previews with tree navigation
 - CLI tool
 - ShareX support
+- Automatic retention: files older than 14 days (`ANONHOST_RETENTION_DAYS`) are wiped (storage object + DB row) by an hourly background job; `expires_at` files are wiped too
+- Internal admin portal on a separate bind (`ANONHOST_ADMIN_BIND`, default `127.0.0.1:1985`): stats, search, delete, manual cleanup, archive rescan. Protect with `ANONHOST_ADMIN_KEY` and keep it off the public interface.
 
 ## CLI
 

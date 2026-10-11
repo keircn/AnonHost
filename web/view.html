@@ -300,6 +300,58 @@
   }
   .delete-ok { color: #060; font-weight: bold; }
   .delete-err { color: #c00; margin-top: 6px; }
+  .btn-small {
+    padding: 4px 12px;
+    font-size: 12px;
+    background: #eee;
+    border: 1px solid #999;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: Verdana, sans-serif;
+  }
+  .btn-small:hover { background: #ddd; }
+  .btn-small:disabled { opacity: 0.6; cursor: default; }
+  .btn-danger {
+    background: #c00;
+    border-color: #900;
+    color: #fff;
+    font-weight: bold;
+  }
+  .btn-danger:hover { background: #a00; }
+  .delete-confirm {
+    padding: 32px 24px;
+    background: #fff;
+    color: #000;
+    text-align: center;
+  }
+  .delete-confirm .warn {
+    font-size: 14px;
+    font-weight: bold;
+    color: #c00;
+    margin-bottom: 8px;
+  }
+  .delete-confirm .fname {
+    font-size: 12px;
+    color: #333;
+    word-break: break-all;
+    margin-bottom: 4px;
+  }
+  .delete-confirm .fmeta {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  .delete-confirm .row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .delete-confirm .view-link {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+  }
 
   .decrypt-box {
     background: #f4f4f4;
@@ -403,7 +455,18 @@
   </div>
 
   <div class="media">
-{{if .IsEncrypted}}
+{{if .IsDeleteView}}
+    <div class="delete-confirm" id="delete-confirm">
+      <div class="warn">Delete this file?</div>
+      <div class="fname">{{.Filename}}</div>
+      <div class="fmeta">{{formatSize .Size}} - {{.MimeType}} - uploaded {{.CreatedAt}}</div>
+      <div class="row">
+        <button class="btn-small btn-danger" id="delete-btn" type="button">Delete permanently</button>
+        <a class="view-link" href="{{.BaseURL}}/{{.ID}}">Back to file</a>
+      </div>
+      <div class="delete-err" id="delete-err" hidden></div>
+    </div>
+{{else if .IsEncrypted}}
     <div class="placeholder" id="encrypt-notice">This file is encrypted. You need the decryption key which was included in the original URL.</div>
 {{else if .IsImage}}
     <img src="{{.FileURL}}" alt="{{.Filename}}">
@@ -437,16 +500,12 @@
 {{end}}
   </div>
 
-{{if and (not .IsImage) (not .IsEncrypted)}}
+{{if and (not .IsImage) (not .IsEncrypted) (not .IsDeleteView)}}
   <div class="actions">
     <a href="{{.FileURL}}" download="{{.Filename}}">Download</a>
   </div>
 {{end}}
 {{if .CanDelete}}
-  <div class="delete-box" id="delete-box">
-    <span class="delete-label">DANGER ZONE</span>
-    <button class="btn-small" id="delete-btn" type="button">Delete this file</button>
-  </div>
   <script>
   (function () {
     var btn = document.getElementById('delete-btn');
@@ -456,20 +515,24 @@
       btn.disabled = true;
       btn.textContent = 'Deleting...';
       fetch(window.location.pathname + window.location.search, { method: 'DELETE' }).then(function (resp) {
-        var box = document.getElementById('delete-box');
+        var box = document.getElementById('delete-confirm') || document.getElementById('delete-box');
         if (resp.ok) {
-          box.innerHTML = '<span class="delete-ok">FILE DELETED.</span>';
+          if (box) box.innerHTML = '<span class="delete-ok">FILE DELETED.</span>';
         } else {
           btn.disabled = false;
-          btn.textContent = 'Delete this file';
-          var err = document.createElement('div');
-          err.className = 'delete-err';
-          err.textContent = 'Delete failed. Try again.';
-          box.appendChild(err);
+          btn.textContent = 'Delete permanently';
+          var errEl = document.getElementById('delete-err');
+          if (errEl) { errEl.hidden = false; errEl.textContent = 'Delete failed. Try again.'; }
+          else if (box) {
+            var err = document.createElement('div');
+            err.className = 'delete-err';
+            err.textContent = 'Delete failed. Try again.';
+            box.appendChild(err);
+          }
         }
       }).catch(function () {
         btn.disabled = false;
-        btn.textContent = 'Delete this file';
+        btn.textContent = 'Delete permanently';
       });
     });
   })();
@@ -483,7 +546,7 @@
   <a href="{{.BaseURL}}/">AnonHost</a> - anonymous file hosting
 </div>
 
-{{if .IsArchive}}
+{{if and .IsArchive (not .IsDeleteView)}}
 <script>
 (function () {
   var dataEl = document.getElementById('archive-data');
@@ -705,6 +768,7 @@
 </script>
 {{end}}
 
+{{if and .IsEncrypted (not .IsDeleteView)}}
 <script src="/public/crypto.js"></script>
 <script>
 (function () {
@@ -891,6 +955,7 @@
   run(initial);
 })();
 </script>
+{{end}}
 
 </body>
 </html>

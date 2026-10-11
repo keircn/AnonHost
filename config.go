@@ -21,6 +21,9 @@ type Config struct {
 	RateLimit int
 
 	AdminKey string
+
+	AdminBind     string
+	RetentionDays int
 }
 
 func LoadConfig() *Config {
@@ -37,6 +40,8 @@ func LoadConfig() *Config {
 		R2PublicURL:       os.Getenv("R2_PUBLIC_URL"),
 		RateLimit:  getEnvInt("ANONHOST_RATE_LIMIT", 5),
 		AdminKey:   os.Getenv("ANONHOST_ADMIN_KEY"),
+		AdminBind:  getEnv("ANONHOST_ADMIN_BIND", "127.0.0.1:1985"),
+		RetentionDays: getEnvInt("ANONHOST_RETENTION_DAYS", 14),
 	}
 	return cfg
 }

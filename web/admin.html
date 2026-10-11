@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin - AnonHost</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Verdana, sans-serif; font-size: 13px; background: #fff; color: #000; line-height: 1.4; }
+  a { color: #00e; }
+  .header { background: #330000; color: #fff; padding: 10px 16px; border-bottom: 2px solid #c0c0c0; }
+  .header h1 { font-size: 16px; display: inline; }
+  .header .sub { font-size: 10px; color: #f99; margin-left: 8px; }
+  .nav { background: #e8e8e8; padding: 4px 16px; border-bottom: 1px solid #c0c0c0; font-size: 12px; }
+  .content { max-width: 900px; margin: 16px auto; padding: 0 16px; }
+  .section { border: 1px solid #c0c0c0; margin-bottom: 10px; }
+  .section h3 { margin: 0; padding: 5px 10px; font-size: 11px; background: #e8e8e8; border-bottom: 1px solid #c0c0c0; }
+  .section-inner { padding: 10px; }
+  .stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; }
+  .stat b { display: block; font-size: 18px; }
+  .btn { padding: 6px 16px; font-size: 12px; background: #eee; border: 1px solid #999; cursor: pointer; }
+  .btn:hover { background: #ddd; }
+  .btn-danger { background: #fee; border-color: #c00; color: #c00; }
+  .btn-danger:hover { background: #fcc; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #eee; }
+  th { background: #f4f4f4; font-size: 11px; }
+  td.mono { font-family: monospace; word-break: break-all; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .toolbar input { flex: 1; min-width: 200px; padding: 5px 8px; font-size: 12px; border: 1px solid #999; }
+  .msg { font-size: 12px; margin-top: 6px; }
+  .msg.ok { color: #060; } .msg.err { color: #c00; }
+</style>
+</head>
+<body>
+<div class="header"><h1>AnonHost Admin</h1><span class="sub">internal only - do not expose publicly</span></div>
+<div class="nav"><span>{{.TotalUploads}} files &middot; {{.TotalHuman}} &middot; retention {{.RetentionDays}}d &middot; cutoff {{.Cutoff}}</span></div>
+<div class="content">
+  <div class="section"><h3>overview</h3><div class="section-inner">
+    <div class="stats">
+      <div class="stat">files<b id="stat-count">{{.TotalUploads}}</b></div>
+      <div class="stat">bytes<b id="stat-size">{{.TotalHuman}}</b></div>
+      <div class="stat">retention<b>{{.RetentionDays}} days</b></div>
+    </div>
+    <p style="font-size:11px;color:#666;margin:8px 0">Files older than {{.RetentionDays}} days (before {{.Cutoff}}) are deleted by the background job every hour. Expired files (expires_at in the past) are deleted too. Both wipe the storage object and the DB row.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="btn-refresh" type="button">Refresh</button>
+      <button class="btn" id="btn-cleanup" type="button">Run cleanup now</button>
+      <button class="btn" id="btn-rescan" type="button">Rescan archives</button>
+    </div>
+    <div class="msg" id="action-msg"></div>
+  </div></div>
+
+  <div class="section"><h3>files</h3><div class="section-inner">
+    <div class="toolbar">
+      <input id="search" type="text" placeholder="Filter by id, filename, mime..." autocomplete="off">
+      <button class="btn" id="search-btn" type="button">Search</button>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>ID</th><th>Filename</th><th>Size</th><th>Mime</th><th>Created</th><th>Flags</th><th></th></tr></thead>
+      <tbody id="rows"><tr><td colspan="7">loading...</td></tr></tbody>
+    </table>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;font-size:12px">
+      <button class="btn" id="prev" type="button">Prev</button>
+      <span id="page-info"></span>
+      <button class="btn" id="next" type="button">Next</button>
+    </div>
+  </div></div>
+</div>
+<script>
+(function () {
+  var key = '{{.Key}}';
+  function authQs(extra) {
+    var qs = extra || '';
+    if (key) qs += (qs ? '&' : '?') + 'key=' + encodeURIComponent(key);
+    return qs;
+  }
+  function authHeaders() {
+    var h = {};
+    if (key) h['Authorization'] = 'Bearer ' + key;
+    return h;
+  }
+  var offset = 0, limit = 100, total = 0;
+  var rows = document.getElementById('rows');
+  var msg = document.getElementById('action-msg');
+  function setMsg(t, ok) { msg.textContent = t; msg.className = 'msg ' + (ok ? 'ok' : 'err'); }
+
+  function esc(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s == null ? '' : String(s))); return d.innerHTML; }
+
+  function load() {
+    var q = document.getElementById('search').value;
+    fetch('/api/files' + authQs('?offset=' + offset + '&limit=' + limit + '&q=' + encodeURIComponent(q)), { headers: authHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) {
+        total = d.total;
+        document.getElementById('page-info').textContent = 'showing ' + (d.files ? d.files.length : 0) + ' of ' + total;
+        if (!d.files || !d.files.length) { rows.innerHTML = '<tr><td colspan="7">no files</td></tr>'; return; }
+        rows.innerHTML = d.files.map(function (f) {
+          var flags = [];
+          if (f.is_encrypted) flags.push('enc');
+          if (f.is_archive) flags.push('arch');
+          if (f.expires_at) flags.push('exp:' + f.expires_at);
+          return '<tr>' +
+            '<td class="mono">' + esc(f.id) + '</td>' +
+            '<td>' + esc(f.filename) + '</td>' +
+            '<td>' + esc(f.size) + '</td>' +
+            '<td>' + esc(f.mime_type) + '</td>' +
+            '<td class="mono">' + esc(f.created_at) + '</td>' +
+            '<td>' + esc(flags.join(' ')) + '</td>' +
+            '<td><button class="btn btn-danger" data-del="' + esc(f.id) + '" type="button">Delete</button></td>' +
+            '</tr>';
+        }).join('');
+        rows.querySelectorAll('[data-del]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (!confirm('Delete ' + b.getAttribute('data-del') + '? This wipes storage + DB.')) return;
+            fetch('/api/files/' + encodeURIComponent(b.getAttribute('data-del')) + authQs(), { method: 'DELETE', headers: authHeaders() })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+              .then(function () { setMsg('Deleted ' + b.getAttribute('data-del'), true); load(); })
+              .catch(function (e) { setMsg('Delete failed: ' + e.message, false); });
+          });
+        });
+      })
+      .catch(function (e) { rows.innerHTML = '<tr><td colspan="7">load failed: ' + esc(e.message) + '</td></tr>'; });
+    fetch('/api/stats' + authQs(), { headers: authHeaders() }).then(function (r) { return r.json(); }).then(function (d) {
+      document.getElementById('stat-count').textContent = d.total_uploads;
+    }).catch(function () {});
+  }
+  document.getElementById('search-btn').addEventListener('click', function () { offset = 0; load(); });
+  document.getElementById('search').addEventListener('keydown', function (e) { if (e.key === 'Enter') { offset = 0; load(); } });
+  document.getElementById('prev').addEventListener('click', function () { offset = Math.max(0, offset - limit); load(); });
+  document.getElementById('next').addEventListener('click', function () { if (offset + limit < total) offset += limit; load(); });
+  document.getElementById('btn-refresh').addEventListener('click', load);
+  document.getElementById('btn-cleanup').addEventListener('click', function () {
+    setMsg('Running cleanup...', true);
+    fetch('/api/cleanup' + authQs(), { method: 'POST', headers: authHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { setMsg('Cleanup: ' + d.total + ' deleted (' + d.expired + ' expired, ' + d.aged + ' aged), freed ' + d.freed_bytes + ' bytes.', true); load(); })
+      .catch(function (e) { setMsg('Cleanup failed: ' + e.message, false); });
+  });
+  document.getElementById('btn-rescan').addEventListener('click', function () {
+    setMsg('Rescanning archives...', true);
+    fetch('/api/backfill/archives' + authQs(), { method: 'POST', headers: authHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { setMsg('Rescan done: ' + d.total + ' checked.', true); })
+      .catch(function (e) { setMsg('Rescan failed: ' + e.message, false); });
+  });
+  load();
+})();
+</script>
+</body>
+</html>

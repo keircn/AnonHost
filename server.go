@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -92,21 +91,41 @@ func RunServer(cfg *Config, db *DB, storage Storage) error {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	adminServer := &http.Server{
+		Addr:         cfg.AdminBind,
+		Handler:      srv.adminHandler(),
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	go srv.startCleanupLoop(ctx, cfg.RetentionDays, time.Hour)
 
 	go func() {
 		log.Printf("listening on %s", cfg.Bind)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server error: %v", err)
+			log.Printf("server error: %v", err)
 		}
 	}()
 
-	<-quit
+	go func() {
+		if cfg.AdminBind == "" {
+			return
+		}
+		log.Printf("admin listening on %s (internal only)", cfg.AdminBind)
+		if err := adminServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("admin server error: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
 	log.Println("shutting down...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	return httpServer.Shutdown(ctx)
+	_ = adminServer.Shutdown(shutdownCtx)
+	return httpServer.Shutdown(shutdownCtx)
 }

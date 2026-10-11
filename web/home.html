@@ -286,7 +286,7 @@
     A: Use the form above or curl:<br>
     <code style="margin-top:4px;display:inline-block">curl -F "file=@image.png" {{.BaseURL}}/api/upload</code></p>
     <p style="margin-top:8px"><b>Q: How long are files kept?</b><br>
-    A: Indefinitely, unless an expiration is set.</p>
+    A: Files are automatically deleted 14 days after upload.</p>
     <p style="margin-top:8px"><b>Q: Is there a file size limit?</b><br>
     A: Yes, {{.MaxFileSizeHuman}} per file.</p>
     <p style="margin-top:8px"><b>Q: Can I delete a file?</b><br>
@@ -342,6 +342,14 @@
   var uploadKey = null;
   var encryptCheckbox = document.getElementById('encrypt-checkbox');
   function encryptEnabled() { return encryptCheckbox.checked; }
+  encryptCheckbox.addEventListener('change', function () {
+    try { localStorage.setItem('anonhost_encrypt', this.checked ? '1' : '0'); } catch (e) {}
+  });
+  try {
+    var saved = localStorage.getItem('anonhost_encrypt');
+    if (saved === '0' || saved === 'false') encryptCheckbox.checked = false;
+    else if (saved === '1' || saved === 'true') encryptCheckbox.checked = true;
+  } catch (e) {}
 
   function updateFile() {
     if (input.files.length) {

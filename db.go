@@ -250,3 +250,53 @@ func (d *DB) CleanupExpired() (int64, error) {
 	}
 	return result.RowsAffected()
 }
+
+func (d *DB) ListExpired(now string) ([]FileRecord, error) {
+	return d.listWhere(`expires_at IS NOT NULL AND expires_at <= ?`, now)
+}
+
+func (d *DB) ListOlderThan(cutoff string) ([]FileRecord, error) {
+	return d.listWhere(`created_at <= ?`, cutoff)
+}
+
+func (d *DB) listWhere(where string, args ...any) ([]FileRecord, error) {
+	rows, err := d.db.Query(
+		`SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted
+		 FROM files WHERE `+where+` ORDER BY created_at ASC`,
+		args...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var files []FileRecord
+	for rows.Next() {
+		var f FileRecord
+		var width, height sql.NullInt64
+		var expiresAt sql.NullString
+
+		err := rows.Scan(&f.ID, &f.Filename, &f.Size, &f.MimeType,
+			&f.StorageBackend, &f.StoragePath, &width, &height,
+			&f.DeletionToken, &f.CreatedAt, &expiresAt,
+			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
+			&f.IsEncrypted)
+		if err != nil {
+			return nil, err
+		}
+
+		if width.Valid {
+			v := int(width.Int64)
+			f.Width = &v
+		}
+		if height.Valid {
+			v := int(height.Int64)
+			f.Height = &v
+		}
+		if expiresAt.Valid {
+			f.ExpiresAt = &expiresAt.String
+		}
+		files = append(files, f)
+	}
+	return files, rows.Err()
+}

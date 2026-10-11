@@ -52,7 +52,7 @@ func NewServer(cfg *Config, db *DB, storage Storage) (*Server, error) {
 
 	views := template.New("").Funcs(funcMap)
 
-	for _, name := range []string{"home", "upload", "view", "roadmap", "upload-form"} {
+	for _, name := range []string{"home", "upload", "view", "roadmap", "upload-form", "admin"} {
 		content, err := webFS.ReadFile("web/" + name + ".html")
 		if err != nil {
 			return nil, fmt.Errorf("reading web/%s.html: %w", name, err)
@@ -512,6 +512,8 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 		"Height":             rec.Height,
 		"BaseURL":            strings.TrimRight(s.cfg.PublicURL, "/"),
 		"CanDelete":          canDelete,
+		"IsDeleteView":       canDelete,
+		"CreatedAt":          rec.CreatedAt,
 	})
 }
 
@@ -986,7 +988,7 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	count, err := s.db.CleanupExpired()
+	res, err := s.runCleanup(r.Context(), s.cfg.RetentionDays)
 	if err != nil {
 		log.Printf("cleanup error: %v", err)
 		s.respondError(w, http.StatusInternalServerError, "cleanup failed")
@@ -994,7 +996,10 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.respondJSON(w, http.StatusOK, map[string]any{
-		"deleted": count,
+		"deleted": res.Total,
+		"expired": res.Expired,
+		"aged":    res.Aged,
+		"freed":   res.Freed,
 	})
 }
 

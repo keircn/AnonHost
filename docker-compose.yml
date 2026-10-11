@@ -12,6 +12,7 @@ services:
       - .env
     environment:
       ANONHOST_BIND: :1984
+      ANONHOST_ADMIN_BIND: :1985
       ANONHOST_DB_PATH: /app/data/anonhost.db
       ANONHOST_UPLOAD_DIR: /app/uploads
     volumes:
@@ -19,6 +20,7 @@ services:
       - data_volume:/app/data
     ports:
       - '${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984'
+      - '${ANONHOST_ADMIN_BIND_IP:-127.0.0.1}:${ANONHOST_ADMIN_PORT:-1985}:1985'
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:1984/api/stats']
       interval: 30s

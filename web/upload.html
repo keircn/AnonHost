@@ -399,12 +399,12 @@ chmod +x anonhost.sh
     if (status >= 500) {
       return ['Server error',
         'The server failed to store your file' + (detail ? ': ' + detail + '. ' : '. ') +
-        'Try again, and email root@roxylab.uk if it keeps failing.'];
+        'Try again, and email root@keirn.net if it keeps failing.'];
     }
     if (detail && detail !== 'Upload failed') {
-      return ['Upload failed', detail + ' Try again, and email root@roxylab.uk if it keeps failing.'];
+      return ['Upload failed', detail + ' Try again, and email root@keirn.net if it keeps failing.'];
     }
-    return ['Upload failed', 'The server rejected the upload. Try again, and email root@roxylab.uk if it keeps failing.'];
+    return ['Upload failed', 'The server rejected the upload. Try again, and email root@keirn.net if it keeps failing.'];
   }
 
   function showError(status, serverMsg) {

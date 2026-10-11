@@ -24,6 +24,9 @@ type Config struct {
 
 	AdminBind     string
 	RetentionDays int
+
+	DedupMaxFiles int
+	DedupMaxBytes int64
 }
 
 func LoadConfig() *Config {
@@ -42,6 +45,8 @@ func LoadConfig() *Config {
 		AdminKey:   os.Getenv("ANONHOST_ADMIN_KEY"),
 		AdminBind:  getEnv("ANONHOST_ADMIN_BIND", "127.0.0.1:1985"),
 		RetentionDays: getEnvInt("ANONHOST_RETENTION_DAYS", 14),
+		DedupMaxFiles: getEnvInt("ANONHOST_DEDUP_MAX_FILES", 200),
+		DedupMaxBytes: getEnvInt64("ANONHOST_DEDUP_MAX_BYTES", 2<<30),
 	}
 	return cfg
 }

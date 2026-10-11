@@ -756,7 +756,6 @@ func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Refcount-aware: shared (deduped) bytes survive until the last ID is gone.
 	s.deleteRecord(r.Context(), *rec)
 
 	s.respondJSON(w, http.StatusOK, map[string]bool{"deleted": true})
@@ -987,7 +986,7 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := s.runCleanup(r.Context(), s.cfg.RetentionDays)
+	res, err := s.runCleanup(context.WithoutCancel(r.Context()), s.cfg.RetentionDays)
 	if err != nil {
 		log.Printf("cleanup error: %v", err)
 		s.respondError(w, http.StatusInternalServerError, "cleanup failed")

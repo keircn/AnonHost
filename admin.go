@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -163,7 +164,7 @@ func (s *Server) handleAdminCleanup(w http.ResponseWriter, r *http.Request) {
 		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
-	res, err := s.runCleanup(r.Context(), s.cfg.RetentionDays)
+	res, err := s.runCleanup(context.WithoutCancel(r.Context()), s.cfg.RetentionDays)
 	if err != nil {
 		s.respondError(w, http.StatusInternalServerError, "cleanup failed")
 		return
@@ -179,7 +180,7 @@ func (s *Server) handleAdminDedup(w http.ResponseWriter, r *http.Request) {
 		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
-	res, err := s.runDedup(r.Context())
+	res, err := s.runDedup(context.WithoutCancel(r.Context()))
 	if err != nil {
 		s.respondError(w, http.StatusInternalServerError, "dedup failed")
 		return

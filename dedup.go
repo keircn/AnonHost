@@ -15,7 +15,6 @@ type dedupResult struct {
 	Freed   int64 `json:"freed_bytes"`
 }
 
-// hashStorageObject streams a stored object and returns its hex SHA-256.
 func (s *Server) hashStorageObject(ctx context.Context, storagePath string) (string, error) {
 	rc, _, err := s.storage.GetWithSize(ctx, storagePath)
 	if err != nil {
@@ -29,32 +28,45 @@ func (s *Server) hashStorageObject(ctx context.Context, storagePath string) (str
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-// runDedup finds byte-identical plaintext files, deletes the duplicate
-// storage objects, and repoints the duplicate IDs at the surviving master
-// copy. Every ID keeps its own row (filename, deletion token, expiry), so
-// all previously issued URLs and deletion tokens keep working.
-//
-// Encrypted uploads are excluded: each uses a fresh random salt/IV, so even
-// identical plaintexts never share stored bytes.
 func (s *Server) runDedup(ctx context.Context) (dedupResult, error) {
 	var res dedupResult
 
-	// Backfill hashes for plaintext rows that predate the content_hash column.
-	unhashed, err := s.db.ListUnhashedPlaintext()
+	maxFiles := s.cfg.DedupMaxFiles
+	maxBytes := s.cfg.DedupMaxBytes
+
+	unhashed, err := s.db.ListUnhashedPlaintext(maxFiles)
 	if err != nil {
 		return res, err
 	}
+	var hashedBytes int64
+	hashed := 0
 	for _, rec := range unhashed {
+		if ctx.Err() != nil {
+			log.Printf("dedup: backfill aborted (%v), resuming next run", ctx.Err())
+			break
+		}
+		if maxBytes > 0 && hashedBytes >= maxBytes {
+			break
+		}
 		sum, err := s.hashStorageObject(ctx, rec.StoragePath)
 		if err != nil {
-			// Orphan row (object already gone) or transient backend error:
-			// leave the row for the retention/expired passes, don't fail the run.
+			if ctx.Err() != nil {
+				log.Printf("dedup: backfill aborted (%v), resuming next run", ctx.Err())
+				break
+			}
 			log.Printf("dedup: hash %s (%s): %v", rec.ID, rec.StoragePath, err)
 			continue
 		}
 		if err := s.db.UpdateContentHash(rec.ID, sum); err != nil {
 			log.Printf("dedup: store hash %s: %v", rec.ID, err)
+			continue
 		}
+		hashed++
+		hashedBytes += rec.Size
+	}
+	if remaining, err := s.db.CountUnhashedPlaintext(); err == nil && (hashed > 0 || remaining > 0) {
+		log.Printf("dedup: backfill hashed %d file(s) (%d bytes), %d remaining",
+			hashed, hashedBytes, remaining)
 	}
 
 	hashes, err := s.db.DuplicateHashes()
@@ -63,6 +75,10 @@ func (s *Server) runDedup(ctx context.Context) (dedupResult, error) {
 	}
 
 	for _, h := range hashes {
+		if ctx.Err() != nil {
+			log.Printf("dedup: merge aborted (%v), resuming next run", ctx.Err())
+			break
+		}
 		group, err := s.db.ListByContentHash(h)
 		if err != nil {
 			log.Printf("dedup: list group %s: %v", h[:12], err)
@@ -71,8 +87,6 @@ func (s *Server) runDedup(ctx context.Context) (dedupResult, error) {
 		if len(group) < 2 {
 			continue
 		}
-		// Defense in depth: equal hashes imply equal sizes, but verify
-		// before merging in case of hash bookkeeping bugs.
 		sizes := make(map[int64]bool, len(group))
 		for _, rec := range group {
 			sizes[rec.Size] = true
@@ -82,7 +96,6 @@ func (s *Server) runDedup(ctx context.Context) (dedupResult, error) {
 			continue
 		}
 
-		// Oldest upload wins; smallest ID breaks ties deterministically.
 		sort.Slice(group, func(i, j int) bool {
 			if group[i].CreatedAt != group[j].CreatedAt {
 				return group[i].CreatedAt < group[j].CreatedAt
@@ -94,7 +107,7 @@ func (s *Server) runDedup(ctx context.Context) (dedupResult, error) {
 		merged := false
 		for _, dup := range group[1:] {
 			if dup.StoragePath == master.StoragePath {
-				continue // already aliased by an earlier run
+				continue
 			}
 			if err := s.storage.Delete(ctx, dup.StoragePath); err != nil {
 				log.Printf("dedup: delete object %s (%s): %v", dup.ID, dup.StoragePath, err)

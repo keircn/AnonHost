@@ -13,10 +13,6 @@ func retentionCutoff(days int) string {
 	return time.Now().UTC().Add(-time.Duration(days) * 24 * time.Hour).Format(time.RFC3339)
 }
 
-// deleteRecord removes the DB row and, when no other row references the
-// same storage object (see runDedup aliasing), the object itself. Keeping
-// the bytes while aliases exist is what keeps duplicate IDs serving after
-// one of them is deleted.
 func (s *Server) deleteRecord(ctx context.Context, rec FileRecord) error {
 	if rec.StoragePath != "" {
 		n, err := s.db.CountByStoragePath(rec.StoragePath)
@@ -41,8 +37,6 @@ type cleanupResult struct {
 	DedupFreed  int64 `json:"dedup_freed_bytes"`
 }
 
-// runCleanup deletes expired rows and rows older than retentionDays, then
-// runs the dedup hook to merge byte-identical files.
 func (s *Server) runCleanup(ctx context.Context, retentionDays int) (cleanupResult, error) {
 	var res cleanupResult
 
@@ -104,7 +98,6 @@ func (s *Server) startCleanupLoop(ctx context.Context, retentionDays int, interv
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	// Run once shortly after startup so old deployments converge quickly.
 	select {
 	case <-ctx.Done():
 		return

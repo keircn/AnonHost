@@ -97,10 +97,7 @@ func (d *DB) migrate() error {
 	if err != nil {
 		// column may already exist — ignore
 	}
-	_, err = d.db.Exec(`ALTER TABLE files ADD COLUMN content_hash TEXT NOT NULL DEFAULT ''`)
-	if err != nil {
-		// column may already exist — ignore
-	}
+	_, _ = d.db.Exec(`ALTER TABLE files ADD COLUMN content_hash TEXT NOT NULL DEFAULT ''`)
 	_, err = d.db.Exec(`CREATE INDEX IF NOT EXISTS idx_files_content_hash ON files(content_hash)`)
 	if err != nil {
 		return err
@@ -280,23 +277,65 @@ func (d *DB) UpdateStoragePath(id, backend, storagePath string) error {
 	return err
 }
 
-// CountByStoragePath reports how many rows reference a storage object.
-// Used to avoid deleting shared bytes while aliases still point at them.
 func (d *DB) CountByStoragePath(storagePath string) (int, error) {
 	var n int
 	err := d.db.QueryRow(`SELECT COUNT(*) FROM files WHERE storage_path = ?`, storagePath).Scan(&n)
 	return n, err
 }
 
-// ListUnhashedPlaintext returns non-encrypted rows with no content hash yet.
-// Encrypted uploads are skipped: per-upload random salt/IV means identical
-// plaintexts never produce identical stored bytes, so hashing them only
-// wastes I/O (a full download on R2) with no possible match.
-func (d *DB) ListUnhashedPlaintext() ([]FileRecord, error) {
-	return d.listWhere(`is_encrypted = 0 AND (content_hash IS NULL OR content_hash = '')`)
+func (d *DB) ListUnhashedPlaintext(limit int) ([]FileRecord, error) {
+	query := `SELECT id, filename, size, mime_type, storage_backend, storage_path, width, height, deletion_token, created_at, expires_at, is_archive, archive_format, archive_listing, is_encrypted, content_hash
+		 FROM files WHERE is_encrypted = 0 AND (content_hash IS NULL OR content_hash = '')
+		 ORDER BY size ASC, created_at ASC`
+	var rows *sql.Rows
+	var err error
+	if limit > 0 {
+		query += ` LIMIT ?`
+		rows, err = d.db.Query(query, limit)
+	} else {
+		rows, err = d.db.Query(query)
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var files []FileRecord
+	for rows.Next() {
+		var f FileRecord
+		var width, height sql.NullInt64
+		var expiresAt sql.NullString
+
+		if err := rows.Scan(&f.ID, &f.Filename, &f.Size, &f.MimeType,
+			&f.StorageBackend, &f.StoragePath, &width, &height,
+			&f.DeletionToken, &f.CreatedAt, &expiresAt,
+			&f.IsArchive, &f.ArchiveFormat, &f.ArchiveListing,
+			&f.IsEncrypted, &f.ContentHash); err != nil {
+			return nil, err
+		}
+
+		if width.Valid {
+			v := int(width.Int64)
+			f.Width = &v
+		}
+		if height.Valid {
+			v := int(height.Int64)
+			f.Height = &v
+		}
+		if expiresAt.Valid {
+			f.ExpiresAt = &expiresAt.String
+		}
+		files = append(files, f)
+	}
+	return files, rows.Err()
 }
 
-// DuplicateHashes returns content hashes shared by more than one row.
+func (d *DB) CountUnhashedPlaintext() (int, error) {
+	var n int
+	err := d.db.QueryRow(`SELECT COUNT(*) FROM files WHERE is_encrypted = 0 AND (content_hash IS NULL OR content_hash = '')`).Scan(&n)
+	return n, err
+}
+
 func (d *DB) DuplicateHashes() ([]string, error) {
 	rows, err := d.db.Query(
 		`SELECT content_hash FROM files

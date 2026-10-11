@@ -29,7 +29,7 @@ docker compose up -d --build
 - CLI tool
 - ShareX support
 - Automatic retention: files older than 14 days (`ANONHOST_RETENTION_DAYS`) are wiped (storage object + DB row) by an hourly background job; `expires_at` files are wiped too
-- Deduplication: each cleanup ends with a content-hash pass over plaintext files. Byte-identical uploads share one master copy (duplicate objects deleted, duplicate IDs repointed, all URLs/deletion tokens keep working); deletes are refcount-aware so shared bytes survive until the last ID is gone
+- Deduplication: each cleanup ends with a content-hash pass over plaintext files. Byte-identical uploads share one master copy (duplicate objects deleted, duplicate IDs repointed, all URLs/deletion tokens keep working); deletes are refcount-aware so shared bytes survive until the last ID is gone. Hash backfill is budgeted per run (`ANONHOST_DEDUP_MAX_FILES`/`ANONHOST_DEDUP_MAX_BYTES`, smallest first) and runs on a client-disconnect-proof context, converging over successive runs
 - Internal admin portal on a separate bind (`ANONHOST_ADMIN_BIND`, default `127.0.0.1:1985`): stats, search, delete, manual cleanup, archive rescan. Protect with `ANONHOST_ADMIN_KEY` and keep it off the public interface.
 
 ## CLI

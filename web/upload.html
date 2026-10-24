@@ -396,6 +396,10 @@ chmod +x anonhost.sh
       return ['File too large',
         (detail ? detail + ' ' : '') + 'Try a smaller file, compress it, or split it up.'];
     }
+    if (status === 503) {
+      return ['Maintenance',
+        detail || 'Uploads are temporarily disabled for maintenance. Existing files remain available; try again later.'];
+    }
     if (status >= 500) {
       return ['Server error',
         'The server failed to store your file' + (detail ? ': ' + detail + '. ' : '. ') +

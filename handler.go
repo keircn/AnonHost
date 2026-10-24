@@ -98,9 +98,22 @@ func detectContentType(filename string, header []byte) string {
 	return ct
 }
 
+func (s *Server) maintenanceBlock(w http.ResponseWriter) bool {
+	if !s.cfg.Maintenance {
+		return false
+	}
+	s.respondError(w, http.StatusServiceUnavailable,
+		"maintenance mode: uploads are temporarily disabled, existing files remain available")
+	return true
+}
+
 func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	if s.maintenanceBlock(w) {
 		return
 	}
 
@@ -119,6 +132,10 @@ func (s *Server) handleAdminUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method != "POST" {
 		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	if s.maintenanceBlock(w) {
 		return
 	}
 
@@ -302,6 +319,10 @@ func (s *Server) doUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
+	if s.maintenanceBlock(w) {
+		return
+	}
+
 	r2, ok := s.storage.(*R2Storage)
 	if !ok {
 		s.respondJSON(w, http.StatusOK, map[string]bool{"direct": false})
@@ -350,6 +371,10 @@ func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
+	if s.maintenanceBlock(w) {
+		return
+	}
+
 	var req struct {
 		ID         string `json:"id"`
 		ObjectKey  string `json:"object_key"`
@@ -798,6 +823,7 @@ func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
 		"TotalUploads":     count,
 		"TotalSize":        totalSize,
 		"TotalSizeHuman":   formatSize(totalSize),
+		"Maintenance":      s.cfg.Maintenance,
 	})
 }
 
@@ -812,6 +838,7 @@ func (s *Server) handleUploadPage(w http.ResponseWriter, r *http.Request) {
 		"TotalUploads":     count,
 		"TotalSize":        totalSize,
 		"TotalSizeHuman":   formatSize(totalSize),
+		"Maintenance":      s.cfg.Maintenance,
 	})
 }
 
@@ -1011,13 +1038,13 @@ func (s *Server) handleCronCleanup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.respondJSON(w, http.StatusOK, map[string]any{
-		"deleted":           res.Total,
-		"expired":           res.Expired,
-		"aged":              res.Aged,
-		"freed":             res.Freed,
-		"dedup_groups":      res.DedupGroups,
-		"deduped":           res.Deduped,
-		"dedup_freed":       res.DedupFreed,
+		"deleted":      res.Total,
+		"expired":      res.Expired,
+		"aged":         res.Aged,
+		"freed":        res.Freed,
+		"dedup_groups": res.DedupGroups,
+		"deduped":      res.Deduped,
+		"dedup_freed":  res.DedupFreed,
 	})
 }
 

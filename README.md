@@ -28,6 +28,7 @@ docker compose up -d --build
 - Archive previews with tree navigation
 - CLI tool
 - ShareX support
+- Maintenance mode (`ANONHOST_MAINTENANCE`): rejects every upload endpoint with 503 while it is on; already uploaded files stay downloadable and the web UI shows a notice
 - Automatic retention: files older than 14 days (`ANONHOST_RETENTION_DAYS`) are wiped (storage object + DB row) by an hourly background job; `expires_at` files are wiped too
 - Deduplication: each cleanup ends with a content-hash pass over plaintext files. Byte-identical uploads share one master copy (duplicate objects deleted, duplicate IDs repointed, all URLs/deletion tokens keep working); deletes are refcount-aware so shared bytes survive until the last ID is gone. Hash backfill is budgeted per run (`ANONHOST_DEDUP_MAX_FILES`/`ANONHOST_DEDUP_MAX_BYTES`, smallest first) and runs on a client-disconnect-proof context, converging over successive runs
 - Orphan prune (manual only, `POST /api/orphans` on the admin port, `?dry_run=1` to preview): drops DB rows whose storage objects are gone, e.g. after manual R2 deletes. Starts a background job (202, poll `GET /api/orphans/status`); only 404-class misses are pruned, transient errors are skipped, and runs aborting when over half the rows look orphaned

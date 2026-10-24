@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -20,6 +21,8 @@ type Config struct {
 
 	RateLimit int
 
+	Maintenance bool
+
 	AdminKey string
 
 	AdminBind     string
@@ -31,22 +34,23 @@ type Config struct {
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		Bind:        getEnv("ANONHOST_BIND", ":1984"),
-		PublicURL:   getEnv("ANONHOST_URL", "http://localhost:1984"),
-		DBPath:      getEnv("ANONHOST_DB_PATH", "/app/data/anonhost.db"),
-		UploadDir:   getEnv("ANONHOST_UPLOAD_DIR", "/app/uploads"),
-		MaxFileSize: getEnvInt64("ANONHOST_MAX_FILE_SIZE", 1073741824),
+		Bind:              getEnv("ANONHOST_BIND", ":1984"),
+		PublicURL:         getEnv("ANONHOST_URL", "http://localhost:1984"),
+		DBPath:            getEnv("ANONHOST_DB_PATH", "/app/data/anonhost.db"),
+		UploadDir:         getEnv("ANONHOST_UPLOAD_DIR", "/app/uploads"),
+		MaxFileSize:       getEnvInt64("ANONHOST_MAX_FILE_SIZE", 1073741824),
 		R2AccountID:       os.Getenv("R2_ACCOUNT_ID"),
 		R2AccessKeyID:     os.Getenv("R2_ACCESS_KEY_ID"),
 		R2SecretAccessKey: os.Getenv("R2_SECRET_ACCESS_KEY"),
 		R2BucketName:      os.Getenv("R2_BUCKET_NAME"),
 		R2PublicURL:       os.Getenv("R2_PUBLIC_URL"),
-		RateLimit:  getEnvInt("ANONHOST_RATE_LIMIT", 5),
-		AdminKey:   os.Getenv("ANONHOST_ADMIN_KEY"),
-		AdminBind:  getEnv("ANONHOST_ADMIN_BIND", "127.0.0.1:1985"),
-		RetentionDays: getEnvInt("ANONHOST_RETENTION_DAYS", 14),
-		DedupMaxFiles: getEnvInt("ANONHOST_DEDUP_MAX_FILES", 200),
-		DedupMaxBytes: getEnvInt64("ANONHOST_DEDUP_MAX_BYTES", 2<<30),
+		RateLimit:         getEnvInt("ANONHOST_RATE_LIMIT", 5),
+		Maintenance:       getEnvBool("ANONHOST_MAINTENANCE", false),
+		AdminKey:          os.Getenv("ANONHOST_ADMIN_KEY"),
+		AdminBind:         getEnv("ANONHOST_ADMIN_BIND", "127.0.0.1:1985"),
+		RetentionDays:     getEnvInt("ANONHOST_RETENTION_DAYS", 14),
+		DedupMaxFiles:     getEnvInt("ANONHOST_DEDUP_MAX_FILES", 200),
+		DedupMaxBytes:     getEnvInt64("ANONHOST_DEDUP_MAX_BYTES", 2<<30),
 	}
 	return cfg
 }
@@ -68,6 +72,17 @@ func getEnvInt(key string, fallback int) int {
 		if n, err := strconv.Atoi(v); err == nil {
 			return n
 		}
+	}
+	return fallback
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	v := strings.ToLower(os.Getenv(key))
+	switch v {
+	case "1", "true", "yes", "on":
+		return true
+	case "0", "false", "no", "off":
+		return false
 	}
 	return fallback
 }

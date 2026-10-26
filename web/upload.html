@@ -232,9 +232,9 @@
 <div class="header">
   <a class="brand" href="/">
     <img src="/public/anonhost.svg" alt="">
-    <span><strong>AnonHost</strong><small>PRIVATE FILE SHARING</small></span>
+    <span><strong>AnonHost</strong><small>A SMALL FILE HOST</small></span>
   </a>
-  <span class="header-note">No account. No tracking. Files expire automatically.</span>
+  <span class="header-note">anonymous file hosting</span>
 </div>
 
 <div class="nav">
@@ -249,14 +249,12 @@
 
 <div class="content">
 
-<div class="hero slim-hero">
-  <span class="eyebrow">UPLOAD CENTER</span>
-  <h2>One file. One private link.</h2>
-  <p>Choose a file below. Encryption happens in your browser before it leaves your device.</p>
+<div class="intro upload-intro">
+  <div><h2>Upload a file</h2><p>Choose a file below. Encryption runs in your browser when enabled.</p></div>
 </div>
 
 <div class="section upload-section">
-  <div class="section-heading"><div><span class="eyebrow">SEND A FILE</span><h3>Choose your file</h3></div><span class="step-badge">01 / UPLOAD</span></div>
+  <h3>Choose your file</h3>
   <div class="section-inner">
     <p class="section-intro">Maximum file size: {{.MaxFileSizeHuman}}. Files are automatically deleted after 14 days.</p>
     {{template "uploadForm" .}}

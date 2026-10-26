@@ -247,9 +247,9 @@
 <div class="header">
   <a class="brand" href="/">
     <img src="/public/anonhost.svg" alt="">
-    <span><strong>AnonHost</strong><small>PRIVATE FILE SHARING</small></span>
+    <span><strong>AnonHost</strong><small>A SMALL FILE HOST</small></span>
   </a>
-  <span class="header-note">No account. No tracking. Files expire automatically.</span>
+  <span class="header-note">anonymous file hosting</span>
 </div>
 
 <div class="nav">
@@ -264,21 +264,15 @@
 
 <div class="content">
 
-<div class="hero section">
-  <div class="hero-copy">
-    <span class="eyebrow">SIMPLE. PRIVATE. TEMPORARY.</span>
-    <h2>Share files.<br><em>Leave no trail.</em></h2>
-    <p>Upload without an account. Get a private link, then share it wherever you need.</p>
-    <a class="hero-link" href="#upload">Start an upload <span aria-hidden="true">↓</span></a>
-    <div class="hero-facts"><span>Up to {{.MaxFileSizeHuman}}</span><span>Auto-deletes after 14 days</span></div>
-  </div>
-  <div class="hero-art"><img src="/public/haruhi-suzumiya-plotting.gif" alt="Abstract file sharing illustration"></div>
+<div class="intro">
+  <img src="/public/haruhi-suzumiya-plotting.gif" alt="">
+  <div><h2>AnonHost</h2><p>Upload a file and get a link to share.</p><p>Files up to {{.MaxFileSizeHuman}} · deleted after 14 days · no account required</p></div>
 </div>
 
 <div class="section upload-section" id="upload">
-  <div class="section-heading"><div><span class="eyebrow">SEND A FILE</span><h3>Drop it here</h3></div><span class="step-badge">01 / UPLOAD</span></div>
+  <h3>Upload a file</h3>
   <div class="section-inner">
-    <p class="section-intro">Your file is encrypted in your browser before upload. Turn encryption off any time.</p>
+    <p class="section-intro">Encryption is on by default. You can turn it off below.</p>
     {{template "uploadForm" .}}
   </div>
 </div>

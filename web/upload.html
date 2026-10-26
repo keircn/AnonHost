@@ -6,7 +6,7 @@
 <link rel="icon" href="/public/anonhost.svg" type="image/svg+xml">
 <link rel="icon" href="/public/anonhost-fill.png" type="image/png" sizes="512x512">
 <meta property="og:title" content="Upload - AnonHost">
-<meta property="og:description" content="Upload files anonymously. Max 1GB, no account required.">
+<meta property="og:description" content="Upload files anonymously. Max {{.MaxFileSizeHuman}}, no account required.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AnonHost">
 <title>Upload - AnonHost</title>
@@ -224,30 +224,41 @@
     .drop-zone { padding: 14px; }
   }
 </style>
+<link rel="stylesheet" href="/public/site.css">
 </head>
 <body>
 <div class="wrapper">
 
 <div class="header">
-  <h1><a href="/">AnonHost</a></h1>
-  <span class="jp">&#12450;&#12494;&#12531;&#12507;&#12473;&#12488;</span>
-  <span class="sub">anonymous file hosting</span>
+  <a class="brand" href="/">
+    <img src="/public/anonhost.svg" alt="">
+    <span><strong>AnonHost</strong><small>PRIVATE FILE SHARING</small></span>
+  </a>
+  <span class="header-note">No account. No tracking. Files expire automatically.</span>
 </div>
 
 <div class="nav">
-  <a href="/">Home</a>
-  <a href="/upload">Upload</a>
-  <a href="/install">CLI</a>
-  <a href="/sharex">ShareX</a>
-  <a href="/roadmap">Roadmap</a>
+  <div class="nav-inner">
+    <a href="/">Home</a>
+    <a class="active" href="/upload">Upload</a>
+    <a href="/install">CLI</a>
+    <a href="/sharex">ShareX</a>
+    <a href="/roadmap">Roadmap</a>
+  </div>
 </div>
 
 <div class="content">
 
-<div class="section">
-  <h3>upload a file</h3>
+<div class="hero slim-hero">
+  <span class="eyebrow">UPLOAD CENTER</span>
+  <h2>One file. One private link.</h2>
+  <p>Choose a file below. Encryption happens in your browser before it leaves your device.</p>
+</div>
+
+<div class="section upload-section">
+  <div class="section-heading"><div><span class="eyebrow">SEND A FILE</span><h3>Choose your file</h3></div><span class="step-badge">01 / UPLOAD</span></div>
   <div class="section-inner">
-    <p style="font-size:11px;color:#888;margin-bottom:8px">Files can be encrypted in your browser before upload. Toggle the Encrypt checkbox above.</p>
+    <p class="section-intro">Maximum file size: {{.MaxFileSizeHuman}}. Files are automatically deleted after 14 days.</p>
     {{template "uploadForm" .}}
   </div>
 </div>
@@ -271,7 +282,7 @@ chmod +x anonhost.sh
 </div>
 
 <div class="footer">
-  <a href="/">AnonHost</a> - anonymous file hosting
+  <a href="/">AnonHost</a><span>·</span> Files are temporary by design
 </div>
 
 </div>
@@ -297,6 +308,7 @@ chmod +x anonhost.sh
   var errMsg = document.getElementById('upload-error-msg');
   var dzFile = document.getElementById('dz-file');
   var dzHint = document.getElementById('dz-hint');
+  var maxFileSize = Number(form.getAttribute('data-max-size')) || 0;
   var uploadKey = null;
   var encryptCheckbox = document.getElementById('encrypt-checkbox');
   function encryptEnabled() { return encryptCheckbox.checked; }
@@ -556,6 +568,10 @@ chmod +x anonhost.sh
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!input.files.length) return;
+    if (maxFileSize && input.files[0].size > maxFileSize) {
+      showError(413, 'This instance allows files up to ' + formatSize(maxFileSize) + '.');
+      return;
+    }
     btn.disabled = true;
     btn.textContent = 'Uploading...';
     setProgress(0, 'PREPARING...');

@@ -16,8 +16,8 @@ services:
       ANONHOST_DB_PATH: /app/data/anonhost.db
       ANONHOST_UPLOAD_DIR: /app/uploads
     volumes:
-      - uploads_data:/app/uploads
-      - data_volume:/app/data
+      - ./data/uploads:/app/uploads
+      - ./data:/app/data
     ports:
       - '${ANONHOST_BIND_IP:-127.0.0.1}:${ANONHOST_PORT:-1984}:1984'
       - '${ANONHOST_ADMIN_BIND_IP:-127.0.0.1}:${ANONHOST_ADMIN_PORT:-1985}:1985'
@@ -27,11 +27,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-
-volumes:
-  uploads_data:
-    external: true
-    name: anonhost_uploads_data
-  data_volume:
-    external: true
-    name: anonhost_data

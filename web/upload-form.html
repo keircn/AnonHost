@@ -25,10 +25,10 @@ function encryptFile(file, onProgress) {
   Uploads are temporarily disabled. Files uploaded earlier remain available.
 </div>
 {{end}}
-<form id="upload-form" enctype="multipart/form-data"{{if .Maintenance}} class="maintenance"{{end}}>
+<form id="upload-form" enctype="multipart/form-data" data-max-size="{{.MaxFileSize}}"{{if .Maintenance}} class="maintenance"{{end}}>
   <div class="drop-zone" id="drop-zone">
-    <input type="file" name="file" id="file-input"{{if .Maintenance}} disabled{{end}}>
-    <div class="dz-icon">
+    <input type="file" name="file" id="file-input" aria-label="Choose a file to upload"{{if .Maintenance}} disabled{{end}}>
+    <div class="dz-icon" aria-hidden="true">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M12 16V4m0 0L8 8m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
       </svg>

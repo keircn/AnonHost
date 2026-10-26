@@ -11,6 +11,8 @@ cp .env.example .env # and fill them in obviously
 docker compose up -d --build
 ```
 
+Compose stores the SQLite database and local uploads under `./data/`, which Docker creates on first start. Back up that directory if you use local storage. To keep runtime data elsewhere, change the two bind-mount paths in `docker-compose.yml`.
+
 ## Stack
 
 - Go

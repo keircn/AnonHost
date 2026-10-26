@@ -165,11 +165,26 @@ func (s *R2Storage) PresignedPutURL(ctx context.Context, key, contentType string
 }
 
 func (s *R2Storage) VerifyObject(ctx context.Context, key string) (bool, error) {
-	exists, err := s.Exists(ctx, key)
+	_, exists, err := s.ObjectSize(ctx, key)
+	return exists, err
+}
+
+func (s *R2Storage) ObjectSize(ctx context.Context, key string) (int64, bool, error) {
+	out, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
 	if err != nil {
-		return false, nil
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) && (apiErr.ErrorCode() == "NotFound" || apiErr.ErrorCode() == "NoSuchKey") {
+			return 0, false, nil
+		}
+		return 0, false, err
 	}
-	return exists, nil
+	if out.ContentLength == nil {
+		return 0, true, nil
+	}
+	return *out.ContentLength, true, nil
 }
 
 func (s *R2Storage) Exists(ctx context.Context, key string) (bool, error) {

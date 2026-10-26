@@ -37,12 +37,22 @@ type ErrorResponse struct {
 }
 
 type Server struct {
-	cfg     *Config
-	db      *DB
-	storage Storage
-	views   *template.Template
-	rl      *RateLimiter
-	orphans orphanJobState
+	cfg           *Config
+	db            *DB
+	storage       Storage
+	views         *template.Template
+	rl            *RateLimiter
+	orphans       orphanJobState
+	uploadSlots   chan struct{}
+	directMu      sync.Mutex
+	directIntents map[string]directUploadIntent
+}
+
+type directUploadIntent struct {
+	key      string
+	filename string
+	size     int64
+	expires  time.Time
 }
 
 func NewServer(cfg *Config, db *DB, storage Storage) (*Server, error) {
@@ -64,11 +74,13 @@ func NewServer(cfg *Config, db *DB, storage Storage) (*Server, error) {
 	}
 
 	return &Server{
-		cfg:     cfg,
-		db:      db,
-		storage: storage,
-		views:   views,
-		rl:      NewRateLimiter(cfg.RateLimit),
+		cfg:           cfg,
+		db:            db,
+		storage:       storage,
+		views:         views,
+		rl:            NewRateLimiter(cfg.RateLimit),
+		uploadSlots:   make(chan struct{}, 3),
+		directIntents: make(map[string]directUploadIntent),
 	}, nil
 }
 
@@ -143,7 +155,14 @@ func (s *Server) handleAdminUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) doUpload(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxFileSize+1<<20)
+	select {
+	case s.uploadSlots <- struct{}{}:
+		defer func() { <-s.uploadSlots }()
+	default:
+		s.respondError(w, http.StatusServiceUnavailable, "upload capacity is busy; try again shortly")
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxFileSize+(1<<20))
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		s.respondError(w, http.StatusBadRequest, "file too large or invalid multipart")
@@ -319,7 +338,15 @@ func (s *Server) doUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
 	if s.maintenanceBlock(w) {
+		return
+	}
+	if !s.rl.Allow(extractIP(r)) {
+		s.respondError(w, http.StatusTooManyRequests, "rate limit exceeded")
 		return
 	}
 
@@ -339,8 +366,12 @@ func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Filename == "" {
+	if req.Filename == "" || strings.TrimSpace(req.Filename) == "" {
 		s.respondError(w, http.StatusBadRequest, "filename required")
+		return
+	}
+	if req.Size <= 0 {
+		s.respondError(w, http.StatusBadRequest, "size must be greater than zero")
 		return
 	}
 	if req.Size > s.cfg.MaxFileSize {
@@ -360,6 +391,19 @@ func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	publicURL := r2.URL(key)
+	s.directMu.Lock()
+	for intentID, intent := range s.directIntents {
+		if time.Now().After(intent.expires) {
+			delete(s.directIntents, intentID)
+		}
+	}
+	if len(s.directIntents) >= 10000 {
+		s.directMu.Unlock()
+		s.respondError(w, http.StatusServiceUnavailable, "direct upload capacity is busy; try again shortly")
+		return
+	}
+	s.directIntents[id] = directUploadIntent{key: key, filename: req.Filename, size: req.Size, expires: time.Now().Add(20 * time.Minute)}
+	s.directMu.Unlock()
 
 	s.respondJSON(w, http.StatusOK, map[string]any{
 		"direct":     true,
@@ -371,6 +415,10 @@ func (s *Server) handleDirectInit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		s.respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
 	if s.maintenanceBlock(w) {
 		return
 	}
@@ -393,6 +441,16 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 
 	if req.ID == "" || req.ObjectKey == "" || req.Filename == "" {
 		s.respondError(w, http.StatusBadRequest, "missing required fields")
+		return
+	}
+	s.directMu.Lock()
+	intent, intentOK := s.directIntents[req.ID]
+	if intentOK {
+		delete(s.directIntents, req.ID)
+	}
+	s.directMu.Unlock()
+	if !intentOK || time.Now().After(intent.expires) || intent.key != req.ObjectKey || intent.filename != req.Filename || intent.size != req.PlainSize {
+		s.respondError(w, http.StatusBadRequest, "upload authorization expired or invalid")
 		return
 	}
 
@@ -430,7 +488,7 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := r2.VerifyObject(r.Context(), req.ObjectKey)
+	actualSize, exists, err := r2.ObjectSize(r.Context(), req.ObjectKey)
 	if err != nil {
 		log.Printf("verify object error: %v", err)
 		s.respondError(w, http.StatusInternalServerError, "verification failed")
@@ -440,9 +498,10 @@ func (s *Server) handleDirectFinalize(w http.ResponseWriter, r *http.Request) {
 		s.respondError(w, http.StatusNotFound, "file not found in storage")
 		return
 	}
-
-	ip := extractIP(r)
-	s.rl.Allow(ip)
+	if actualSize != storedSize {
+		s.respondError(w, http.StatusBadRequest, "stored size does not match uploaded object")
+		return
+	}
 
 	now := time.Now().UTC().Format(time.RFC3339)
 	deletionToken := GenerateDeletionToken()
